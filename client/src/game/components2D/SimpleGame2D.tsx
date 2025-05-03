@@ -73,14 +73,14 @@ const SimpleGame2D: React.FC<SimpleGame2DProps> = ({
         
         {/* CENTER ZONES */}
         {/* Reserve 1 */}
-        <div className="absolute left-[35%] top-[20%] w-[12%] h-[25%]">
+        <div className="absolute left-[35%] top-[5%] w-[12%] h-[25%]">
           <div className="w-full h-full border-2 border-dashed border-blue-400 rounded-lg flex items-center justify-center transform rotate-180">
             <span className="text-xs text-white opacity-70">Reserve</span>
           </div>
         </div>
         
         {/* Reserve 2 */}
-        <div className="absolute left-[53%] top-[20%] w-[12%] h-[25%]">
+        <div className="absolute left-[53%] top-[5%] w-[12%] h-[25%]">
           <div className="w-full h-full border-2 border-dashed border-blue-400 rounded-lg flex items-center justify-center transform rotate-180">
             <span className="text-xs text-white opacity-70">Reserve</span>
           </div>
@@ -108,7 +108,7 @@ const SimpleGame2D: React.FC<SimpleGame2DProps> = ({
         </div>
         
         {/* AVATAR ZONE */}
-        <div className="absolute left-[43%] top-[50%] w-[14%] h-[42%]">
+        <div className="absolute left-[43%] top-[35%] w-[14%] h-[42%]">
           <div className="w-full h-full border-4 border-blue-600 rounded-lg flex items-center justify-center bg-blue-800 bg-opacity-30">
             <div className="transform rotate-180 w-full h-full">
               {opponentCards.length > 0 && opponentCards[0].type === 'avatar' ? (
@@ -136,15 +136,15 @@ const SimpleGame2D: React.FC<SimpleGame2DProps> = ({
       </div>
       
       {/* FIELD ZONES IN MIDDLE */}
-      <div className="absolute left-[28%] top-[35%] w-[18%] h-[27%]">
+      <div className="absolute left-[20%] top-[35%] w-[14%] h-[30%]">
         <div className="w-full h-full border-2 border-dashed border-gray-500 rounded-lg flex items-center justify-center bg-gray-900 bg-opacity-50">
-          <span className="text-white font-bold text-2xl transform rotate-180">FIELD</span>
+          <span className="text-white font-bold text-lg transform rotate-180">FIELD</span>
         </div>
       </div>
       
-      <div className="absolute right-[28%] top-[48%] w-[18%] h-[27%]">
+      <div className="absolute right-[20%] top-[35%] w-[14%] h-[30%]">
         <div className="w-full h-full border-2 border-dashed border-gray-500 rounded-lg flex items-center justify-center bg-gray-900 bg-opacity-50">
-          <span className="text-white font-bold text-2xl">FIELD</span>
+          <span className="text-white font-bold text-lg">FIELD</span>
         </div>
       </div>
       
@@ -205,13 +205,13 @@ const SimpleGame2D: React.FC<SimpleGame2DProps> = ({
         </div>
         
         {/* Reserve zones */}
-        <div className="absolute left-[35%] top-[55%] w-[12%] h-[25%]">
+        <div className="absolute left-[35%] top-[70%] w-[12%] h-[25%]">
           <div className="w-full h-full border-2 border-dashed border-red-400 rounded-lg flex items-center justify-center">
             <span className="text-xs text-white opacity-70">Reserve</span>
           </div>
         </div>
         
-        <div className="absolute left-[53%] top-[55%] w-[12%] h-[25%]">
+        <div className="absolute left-[53%] top-[70%] w-[12%] h-[25%]">
           <div className="w-full h-full border-2 border-dashed border-red-400 rounded-lg flex items-center justify-center">
             <span className="text-xs text-white opacity-70">Reserve</span>
           </div>
