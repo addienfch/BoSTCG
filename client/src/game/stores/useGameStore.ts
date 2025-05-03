@@ -1181,5 +1181,58 @@ export const useGameStore = create<GameState>((set, get) => ({
     set(state => ({
       logs: [...state.logs, message].slice(-20) // Keep last 20 logs
     }));
+  },
+  
+  // Check for defeated avatars
+  checkDefeatedAvatars: () => {
+    const { player, opponent } = get();
+    
+    // Check player's active avatar
+    if (player.activeAvatar) {
+      const avatar = player.activeAvatar;
+      const currentDamage = avatar.counters?.damage || 0;
+      
+      if (currentDamage >= avatar.health) {
+        // Avatar is defeated
+        set(state => ({
+          player: {
+            ...state.player,
+            activeAvatar: null,
+            graveyard: [...state.player.graveyard, avatar]
+          }
+        }));
+        get().addLog(`Your ${avatar.name} was defeated!`);
+        
+        // Check win condition - if player has no active avatar, no reserves, and no life cards
+        if (player.reserveAvatars.length === 0 && player.lifeCards.length === 0) {
+          set({ winner: 'opponent' });
+          get().addLog("You have no avatars left. You lose!");
+        }
+      }
+    }
+    
+    // Check opponent's active avatar
+    if (opponent.activeAvatar) {
+      const avatar = opponent.activeAvatar;
+      const currentDamage = avatar.counters?.damage || 0;
+      
+      if (currentDamage >= avatar.health) {
+        // Avatar is defeated
+        set(state => ({
+          opponent: {
+            ...state.opponent,
+            activeAvatar: null,
+            graveyard: [...state.opponent.graveyard, avatar]
+          }
+        }));
+        get().addLog(`Opponent's ${avatar.name} was defeated!`);
+        
+        // Check win condition - if opponent has no active avatar, no reserves, and no life cards
+        if (opponent.reserveAvatars.length === 0 && opponent.lifeCards.length === 0) {
+          set({ winner: 'player' });
+          get().addLog("Opponent has no avatars left. You win!");
+        }
+      }
+    }
   }
 }));

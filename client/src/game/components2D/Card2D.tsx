@@ -231,7 +231,7 @@ const Card2D: React.FC<Card2DProps> = ({
         
         {/* Health */}
         <div className="absolute bottom-2 right-2 bg-gray-700 rounded-md px-1 py-0.5 text-[10px] font-bold text-white">
-          HP {avatarCard.health}
+          HP {avatarCard.health || (card as any).health || 0}
         </div>
         
         {/* Skill 1 */}
@@ -262,6 +262,13 @@ const Card2D: React.FC<Card2DProps> = ({
         {avatarCard.counters && avatarCard.counters.shield > 0 && (
           <div className="absolute top-17 right-2 bg-blue-600 text-white text-[10px] font-bold px-1 rounded-full">
             S{avatarCard.counters.shield}
+          </div>
+        )}
+        
+        {/* Handle damage counter for legacy card format */}
+        {(card as any).damageCounter > 0 && (
+          <div className="absolute top-7 right-2 bg-red-600 text-white text-[10px] font-bold px-1 rounded-full">
+            {(card as any).damageCounter}
           </div>
         )}
       </>
@@ -324,7 +331,9 @@ const Card2D: React.FC<Card2DProps> = ({
         {/* Card type */}
         <div className="absolute top-[116px] left-2 right-2 text-center bg-black bg-opacity-70 py-0.5 px-1 rounded text-white text-[9px]">
           {card.type === 'avatar' 
-            ? `Avatar - ${(card as AvatarCard).subType.charAt(0).toUpperCase() + (card as AvatarCard).subType.slice(1)}` 
+            ? `Avatar - ${(card as AvatarCard).subType ? 
+              ((card as AvatarCard).subType.charAt(0).toUpperCase() + (card as AvatarCard).subType.slice(1)) 
+              : 'Unknown'}`
             : card.type.charAt(0).toUpperCase() + card.type.slice(1)}
         </div>
         
@@ -334,7 +343,8 @@ const Card2D: React.FC<Card2DProps> = ({
         >
           {card.type === 'avatar' ? (
             <>
-              {(card as AvatarCard).skill1?.name} {(card as AvatarCard).skill1?.damage} dmg
+              {(card as AvatarCard).skill1?.name || ''} {(card as AvatarCard).skill1?.damage || ''} 
+              {(card as AvatarCard).skill1?.damage ? 'dmg' : ''}
               {(card as AvatarCard).skill1?.effect && (
                 <> | {(card as AvatarCard).skill1.effect.length > 35 
                   ? (card as AvatarCard).skill1.effect.substring(0, 35) + '...' 
