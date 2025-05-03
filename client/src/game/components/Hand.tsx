@@ -46,18 +46,24 @@ const Hand = ({ position = [0, 0, 0] }: HandProps) => {
     const totalWidth = (playerHand.length - 1) * cardSpacing;
     const startX = -totalWidth / 2;
     
-    const newPositions = playerHand.map((_, index) => {
+    const newPositions: Array<[number, number, number]> = [];
+    
+    for (let index = 0; index < playerHand.length; index++) {
       // Calculate x position with a slight arc
       const x = startX + index * cardSpacing;
       
       // Calculate y and z to create an arc effect
       const arcHeight = 0.1;
-      const normalizedPos = (index / (playerHand.length - 1) - 0.5) * 2;
+      const normalizedPos = (index / Math.max(1, playerHand.length - 1) - 0.5) * 2;
       const y = -Math.abs(normalizedPos) * arcHeight + 0.1;
       const z = Math.abs(normalizedPos) * 0.3;
       
-      return [x + position[0], y + position[1], z + position[2]];
-    });
+      newPositions.push([
+        x + position[0], 
+        y + position[1], 
+        z + position[2]
+      ]);
+    }
     
     setCardPositions(newPositions);
   }, [playerHand.length, size.width, position]);
