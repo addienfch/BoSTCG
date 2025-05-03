@@ -45,31 +45,76 @@ const GameBoard2D: React.FC<GameBoard2DProps> = ({ onAction }) => {
   const handleCardAction = (card: Card, action: string) => {
     console.log(action, card);
     
+    // Common validation for all actions
+    if (game.currentPlayer !== 'player' || (game.gamePhase !== 'main1' && game.gamePhase !== 'main2')) {
+      toast.error("You can only perform actions during your Main Phases!");
+      return;
+    }
+    
+    // Find the card index
+    const index = game.player.hand.findIndex(c => c.id === card.id);
+    if (index === -1) {
+      toast.error("Card not found in your hand!");
+      return;
+    }
+    
     if (action === 'play') {
-      // Find the card index
-      const index = game.player.hand.findIndex(c => c.id === card.id);
-      if (index !== -1) {
-        // This will check energy cost and placement rules
-        game.playCard(index);
+      // Play non-avatar cards
+      game.playCard(index);
+      
+    } else if (action === 'active') {
+      // Place as active avatar
+      if (card.type !== 'avatar') {
+        toast.error("Only avatar cards can be placed as active avatar!");
+        return;
       }
-    } else if (action === 'toEnergy') {
-      if (game.currentPlayer === 'player' && 
-          (game.gamePhase === 'main1' || game.gamePhase === 'main2')) {
+      
+      if (game.player.activeAvatar !== null) {
+        toast.error("You already have an active avatar!");
+        return;
+      }
+      
+      // This uses the playCard implementation specifically for avatars
+      game.playCard(index);
+      toast.success(`${card.name} placed as active avatar!`);
+      
+    } else if (action === 'reserve') {
+      // Place as reserve avatar
+      if (card.type !== 'avatar') {
+        toast.error("Only avatar cards can be placed in reserve!");
+        return;
+      }
+      
+      if (game.player.reserveAvatars.length >= 2) {
+        toast.error("You already have the maximum number of reserve avatars (2)!");
+        return;
+      }
+      
+      // Manually set up the card placement in reserve
+      set(state => {
+        const updatedHand = [...state.player.hand];
+        updatedHand.splice(index, 1);
         
-        // Only allow one avatar card to energy pile per turn
-        if (card.type === 'avatar' && game.player.avatarToEnergyCount >= 1) {
-          toast.error("You can only put 1 Avatar card into energy per turn!");
-          return;
-        }
-
-        // Find the card index
-        const index = game.player.hand.findIndex(c => c.id === card.id);
-        if (index !== -1) {
-          game.moveCardToEnergy(index);
-        }
-      } else {
-        toast.error("You can only add cards to energy during your Main Phase!");
+        return {
+          player: {
+            ...state.player,
+            hand: updatedHand,
+            reserveAvatars: [...state.player.reserveAvatars, card as AvatarCard]
+          }
+        };
+      });
+      
+      game.addLog(`${card.name} placed in reserve.`);
+      toast.success(`${card.name} placed in reserve!`);
+      
+    } else if (action === 'toEnergy') {
+      // Only allow one avatar card to energy pile per turn
+      if (card.type === 'avatar' && game.player.avatarToEnergyCount >= 1) {
+        toast.error("You can only put 1 Avatar card into energy per turn!");
+        return;
       }
+
+      game.moveCardToEnergy(index);
     }
   };
   
