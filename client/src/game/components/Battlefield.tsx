@@ -3,13 +3,14 @@ import { useCardGame } from '../stores/useCardGame';
 import Card from './Card';
 import { useAudio } from '@/lib/stores/useAudio';
 import { toast } from 'sonner';
+import { Group } from 'three';
 
 interface BattlefieldProps {
   position?: [number, number, number];
 }
 
 const Battlefield = ({ position = [0, 0, 0] }: BattlefieldProps) => {
-  const battlefieldRef = useRef<THREE.Group>(null);
+  const battlefieldRef = useRef<Group>(null);
   const { 
     playerActiveAvatar,
     playerReserveAvatars, 

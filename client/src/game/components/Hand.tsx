@@ -1,24 +1,33 @@
 import { useRef, useEffect, useState } from 'react';
 import { useThree } from '@react-three/fiber';
+import { Html } from '@react-three/drei';
 import Card, { CardData } from './Card';
 import { useCardGame } from '../stores/useCardGame';
 import { useCardDrag } from '../hooks/useCardDrag';
-import { Vector3 } from 'three';
+import { Vector3, Group } from 'three';
+import { toast } from 'sonner';
 
 interface HandProps {
   position?: [number, number, number];
 }
 
 const Hand = ({ position = [0, 0, 0] }: HandProps) => {
-  const { playerHand, mana, playCard } = useCardGame();
+  const { 
+    playerHand, 
+    playerEnergyPile, 
+    playCard, 
+    selectCard, 
+    setEnergyCard,
+    gamePhase, 
+    currentPlayer 
+  } = useCardGame();
   const { size } = useThree();
-  const handRef = useRef<THREE.Group>(null);
+  const handRef = useRef<Group>(null);
   
   // Card drag state
   const { 
     draggedCard, 
     isDragging, 
-    setDraggedCard, 
     dragPosition, 
     endDrag,
     startDrag,
@@ -33,7 +42,6 @@ const Hand = ({ position = [0, 0, 0] }: HandProps) => {
     if (!playerHand.length) return;
     
     const isMobile = size.width < 768;
-    const cardWidth = 1;
     const cardSpacing = isMobile ? 0.7 : 1.2;
     const totalWidth = (playerHand.length - 1) * cardSpacing;
     const startX = -totalWidth / 2;
@@ -54,9 +62,20 @@ const Hand = ({ position = [0, 0, 0] }: HandProps) => {
     setCardPositions(newPositions);
   }, [playerHand.length, size.width, position]);
   
-  // Check if a card is playable (has enough mana)
+  // Check if a card is playable based on game state and card type
   const isCardPlayable = (card: CardData) => {
-    return card.cost <= mana;
+    // Can only play cards during main phases and on player's turn
+    if (currentPlayer !== 'player' || (gamePhase !== 'main1' && gamePhase !== 'main2')) {
+      return false;
+    }
+    
+    // Avatar cards can always be played (either as avatar or energy)
+    if (card.type === 'avatar') {
+      return true;
+    }
+    
+    // For action cards, check if player has enough energy
+    return (card.energyCost || 0) <= playerEnergyPile.length;
   };
   
   // Set up touch/mouse move handler for dragging
@@ -80,14 +99,52 @@ const Hand = ({ position = [0, 0, 0] }: HandProps) => {
     };
   }, [isDragging, draggedCard, size, updateDragPosition]);
   
-  // Play a card when drag ends
+  // Handle card actions based on drag position
   const handleDragEnd = () => {
     if (draggedCard !== null) {
       const card = playerHand[draggedCard];
-      if (dragPosition.z < 2) { // Only play if dragged forward onto the battlefield
-        playCard(draggedCard);
+      
+      // Determine action based on where the card was dragged
+      if (dragPosition.z < -2) {
+        // Dragged backward (toward player) - use as energy
+        if (card.type === 'avatar') {
+          setEnergyCard(draggedCard);
+          toast.success(`Using ${card.name} as energy`);
+        } else {
+          toast.error('Only Avatar cards can be used as energy');
+        }
+      } else if (dragPosition.z > 2) {
+        // Dragged forward (toward battlefield)
+        
+        // For avatar and field cards, can play directly
+        if (card.type === 'avatar' || card.type === 'field') {
+          playCard(draggedCard);
+        } 
+        // For other cards that need targeting, select the card first
+        else {
+          selectCard(draggedCard);
+          toast.info(`Select a target for ${card.name}`);
+        }
+      } else {
+        // If not dragged far enough, simply select the card
+        selectCard(draggedCard);
+        toast.info(`${card.name} selected. Drag forward to play, backward to use as energy, or click a target.`);
       }
+      
       endDrag();
+    }
+  };
+  
+  // Handle direct click on card
+  const handleCardClick = (index: number) => {
+    const card = playerHand[index];
+    
+    if (isCardPlayable(card)) {
+      // Select the card
+      selectCard(index);
+      toast.info(`Selected ${card.name}. Now choose a target.`);
+    } else {
+      toast.error('Cannot play this card now');
     }
   };
   
@@ -117,6 +174,7 @@ const Hand = ({ position = [0, 0, 0] }: HandProps) => {
               }
             }}
             onDragEnd={handleDragEnd}
+            onClick={() => handleCardClick(index)}
           />
         );
       })}
@@ -133,6 +191,18 @@ const Hand = ({ position = [0, 0, 0] }: HandProps) => {
           scale={1.2}
         />
       )}
+      
+      {/* Energy pile indicator */}
+      <group position={[position[0] - 4, position[1], position[2]]}>
+        <mesh position={[0, 0, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+          <circleGeometry args={[0.8, 32]} />
+          <meshStandardMaterial color="#2a6e82" />
+        </mesh>
+        <mesh position={[0, 0.1, 0]}>
+          <sphereGeometry args={[0.4, 16, 16]} />
+          <meshStandardMaterial color="white" />
+        </mesh>
+      </group>
     </group>
   );
 };

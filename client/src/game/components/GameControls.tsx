@@ -12,11 +12,13 @@ const GameControls = () => {
     endTurn, 
     drawCard, 
     startGame, 
-    playerHealth, 
-    opponentHealth,
-    processPhase,
+    endPhase,
     winner,
-    turn
+    turn,
+    playerLifeCards,
+    opponentLifeCards,
+    playerActiveAvatar,
+    opponentActiveAvatar
   } = useCardGame();
   const { phase: appGamePhase } = useGame();
   const { playSuccess } = useAudio();
@@ -27,9 +29,9 @@ const GameControls = () => {
   // Handle key presses for game control
   useEffect(() => {
     if (nextPhasePressed && currentPlayer === 'player') {
-      processPhase();
+      endPhase();
     }
-  }, [nextPhasePressed, currentPlayer, processPhase]);
+  }, [nextPhasePressed, currentPlayer, endPhase]);
   
   // Game over handling
   useEffect(() => {
@@ -59,6 +61,34 @@ const GameControls = () => {
     }
   }, [appGamePhase, startGame]);
   
+  // Helper function to get the player's life
+  const getPlayerLife = () => playerLifeCards?.length || 0;
+  
+  // Helper function to get the opponent's life
+  const getOpponentLife = () => opponentLifeCards?.length || 0;
+  
+  // Helper function to get the next phase button text
+  const getNextPhaseButtonText = () => {
+    switch (gamePhase) {
+      case 'refresh':
+        return 'Refresh → Draw';
+      case 'draw':
+        return 'Draw Card';
+      case 'main1':
+        return 'Main 1 → Battle';
+      case 'battle':
+        return 'Battle → Damage';
+      case 'damage':
+        return 'Damage → Main 2';
+      case 'main2':
+        return 'Main 2 → End';
+      case 'end':
+        return 'End Turn';
+      default:
+        return 'Next Phase';
+    }
+  };
+  
   // Return transparent UI container with buttons
   return (
     <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-4 z-10">
@@ -67,15 +97,18 @@ const GameControls = () => {
         Turn: {turn} | {currentPlayer === 'player' ? 'Your Turn' : 'Opponent Turn'} | Phase: {gamePhase}
       </div>
       
+      {/* Life cards indicator */}
+      <div className="bg-gray-800 bg-opacity-80 text-white px-4 py-2 rounded-lg">
+        Life Cards: You {getPlayerLife()} - {getOpponentLife()} Opponent
+      </div>
+      
       {/* Control buttons for player's turn */}
       {currentPlayer === 'player' && !winner && (
         <button
           className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-          onClick={processPhase}
+          onClick={endPhase}
         >
-          {gamePhase === 'draw' ? 'Draw Card' : 
-           gamePhase === 'play' ? 'To Attack Phase' :
-           gamePhase === 'attack' ? 'End Turn' : 'Next'}
+          {getNextPhaseButtonText()}
         </button>
       )}
       
@@ -92,7 +125,7 @@ const GameControls = () => {
                 : 'You have been defeated!'}
             </p>
             <p className="mb-6">
-              Final Score: You {playerHealth} - {opponentHealth} Opponent
+              Final Life Cards: You {getPlayerLife()} - {getOpponentLife()} Opponent
             </p>
             <button
               className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded"
@@ -105,20 +138,35 @@ const GameControls = () => {
       )}
       
       {/* Tutorial for new players */}
-      {turn === 1 && currentPlayer === 'player' && gamePhase === 'draw' && (
+      {turn === 1 && currentPlayer === 'player' && gamePhase === 'refresh' && (
         <div className="fixed bottom-20 left-0 right-0 flex justify-center">
           <div className="bg-gray-800 bg-opacity-90 text-white p-4 rounded-lg max-w-md">
             <h3 className="font-bold mb-2">How to Play:</h3>
             <ul className="list-disc pl-5 text-sm">
-              <li>Draw phase: Draw a card from your deck</li>
-              <li>Play phase: Drag cards from your hand to the battlefield</li>
-              <li>Attack phase: Select your creature then click an opponent's creature or opponent directly</li>
-              <li>Each creature can attack once per turn</li>
-              <li>Defeat your opponent by reducing their life to zero!</li>
+              <li>Play avatar cards to enter battle</li>
+              <li>Set avatar cards as energy by dragging backwards</li>
+              <li>Use your energy to play action cards (spells, equipment, etc.)</li>
+              <li>Attack opponent's avatar during battle phase</li>
+              <li>Win by depleting your opponent's life cards!</li>
             </ul>
           </div>
         </div>
       )}
+      
+      {/* Avatar damage display */}
+      <div className="absolute top-4 left-0 right-0 flex justify-center gap-8 z-10">
+        {playerActiveAvatar && (
+          <div className="bg-blue-900 bg-opacity-80 text-white px-3 py-1 rounded-lg">
+            Your {playerActiveAvatar.name}: HP {(playerActiveAvatar.health || 0) - playerActiveAvatar.damageCounter}/{playerActiveAvatar.health || 0}
+          </div>
+        )}
+        
+        {opponentActiveAvatar && (
+          <div className="bg-red-900 bg-opacity-80 text-white px-3 py-1 rounded-lg">
+            Opponent's {opponentActiveAvatar.name}: HP {(opponentActiveAvatar.health || 0) - opponentActiveAvatar.damageCounter}/{opponentActiveAvatar.health || 0}
+          </div>
+        )}
+      </div>
     </div>
   );
 };
