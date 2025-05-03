@@ -6,12 +6,15 @@ import { toast } from 'sonner';
 
 // Define the types for our game state
 export type Player = 'player' | 'opponent';
-export type GamePhase = 'draw' | 'play' | 'attack' | 'end';
+export type GamePhase = 'refresh' | 'draw' | 'main1' | 'battle' | 'damage' | 'main2' | 'end';
 
-// Creatures on the field need additional properties
-export interface FieldCard extends CardData {
-  tapped: boolean; // Whether the creature has attacked this turn
-  damage: number; // Accumulated damage
+// Avatar cards in play need additional properties to track state
+export interface AvatarInPlay extends CardData {
+  tapped: boolean; // Whether the avatar has used a skill this turn
+  damageCounter: number; // Accumulated damage
+  bleedCounter: number; // Bleeding effect counters
+  shieldCounter: number; // Shield counters for damage reduction
+  attachedCards: CardData[]; // Cards attached to this avatar (equipment, ritual armor)
 }
 
 interface CardGameState {

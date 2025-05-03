@@ -5,19 +5,41 @@ import * as THREE from 'three';
 import { useAudio } from '@/lib/stores/useAudio';
 
 // Define card types
-export type CardType = 'creature' | 'spell';
+export type CardType = 'avatar' | 'spell' | 'quickSpell' | 'ritualArmor' | 'field' | 'equipment' | 'item';
+export type ElementType = 'fire' | 'water' | 'ground' | 'air' | 'neutral';
+export type SubType = 'kobar' | 'borah' | 'kuhaka' | 'kujana';
 
 // Card interface
 export interface CardData {
   id: string;
   name: string;
   type: CardType;
+  element?: ElementType;
+  subType?: SubType;
+  level?: 1 | 2;
   description: string;
   attack?: number;
   health?: number;
+  skill1?: {
+    name: string;
+    energyCost: number;
+    damage: number;
+    effect?: string;
+  };
+  skill2?: {
+    name: string;
+    energyCost: number;
+    damage: number;
+    effect?: string;
+  };
+  energyCost?: number;
   effect?: string;
-  cost: number;
   art: string; // We'll use this for card texture
+  
+  // Counters for gameplay
+  damageCounter?: number;
+  bleedCounter?: number;
+  shieldCounter?: number;
 }
 
 interface CardProps {
@@ -31,7 +53,7 @@ interface CardProps {
   onDragStart?: () => void;
   onDragEnd?: () => void;
   isDragging?: boolean;
-  isTapped?: boolean; // For creatures that attacked this turn
+  isTapped?: boolean; // For avatars and creatures that have used skills/attacked
 }
 
 const Card = ({
@@ -105,9 +127,62 @@ const Card = ({
     }
   });
   
-  // Color based on card type
-  const cardColor = card.type === 'creature' ? '#2a6b42' : '#5b3089';
-  const cardColorHover = card.type === 'creature' ? '#348253' : '#7340ab';
+  // Color based on element type for avatars or card type for actions
+  let cardColor = '#5b3089'; // Default color for action cards
+  let cardColorHover = '#7340ab';
+  
+  // Element-based colors for avatars
+  if (card.type === 'avatar') {
+    switch (card.element) {
+      case 'fire':
+        cardColor = '#c92626';
+        cardColorHover = '#e83232';
+        break;
+      case 'water':
+        cardColor = '#2671c9';
+        cardColorHover = '#3285e8';
+        break;
+      case 'ground':
+        cardColor = '#8c5e2a';
+        cardColorHover = '#a6722f';
+        break;
+      case 'air':
+        cardColor = '#26a4c9';
+        cardColorHover = '#32c1e8';
+        break;
+      default:
+        cardColor = '#6b6b6b'; // neutral color
+        cardColorHover = '#848484';
+    }
+  } else {
+    // Colors for action cards based on type
+    switch (card.type) {
+      case 'spell':
+        cardColor = '#5b3089';
+        cardColorHover = '#7340ab';
+        break;
+      case 'quickSpell':
+        cardColor = '#892a80';
+        cardColorHover = '#ab349e';
+        break;
+      case 'ritualArmor':
+        cardColor = '#295c8a';
+        cardColorHover = '#3273ad';
+        break;
+      case 'field':
+        cardColor = '#2a8a53';
+        cardColorHover = '#34ad67';
+        break;
+      case 'equipment':
+        cardColor = '#8a892a';
+        cardColorHover = '#adad34';
+        break;
+      case 'item':
+        cardColor = '#8a5c2a';
+        cardColorHover = '#ad7334';
+        break;
+    }
+  }
   
   // Highlight color based on playability
   const borderColor = isPlayable ? '#f5d76a' : '#666666';
@@ -199,23 +274,46 @@ const Card = ({
           : card.description}
       </Text>
       
-      {/* Card stats for creatures */}
-      {card.type === 'creature' && (
+      {/* Avatar card stats */}
+      {card.type === 'avatar' && (
         <>
-          {/* Attack */}
-          <mesh position={[-width * 0.3, -height * 0.4, depth / 1.8 + 0.003]}>
-            <circleGeometry args={[0.15 * scale, 32]} />
-            <meshStandardMaterial color="#c92626" />
-          </mesh>
-          <Text
-            position={[-width * 0.3, -height * 0.4, depth / 1.8 + 0.004]}
-            fontSize={0.12 * scale}
-            color="#ffffff"
-            anchorX="center"
-            anchorY="middle"
-          >
-            {card.attack}
-          </Text>
+          {/* First skill if exists */}
+          {card.skill1 && (
+            <>
+              <mesh position={[-width * 0.3, -height * 0.3, depth / 1.8 + 0.003]}>
+                <circleGeometry args={[0.15 * scale, 32]} />
+                <meshStandardMaterial color="#c92626" />
+              </mesh>
+              <Text
+                position={[-width * 0.3, -height * 0.3, depth / 1.8 + 0.004]}
+                fontSize={0.1 * scale}
+                color="#ffffff"
+                anchorX="center"
+                anchorY="middle"
+              >
+                {card.skill1.damage}
+              </Text>
+            </>
+          )}
+          
+          {/* Second skill if exists */}
+          {card.skill2 && (
+            <>
+              <mesh position={[-width * 0.3, -height * 0.5, depth / 1.8 + 0.003]}>
+                <circleGeometry args={[0.15 * scale, 32]} />
+                <meshStandardMaterial color="#8c2676" />
+              </mesh>
+              <Text
+                position={[-width * 0.3, -height * 0.5, depth / 1.8 + 0.004]}
+                fontSize={0.1 * scale}
+                color="#ffffff"
+                anchorX="center"
+                anchorY="middle"
+              >
+                {card.skill2.damage}
+              </Text>
+            </>
+          )}
           
           {/* Health */}
           <mesh position={[width * 0.3, -height * 0.4, depth / 1.8 + 0.003]}>
@@ -229,25 +327,44 @@ const Card = ({
             anchorX="center"
             anchorY="middle"
           >
-            {card.health}
+            {card.health || 0}
+          </Text>
+          
+          {/* Level */}
+          <mesh position={[width * 0.3, height * 0.3, depth / 1.8 + 0.003]}>
+            <circleGeometry args={[0.15 * scale, 32]} />
+            <meshStandardMaterial color="#8c8c26" />
+          </mesh>
+          <Text
+            position={[width * 0.3, height * 0.3, depth / 1.8 + 0.004]}
+            fontSize={0.12 * scale}
+            color="#ffffff"
+            anchorX="center"
+            anchorY="middle"
+          >
+            {card.level || 1}
           </Text>
         </>
       )}
       
-      {/* Mana cost */}
-      <mesh position={[width * 0.3, height * 0.45, depth / 1.8 + 0.003]}>
-        <circleGeometry args={[0.15 * scale, 32]} />
-        <meshStandardMaterial color="#3a70cc" />
-      </mesh>
-      <Text
-        position={[width * 0.3, height * 0.45, depth / 1.8 + 0.004]}
-        fontSize={0.12 * scale}
-        color="#ffffff"
-        anchorX="center"
-        anchorY="middle"
-      >
-        {card.cost}
-      </Text>
+      {/* Action Card Energy Cost */}
+      {card.type !== 'avatar' && (
+        <>
+          <mesh position={[width * 0.3, height * 0.45, depth / 1.8 + 0.003]}>
+            <circleGeometry args={[0.15 * scale, 32]} />
+            <meshStandardMaterial color="#3a70cc" />
+          </mesh>
+          <Text
+            position={[width * 0.3, height * 0.45, depth / 1.8 + 0.004]}
+            fontSize={0.12 * scale}
+            color="#ffffff"
+            anchorX="center"
+            anchorY="middle"
+          >
+            {card.energyCost || 0}
+          </Text>
+        </>
+      )}
     </group>
   );
 };
