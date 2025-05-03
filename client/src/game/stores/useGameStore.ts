@@ -158,11 +158,7 @@ export const useGameStore = create<GameState>((set, get) => ({
       logs: ['Game started! Draw your cards and select your active avatar.']
     }));
     
-    // Draw initial cards for both players
-    get().drawCard('player', 6);
-    get().drawCard('opponent', 6);
-    
-    // Set up life cards
+    // Set up life cards first so we don't remove them from the deck
     set(state => {
       const playerDeck = [...state.player.deck];
       const opponentDeck = [...state.opponent.deck];
@@ -184,6 +180,131 @@ export const useGameStore = create<GameState>((set, get) => ({
         }
       };
     });
+    
+    // Draw initial hand with at least 1 level 1 avatar for player
+    set(state => {
+      const playerDeck = [...state.player.deck];
+      const hand = [];
+      
+      // First, find all level 1 avatars in the deck
+      const level1AvatarIndices = playerDeck
+        .map((card, index) => card.type === 'avatar' && (card as AvatarCard).level === 1 ? index : -1)
+        .filter(index => index !== -1);
+      
+      // If we have level 1 avatars, add one to hand first
+      if (level1AvatarIndices.length > 0) {
+        // Randomly select one level 1 avatar
+        const randomIndex = Math.floor(Math.random() * level1AvatarIndices.length);
+        const selectedAvatarIndex = level1AvatarIndices[randomIndex];
+        
+        // Add to hand and remove from deck
+        hand.push(playerDeck[selectedAvatarIndex]);
+        playerDeck.splice(selectedAvatarIndex, 1);
+        
+        // Draw the rest of the hand (5 more cards)
+        for (let i = 0; i < 5; i++) {
+          if (playerDeck.length > 0) {
+            const drawnCard = playerDeck.shift();
+            if (drawnCard) hand.push(drawnCard);
+          }
+        }
+      } else {
+        // If no level 1 avatars in deck, just draw 6 cards and we'll reshuffle later
+        for (let i = 0; i < 6; i++) {
+          if (playerDeck.length > 0) {
+            const drawnCard = playerDeck.shift();
+            if (drawnCard) hand.push(drawnCard);
+          }
+        }
+        
+        // Log that we're missing level 1 avatars
+        get().addLog('No level 1 avatars found in the deck! You may need to reshuffle.');
+      }
+      
+      return {
+        player: {
+          ...state.player,
+          deck: playerDeck,
+          hand
+        }
+      };
+    });
+    
+    // Draw opponent's cards normally
+    get().drawCard('opponent', 6);
+    
+    // Check if player has at least one level 1 avatar
+    const hasLevel1Avatar = get().player.hand.some(
+      card => card.type === 'avatar' && (card as AvatarCard).level === 1
+    );
+    
+    if (!hasLevel1Avatar) {
+      // If no level 1 avatar in hand, mulligan (reshuffle and draw again)
+      set(state => {
+        const combinedDeck = [...state.player.deck, ...state.player.hand];
+        const shuffledDeck = shuffleArray(combinedDeck);
+        
+        // Log the mulligan
+        get().addLog('No level 1 avatar in opening hand. Performing mulligan...');
+        
+        return {
+          player: {
+            ...state.player,
+            deck: shuffledDeck,
+            hand: []
+          }
+        };
+      });
+      
+      // Try again with the same approach
+      set(state => {
+        const playerDeck = [...state.player.deck];
+        const hand = [];
+        
+        // Find level 1 avatars in the reshuffled deck
+        const level1AvatarIndices = playerDeck
+          .map((card, index) => card.type === 'avatar' && (card as AvatarCard).level === 1 ? index : -1)
+          .filter(index => index !== -1);
+        
+        if (level1AvatarIndices.length > 0) {
+          // Randomly select one level 1 avatar
+          const randomIndex = Math.floor(Math.random() * level1AvatarIndices.length);
+          const selectedAvatarIndex = level1AvatarIndices[randomIndex];
+          
+          // Add to hand and remove from deck
+          hand.push(playerDeck[selectedAvatarIndex]);
+          playerDeck.splice(selectedAvatarIndex, 1);
+          
+          // Draw the rest of the hand (5 more cards)
+          for (let i = 0; i < 5; i++) {
+            if (playerDeck.length > 0) {
+              const drawnCard = playerDeck.shift();
+              if (drawnCard) hand.push(drawnCard);
+            }
+          }
+          
+          get().addLog('Mulligan successful. You have a level 1 avatar in your hand.');
+        } else {
+          // If still no level 1 avatars, just draw 6 cards
+          for (let i = 0; i < 6; i++) {
+            if (playerDeck.length > 0) {
+              const drawnCard = playerDeck.shift();
+              if (drawnCard) hand.push(drawnCard);
+            }
+          }
+          
+          get().addLog('No level 1 avatars found after mulligan. Please check your deck composition.');
+        }
+        
+        return {
+          player: {
+            ...state.player,
+            deck: playerDeck,
+            hand
+          }
+        };
+      });
+    }
     
     // Add game setup log
     get().addLog('Each player has 4 life cards set aside.');
@@ -572,7 +693,7 @@ export const useGameStore = create<GameState>((set, get) => ({
   
   // Add a card from hand to energy pile
   addToEnergyPile: (handIndex) => {
-    const { player, currentPlayer, gamePhase } = get();
+    const { player, currentPlayer, gamePhase, turn } = get();
     
     // Can only add energy during your turn and main phases
     if (currentPlayer !== 'player' || (gamePhase !== 'main1' && gamePhase !== 'main2')) {
@@ -593,6 +714,19 @@ export const useGameStore = create<GameState>((set, get) => ({
       return;
     }
     
+    // Check if we've already added an avatar to energy this turn
+    const hasAddedAvatarThisTurn = get().logs.some(log => 
+      log.includes(`Turn ${turn}:`) && 
+      log.includes('added') && 
+      log.includes('to your energy pile') &&
+      log.includes('(avatar)')
+    );
+    
+    if (hasAddedAvatarThisTurn) {
+      toast.error("You can only add one avatar card to energy per turn!");
+      return;
+    }
+    
     // Remove from hand and add to energy pile
     set(state => {
       const updatedHand = [...state.player.hand];
@@ -607,7 +741,7 @@ export const useGameStore = create<GameState>((set, get) => ({
       };
     });
     
-    get().addLog(`You added ${card.name} to your energy pile.`);
+    get().addLog(`Turn ${turn}: You added ${card.name} (avatar) to your energy pile.`);
   },
   
   // Evolve an avatar from level 1 to level 2
