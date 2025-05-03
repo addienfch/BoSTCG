@@ -1,8 +1,9 @@
 import { useRef, useState, useEffect } from 'react';
 import { useFrame } from '@react-three/fiber';
-import { Text, useTexture } from '@react-three/drei';
+import { Text, useTexture, Html } from '@react-three/drei';
 import * as THREE from 'three';
 import { useAudio } from '@/lib/stores/useAudio';
+import { toast } from 'sonner';
 
 // Define card types
 export type CardType = 'avatar' | 'spell' | 'quickSpell' | 'ritualArmor' | 'field' | 'equipment' | 'item';
@@ -78,6 +79,7 @@ const Card = ({
 }: CardProps) => {
   const meshRef = useRef<THREE.Group>(null);
   const [hovered, setHovered] = useState(false);
+  const [showPopup, setShowPopup] = useState(false);
   const { playHit } = useAudio();
   
   // Use wood texture for the card back
@@ -257,8 +259,35 @@ const Card = ({
   };
   
   const handleClick = () => {
-    if (onClick) {
+    if (isPlayable && card.type === 'avatar' && isInHand) {
+      // For avatar cards, toggle the popup menu instead of default action
       playHit();
+      setShowPopup(!showPopup);
+    } else if (onClick) {
+      playHit();
+      onClick();
+    }
+  };
+  
+  // Handle the avatar action selection from popup
+  const handleAvatarAction = (action: 'active' | 'reserve' | 'energy') => {
+    setShowPopup(false);
+    
+    // Notify the action was taken (this would be replaced with actual game logic)
+    switch(action) {
+      case 'active':
+        toast.success(`${card.name} will be played as active avatar`);
+        break;
+      case 'reserve':
+        toast.success(`${card.name} will be played as reserve avatar`);
+        break;
+      case 'energy':
+        toast.success(`${card.name} will be used as energy`);
+        break;
+    }
+    
+    // Call the main click handler to handle the card action
+    if (onClick) {
       onClick();
     }
   };
@@ -420,6 +449,78 @@ const Card = ({
             {card.energyCost || 0}
           </Text>
         </>
+      )}
+      
+      {/* Popup menu for avatar cards */}
+      {showPopup && isPlayable && card.type === 'avatar' && isInHand && (
+        <Html position={[0, height * 0.7, depth / 1.8 + 0.01]} center>
+          <div style={{
+            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+            padding: '10px',
+            borderRadius: '8px',
+            width: '200px',
+            border: '2px solid #f5d76a',
+            boxShadow: '0 0 10px rgba(0,0,0,0.5)'
+          }}>
+            <div style={{
+              color: 'white',
+              fontWeight: 'bold',
+              marginBottom: '10px',
+              textAlign: 'center',
+              fontSize: '16px'
+            }}>
+              {card.name}
+            </div>
+            <div style={{
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '8px'
+            }}>
+              <button 
+                onClick={() => handleAvatarAction('active')}
+                style={{
+                  backgroundColor: '#e83232',
+                  color: 'white',
+                  border: 'none',
+                  padding: '8px',
+                  borderRadius: '4px',
+                  cursor: 'pointer',
+                  fontWeight: 'bold'
+                }}
+              >
+                Place as Active Avatar
+              </button>
+              <button 
+                onClick={() => handleAvatarAction('reserve')}
+                style={{
+                  backgroundColor: '#3285e8',
+                  color: 'white',
+                  border: 'none',
+                  padding: '8px',
+                  borderRadius: '4px',
+                  cursor: 'pointer',
+                  fontWeight: 'bold'
+                }}
+              >
+                Place as Reserve Avatar
+              </button>
+              <button 
+                onClick={() => handleAvatarAction('energy')}
+                style={{
+                  backgroundColor: '#a6722f',
+                  color: 'white',
+                  border: 'none',
+                  padding: '8px',
+                  borderRadius: '4px',
+                  cursor: 'pointer',
+                  fontWeight: 'bold'
+                }}
+              >
+                Use as Energy
+              </button>
+            </div>
+          </div>
+        </Html>
       )}
     </group>
   );

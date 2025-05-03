@@ -79,8 +79,8 @@ const GameBoard = () => {
         {/* Game areas - optimized for mobile portrait mode */}
         <Battlefield position={[0, 0, 0]} />
         
-        {/* Player hand positioned in front of camera view - adjusted for better visibility */}
-        <Hand position={[0, 0.3, 4.0]} />
+        {/* Player hand positioned further away from the field for better separation */}
+        <Hand position={[0, 0.8, 5.5]} />
         
         {/* Player stats displays - positioned on sides */}
         <PlayerStats player="player" position={[3, 0, 1.5]} />
