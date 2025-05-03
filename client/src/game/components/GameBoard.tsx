@@ -22,34 +22,35 @@ const GameBoard = () => {
     }
   }, [gamePhase, startGame]);
   
-  // Update camera position based on whose turn it is
+  // Update camera position based on whose turn it is - optimized for mobile vertical view
   useFrame(({ clock }) => {
     if (!cameraRef.current) return;
     
     // Make camera gently float for a dynamic feel
     const t = clock.getElapsedTime();
-    const floatY = Math.sin(t * 0.5) * 0.1;
+    const floatY = Math.sin(t * 0.5) * 0.05; // Reduced float amount
     
-    // Target camera position based on turn
+    // Mobile optimized camera position (portrait mode)
+    // Higher up and more centered above the battlefield
     const targetPosition = isUserTurn
-      ? new THREE.Vector3(0, 8 + floatY, 6) // Player's turn - see your hand better
-      : new THREE.Vector3(0, 10 + floatY, 6); // Opponent's turn - see the battlefield better
+      ? new THREE.Vector3(0, 6 + floatY, 0) // Player's turn - centered position
+      : new THREE.Vector3(0, 6 + floatY, -1); // Opponent's turn - slight shift toward opponent
     
     // Smooth camera movement
     cameraRef.current.position.lerp(targetPosition, 0.05);
     
-    // Always look at the center of the board
+    // Look slightly down at the battlefield center
     cameraRef.current.lookAt(0, 0, 0);
   });
 
   return (
     <>
-      {/* Main Camera */}
+      {/* Main Camera - optimized for mobile portrait mode */}
       <PerspectiveCamera 
         makeDefault 
         ref={cameraRef} 
-        position={[0, 10, 6]} 
-        fov={60}
+        position={[0, 6, 0]} 
+        fov={75} // Wider field of view for better visibility on mobile
       />
       
       {/* Lighting */}
@@ -77,15 +78,15 @@ const GameBoard = () => {
           <meshStandardMaterial color="#5e3b28" />
         </mesh>
         
-        {/* Game areas */}
+        {/* Game areas - optimized for mobile portrait mode */}
         <Battlefield position={[0, 0, 0]} />
         
-        {/* Player hand at bottom */}
-        <Hand position={[0, 0, 4]} />
+        {/* Player hand positioned in front of camera view */}
+        <Hand position={[0, 0, 3.5]} />
         
-        {/* Player stats displays */}
-        <PlayerStats player="player" position={[4, 0, 3]} />
-        <PlayerStats player="opponent" position={[-4, 0, -3]} />
+        {/* Player stats displays - positioned on sides */}
+        <PlayerStats player="player" position={[3, 0, 1.5]} />
+        <PlayerStats player="opponent" position={[-3, 0, -1.5]} />
       </group>
     </>
   );

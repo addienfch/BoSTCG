@@ -37,12 +37,13 @@ const Hand = ({ position = [0, 0, 0] }: HandProps) => {
   // Adjust layout based on screen size and number of cards
   const [cardPositions, setCardPositions] = useState<Array<[number, number, number]>>([]);
   
-  // Calculate card positions based on hand size and screen dimensions
+  // Calculate card positions based on hand size and screen dimensions - optimized for mobile
   useEffect(() => {
     if (!playerHand.length) return;
     
-    const isMobile = size.width < 768;
-    const cardSpacing = isMobile ? 0.8 : 1.2;
+    // Even more compact layout for mobile screens
+    const isMobile = true; // Always use mobile layout for this form factor
+    const cardSpacing = isMobile ? 0.6 : 1.2; // Smaller spacing for mobile
     const totalWidth = (playerHand.length - 1) * cardSpacing;
     const startX = -totalWidth / 2;
     
@@ -52,11 +53,15 @@ const Hand = ({ position = [0, 0, 0] }: HandProps) => {
       // Calculate x position with a slight arc
       const x = startX + index * cardSpacing;
       
-      // Calculate y and z to create an arc effect
-      const arcHeight = 0.2; // Increased arc height
+      // Calculate y and z to create a more pronounced arc effect for mobile
+      const arcHeight = 0.15; // Reduced arc height to fit view
       const normalizedPos = (index / Math.max(1, playerHand.length - 1) - 0.5) * 2;
-      const y = -Math.abs(normalizedPos) * arcHeight - 0.5; // Moved down for better visibility
-      const z = 0.5 - Math.abs(normalizedPos) * 0.2; // Moved forward for better visibility
+      
+      // Move cards up in frame for better visibility in mobile portrait mode
+      const y = -Math.abs(normalizedPos) * arcHeight - 0.1; // Closer to eye level
+      
+      // Curve the hand toward the camera for better visibility
+      const z = 1.0 - Math.abs(normalizedPos) * 0.3; // More prominent fan for visibility
       
       newPositions.push([
         x + position[0], 
