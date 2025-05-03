@@ -94,18 +94,7 @@ const SimpleGame2D: React.FC<SimpleGame2DProps> = ({
         
         {/* Middle Column - Opponent Avatar Areas */}
         <div className="col-span-6 flex flex-col gap-2">
-          {/* Life Cards Section - Moved to top */}
-          <div className="border-2 border-dashed border-blue-400 rounded-lg p-1 mb-2">
-            <div className="text-xs text-center text-blue-300 mb-1">Life Cards Section</div>
-            <div className="grid grid-cols-2 gap-1">
-              <div className="aspect-square w-full border border-blue-300 rounded"></div>
-              <div className="aspect-square w-full border border-blue-300 rounded"></div>
-              <div className="aspect-square w-full border border-blue-300 rounded"></div>
-              <div className="aspect-square w-full border border-blue-300 rounded"></div>
-            </div>
-          </div>
-          
-          {/* Active Avatar - Made more prominent */}
+          {/* Active Avatar - Made more prominent and moved to top middle */}
           <div className="aspect-[2/3] w-full border-4 border-blue-600 rounded-lg">
             {opponentCards.length > 0 && opponentCards[0].type === 'avatar' ? (
               <div className="transform scale-85">
@@ -128,8 +117,19 @@ const SimpleGame2D: React.FC<SimpleGame2DProps> = ({
           </div>
         </div>
         
-        {/* Right Column - Opponent Deck and Graveyard (moved here) */}
+        {/* Right Column - Life Cards Section & Deck/Graveyard */}
         <div className="col-span-3 flex flex-col gap-2">
+          {/* Life Cards Section - Moved to top right and made smaller */}
+          <div className="border-2 border-dashed border-blue-400 rounded-lg p-1 mb-2">
+            <div className="text-xs text-center text-blue-300 mb-1">Life Cards</div>
+            <div className="grid grid-cols-2 gap-1">
+              <div className="aspect-square w-full border border-blue-300 rounded"></div>
+              <div className="aspect-square w-full border border-blue-300 rounded"></div>
+              <div className="aspect-square w-full border border-blue-300 rounded"></div>
+              <div className="aspect-square w-full border border-blue-300 rounded"></div>
+            </div>
+          </div>
+          
           {/* Opponent Deck */}
           <div className="aspect-[2/3] w-full">
             <EmptyZone name="Deck" color="border-blue-500" />
@@ -184,18 +184,7 @@ const SimpleGame2D: React.FC<SimpleGame2DProps> = ({
         
         {/* Middle Column - Player Avatar Areas */}
         <div className="col-span-6 flex flex-col gap-2">
-          {/* Life Cards Section - Moved to top */}
-          <div className="border-2 border-dashed border-red-400 rounded-lg p-1 mb-2">
-            <div className="text-xs text-center text-red-300 mb-1">Life Cards Section</div>
-            <div className="grid grid-cols-2 gap-1">
-              <div className="aspect-square w-full border border-red-300 rounded"></div>
-              <div className="aspect-square w-full border border-red-300 rounded"></div>
-              <div className="aspect-square w-full border border-red-300 rounded"></div>
-              <div className="aspect-square w-full border border-red-300 rounded"></div>
-            </div>
-          </div>
-          
-          {/* Active Avatar - Made more prominent */}
+          {/* Active Avatar - Made more prominent and moved to top middle */}
           <div className="aspect-[2/3] w-full border-4 border-red-600 rounded-lg">
             {playerCards.some(card => card.type === 'avatar') ? (
               <div className="transform scale-85">
@@ -218,8 +207,19 @@ const SimpleGame2D: React.FC<SimpleGame2DProps> = ({
           </div>
         </div>
         
-        {/* Right Column - Player Deck and Graveyard (moved here) */}
+        {/* Right Column - Life Cards Section & Deck/Graveyard */}
         <div className="col-span-3 flex flex-col gap-2">
+          {/* Life Cards Section - Moved to top right and made smaller */}
+          <div className="border-2 border-dashed border-red-400 rounded-lg p-1 mb-2">
+            <div className="text-xs text-center text-red-300 mb-1">Life Cards</div>
+            <div className="grid grid-cols-2 gap-1">
+              <div className="aspect-square w-full border border-red-300 rounded"></div>
+              <div className="aspect-square w-full border border-red-300 rounded"></div>
+              <div className="aspect-square w-full border border-red-300 rounded"></div>
+              <div className="aspect-square w-full border border-red-300 rounded"></div>
+            </div>
+          </div>
+          
           {/* Player Deck */}
           <div className="aspect-[2/3] w-full">
             <EmptyZone name="Deck" color="border-red-500" />
