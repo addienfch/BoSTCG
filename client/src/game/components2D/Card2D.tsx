@@ -346,8 +346,8 @@ const Card2D: React.FC<Card2DProps> = ({
               {(card as AvatarCard).skill1?.name || ''} {(card as AvatarCard).skill1?.damage || ''} 
               {(card as AvatarCard).skill1?.damage ? 'dmg' : ''}
               {(card as AvatarCard).skill1?.effect && (
-                <> | {(card as AvatarCard).skill1.effect.length > 35 
-                  ? (card as AvatarCard).skill1.effect.substring(0, 35) + '...' 
+                <> | {((card as AvatarCard).skill1.effect?.length || 0) > 35 
+                  ? (card as AvatarCard).skill1.effect?.substring(0, 35) + '...' 
                   : (card as AvatarCard).skill1.effect}</>
               )}
             </>
