@@ -544,9 +544,36 @@ export const useGameStore = create<GameState>((set, get) => ({
           }
           break;
           
+        case 'field':
+          // Field cards are placed in the field zone
+          if (get().hasEnoughEnergy(card.energyCost || [], 'player')) {
+            // Use the energy
+            if (get().useEnergy(card.energyCost || [], 'player')) {
+              // Remove card from hand
+              set(state => {
+                const updatedHand = [...state.player.hand];
+                updatedHand.splice(handIndex, 1);
+                
+                // Add to field
+                return {
+                  player: {
+                    ...state.player,
+                    hand: updatedHand,
+                    fieldCards: [...state.player.fieldCards, card as ActionCard]
+                  }
+                };
+              });
+              
+              toast.success(`You played ${card.name} to your field!`);
+              get().addLog(`You played ${card.name} to your field zone.`);
+            }
+          } else {
+            toast.error("You don't have enough energy to play this card!");
+          }
+          break;
+          
         case 'ritualArmor':
         case 'equipment':
-        case 'field':
         case 'item':
           // These would have more complex implementations
           toast.info(`${card.type} cards are not fully implemented yet.`);
@@ -734,23 +761,12 @@ export const useGameStore = create<GameState>((set, get) => ({
     
     const card = player.hand[handIndex];
     
-    // Only Avatar cards can be used as energy
-    if (card.type !== 'avatar') {
-      toast.error("Only Avatar cards can be used as energy!");
-      return;
-    }
-    
     // Check if we've already added an avatar to energy this turn
-    const hasAddedAvatarThisTurn = get().logs.some(log => 
-      log.includes(`Turn ${turn}:`) && 
-      log.includes('added') && 
-      log.includes('to your energy pile') &&
-      log.includes('(avatar)')
-    );
-    
-    if (hasAddedAvatarThisTurn) {
-      toast.error("You can only add one avatar card to energy per turn!");
-      return;
+    if (card.type === 'avatar') {
+      if (player.avatarToEnergyCount >= 1) {
+        toast.error("You can only add one avatar card to energy per turn!");
+        return;
+      }
     }
     
     // Remove from hand and add to energy pile
@@ -965,6 +981,13 @@ export const useGameStore = create<GameState>((set, get) => ({
         // Draw a card in the draw phase
         if (currentPlayer === 'player') {
           get().drawCard('player');
+          
+          // Automatically advance to main phase after player draws
+          setTimeout(() => {
+            if (get().gamePhase === 'draw' && get().currentPlayer === 'player') {
+              get().nextPhase(); // Move to Main Phase 1 automatically
+            }
+          }, 500); // Short delay for better UX
         } else {
           get().drawCard('opponent');
         }
