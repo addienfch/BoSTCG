@@ -1,68 +1,100 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { useGameStore } from '../stores/useGameStore';
-import { Card } from '../data/cardTypes';
 import Card2D from './Card2D';
 import { toast } from 'sonner';
+import { AvatarCard, Card } from '../data/cardTypes';
 
 interface GameBoard2DProps {
   onAction?: (action: string, data?: any) => void;
 }
 
 const GameBoard2D: React.FC<GameBoard2DProps> = ({ onAction }) => {
+  // Get game state from store
   const game = useGameStore();
   
-  // Initialize the game
-  useEffect(() => {
-    game.initGame();
-  }, []);
-  
-  // Handle card actions from the player's hand
-  const handleCardAction = (card: Card, action: string) => {
-    const cardIndex = game.player.hand.findIndex(c => c.id === card.id);
-    if (cardIndex === -1) return;
-    
-    switch (action) {
-      case 'active':
-        game.playCard(cardIndex);
-        break;
-      case 'reserve':
-        game.playCard(cardIndex);
-        break;
-      case 'energy':
-        game.addToEnergyPile(cardIndex);
-        break;
-      case 'play':
-        game.playCard(cardIndex);
-        break;
-      default:
-        toast.error('Unknown action');
-        break;
-    }
-  };
-  
-  // Handle avatar skill use
-  const handleSkillUse = (skillIndex: 1 | 2) => {
-    if (!game.player.activeAvatar) {
-      toast.error('No active avatar to use skills!');
-      return;
-    }
-    
-    if (game.player.activeAvatar.isTapped) {
-      toast.error('This avatar has already used a skill this turn!');
-      return;
-    }
-    
-    game.useAvatarSkill('player', skillIndex);
-  };
-  
-  // Check if a card can be played (for UI indication)
+  // Determine if a card is playable (can be placed on the field)
   const isCardPlayable = (card: Card) => {
-    return game.canPlayCard(card);
+    // Check game phase and energy requirements
+    const { player, gamePhase, currentPlayer } = game;
+    
+    if (currentPlayer !== 'player' || (gamePhase !== 'main1' && gamePhase !== 'main2')) {
+      return false;
+    }
+    
+    // Energy requirements vary by card type
+    if (card.type === 'avatar') {
+      // Avatars can only be played if player has no active avatar or reserve slots
+      if (player.activeAvatar === null || player.reserveAvatars.length < 2) {
+        return true;
+      }
+      return false;
+    } else if (card.type === 'spell' || card.type === 'quickSpell') {
+      // Spells require an active avatar
+      if (!player.activeAvatar) {
+        return false;
+      }
+      
+      // Check if player has enough energy
+      return game.hasEnoughEnergy(card.energyCost || [], 'player');
+    }
+    
+    return false;
   };
   
-  // Handle game phase advancement
+  // Function to handle card actions
+  const handleCardAction = (card: Card, action: string) => {
+    console.log(action, card);
+    
+    if (action === 'play') {
+      // Find the card index
+      const index = game.player.hand.findIndex(c => c.id === card.id);
+      if (index !== -1) {
+        // This will check energy cost and placement rules
+        game.playCard(index);
+      }
+    } else if (action === 'toEnergy') {
+      if (game.currentPlayer === 'player' && 
+          (game.gamePhase === 'main1' || game.gamePhase === 'main2')) {
+        
+        // Only allow one avatar card to energy pile per turn
+        if (card.type === 'avatar' && game.player.avatarToEnergyCount >= 1) {
+          toast.error("You can only put 1 Avatar card into energy per turn!");
+          return;
+        }
+
+        // Find the card index
+        const index = game.player.hand.findIndex(c => c.id === card.id);
+        if (index !== -1) {
+          game.moveCardToEnergy(index);
+        }
+      } else {
+        toast.error("You can only add cards to energy during your Main Phase!");
+      }
+    }
+  };
+  
+  // Function to handle skill usage
+  const handleSkillUse = (skillNumber: 1 | 2) => {
+    if (!game.player.activeAvatar) {
+      toast.error("You need an active avatar to use skills!");
+      return;
+    }
+    
+    // Check if the skill exists
+    if (skillNumber === 2 && !game.player.activeAvatar.skill2) {
+      toast.error("This avatar doesn't have a second skill!");
+      return;
+    }
+    
+    // Handle skill use logic
+    game.useAvatarSkill(skillNumber);
+  };
+  
+  // Function to handle phase progression
   const handleNextPhase = () => {
-    game.nextPhase();
+    if (game.currentPlayer === 'player') {
+      game.nextPhase();
+    }
   };
   
   // Current phase display text
@@ -70,6 +102,11 @@ const GameBoard2D: React.FC<GameBoard2DProps> = ({ onAction }) => {
   
   // Determine if it's the player's turn
   const isPlayerTurn = game.currentPlayer === 'player';
+  
+  // State for energy pile popup
+  const [showEnergyPopup, setShowEnergyPopup] = React.useState(false);
+  const [showUsedEnergyPopup, setShowUsedEnergyPopup] = React.useState(false);
+  const [showOpponentEnergyPopup, setShowOpponentEnergyPopup] = React.useState(false);
   
   return (
     <div className="w-full h-full bg-gray-900 text-white p-4 relative">
@@ -101,79 +138,130 @@ const GameBoard2D: React.FC<GameBoard2DProps> = ({ onAction }) => {
       <div className="mb-4">
         <h3 className="text-sm font-bold mb-1">Opponent</h3>
         
-        <div className="flex justify-between bg-gray-800 bg-opacity-50 p-2 rounded">
-          {/* Opponent Stats */}
-          <div className="flex flex-col">
-            <div className="text-xs">Deck: {game.opponent.deck.length}</div>
-            <div className="text-xs">Hand: {game.opponent.hand.length}</div>
-            <div className="text-xs">Life: {game.opponent.lifeCards.length}</div>
-            <div className="text-xs flex flex-col">
-              <span>Energy: {game.opponent.energyPile.length} available</span>
-              {game.opponent.usedEnergyPile.length > 0 && 
-                <span className="text-gray-400 text-[10px]">(+ {game.opponent.usedEnergyPile.length} used)</span>
-              }
-            </div>
-          </div>
-          
-          {/* Opponent Energy Display */}
-          <div className="flex flex-col mr-4">
-            <div className="flex items-center gap-1">
-              {game.opponent.energyPile.length > 0 && (
-                <div className="flex flex-wrap gap-0.5 max-w-[100px]">
-                  {/* Show energy count by element type */}
-                  {Object.entries(
-                    game.opponent.energyPile.reduce((acc, card) => {
-                      acc[card.element] = (acc[card.element] || 0) + 1;
-                      return acc;
-                    }, {} as Record<string, number>)
-                  ).map(([element, count]) => (
-                    <div 
-                      key={`opp-energy-${element}`} 
-                      className="text-[10px] px-1 rounded flex items-center gap-0.5"
-                      title={`${count} ${element} energy`}
-                    >
-                      <div 
-                        className={`w-2 h-2 rounded-full ${
-                          element === 'fire' ? 'bg-red-500' : 
-                          element === 'water' ? 'bg-blue-500' : 
-                          element === 'ground' ? 'bg-amber-800' : 
-                          element === 'air' ? 'bg-cyan-300' : 
-                          'bg-gray-400'
-                        }`}
-                      />
-                      <span>{count}</span>
-                    </div>
-                  ))}
+        <div className="flex flex-col">
+          {/* Opponent Hand Display */}
+          <div className="bg-gray-800 bg-opacity-30 p-2 rounded mb-2 flex justify-center">
+            <div className="flex relative">
+              {game.opponent.hand.map((_, index) => (
+                <div 
+                  key={`opponent-hand-${index}`}
+                  className="w-10 h-14 bg-red-900 border border-red-700 rounded-md shadow-md transform transition-transform hover:translate-y-[-5px]"
+                  style={{ marginLeft: index > 0 ? '-8px' : '0' }}
+                />
+              ))}
+              {game.opponent.hand.length === 0 && (
+                <div className="text-gray-400 text-xs">
+                  No cards in hand
                 </div>
               )}
             </div>
           </div>
-          
-          {/* Opponent Avatar */}
-          <div className="w-1/4">
-            {game.opponent.activeAvatar ? (
-              <div className="transform rotate-180">
-                <Card2D 
-                  card={game.opponent.activeAvatar} 
-                  isPlayable={false}
-                  isTapped={game.opponent.activeAvatar.isTapped}
-                />
+        
+          <div className="flex justify-between bg-gray-800 bg-opacity-50 p-2 rounded">
+            {/* Opponent Stats */}
+            <div className="flex flex-col">
+              <div className="text-xs">Deck: {game.opponent.deck.length}</div>
+              <div className="text-xs">Hand: {game.opponent.hand.length}</div>
+              <div className="text-xs">Life: {game.opponent.lifeCards.length}</div>
+              <div className="text-xs flex flex-col">
+                <span>Energy: {game.opponent.energyPile.length} available</span>
+                {game.opponent.usedEnergyPile.length > 0 && 
+                  <span className="text-gray-400 text-[10px]">(+ {game.opponent.usedEnergyPile.length} used)</span>
+                }
               </div>
-            ) : (
-              <div className="h-32 border-2 border-dashed border-red-800 rounded flex items-center justify-center">
-                <span className="text-xs text-red-400">No Avatar</span>
+            </div>
+            
+            {/* Opponent Energy Display */}
+            <div 
+              className="flex flex-col mr-4 relative"
+              onMouseEnter={() => setShowOpponentEnergyPopup(true)}
+              onMouseLeave={() => setShowOpponentEnergyPopup(false)}
+            >
+              <div className="flex items-center gap-1">
+                {game.opponent.energyPile.length > 0 && (
+                  <div className="flex flex-wrap gap-0.5 max-w-[100px] cursor-help">
+                    {/* Show energy count by element type */}
+                    {Object.entries(
+                      game.opponent.energyPile.reduce((acc, card) => {
+                        acc[card.element] = (acc[card.element] || 0) + 1;
+                        return acc;
+                      }, {} as Record<string, number>)
+                    ).map(([element, count]) => (
+                      <div 
+                        key={`opp-energy-${element}`} 
+                        className="text-[10px] px-1 rounded flex items-center gap-0.5"
+                        title={`${count} ${element} energy`}
+                      >
+                        <div 
+                          className={`w-2 h-2 rounded-full ${
+                            element === 'fire' ? 'bg-red-500' : 
+                            element === 'water' ? 'bg-blue-500' : 
+                            element === 'ground' ? 'bg-amber-800' : 
+                            element === 'air' ? 'bg-cyan-300' : 
+                            'bg-gray-400'
+                          }`}
+                        />
+                        <span>{count}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
-            )}
-          </div>
-          
-          {/* Opponent Reserves */}
-          <div className="flex flex-col">
-            <div className="text-xs mb-1">Reserves: {game.opponent.reserveAvatars.length}/2</div>
-            {game.opponent.reserveAvatars.map((avatar, index) => (
-              <div key={index} className="text-xs mb-0.5 bg-red-900 bg-opacity-50 px-1 py-0.5 rounded">
-                {avatar.name}
-              </div>
-            ))}
+              
+              {/* Energy Pile Popup */}
+              {showOpponentEnergyPopup && game.opponent.energyPile.length > 0 && (
+                <div className="absolute -top-2 left-0 transform -translate-y-full z-50 bg-gray-900 bg-opacity-95 border border-amber-600 rounded p-2 shadow-lg w-60">
+                  <h4 className="text-xs font-bold mb-1 text-amber-400">Opponent's Energy Pile</h4>
+                  <div className="max-h-40 overflow-y-auto">
+                    {game.opponent.energyPile.map((card, index) => (
+                      <div 
+                        key={`energy-detail-${card.id}-${index}`}
+                        className="text-xs mb-1 flex items-center gap-1 border-b border-gray-700 pb-1"
+                      >
+                        <div 
+                          className={`w-3 h-3 rounded-full flex-shrink-0 ${
+                            card.element === 'fire' ? 'bg-red-500' : 
+                            card.element === 'water' ? 'bg-blue-500' : 
+                            card.element === 'ground' ? 'bg-amber-800' : 
+                            card.element === 'air' ? 'bg-cyan-300' : 
+                            'bg-gray-400'
+                          }`}
+                        />
+                        <span className="truncate">{card.name}</span>
+                        <span className="text-gray-400 ml-auto">{card.element}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+            
+            {/* Opponent Avatar */}
+            <div className="w-1/4">
+              {game.opponent.activeAvatar ? (
+                <div className="transform rotate-180">
+                  <Card2D 
+                    card={game.opponent.activeAvatar} 
+                    isPlayable={false}
+                    isTapped={game.opponent.activeAvatar.isTapped}
+                  />
+                </div>
+              ) : (
+                <div className="h-32 border-2 border-dashed border-red-800 rounded flex items-center justify-center">
+                  <span className="text-xs text-red-400">No Avatar</span>
+                </div>
+              )}
+            </div>
+            
+            {/* Opponent Reserves */}
+            <div className="flex flex-col">
+              <div className="text-xs mb-1">Reserves: {game.opponent.reserveAvatars.length}/2</div>
+              {game.opponent.reserveAvatars.map((avatar, index) => (
+                <div key={index} className="text-xs mb-0.5 bg-red-900 bg-opacity-50 px-1 py-0.5 rounded">
+                  {avatar.name}
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </div>
@@ -209,58 +297,124 @@ const GameBoard2D: React.FC<GameBoard2DProps> = ({ onAction }) => {
           </div>
           
           {/* Energy Display */}
-          <div className="flex flex-col mr-4">
+          <div className="flex flex-col mr-4 relative">
             <span className="text-xs font-semibold mb-1">Energy Pile:</span>
-            <div className="flex items-center gap-1">
-              {game.player.energyPile.length > 0 ? (
-                <div className="flex flex-wrap gap-0.5 max-w-[150px]">
-                  {game.player.energyPile.map((card, index) => (
-                    <div 
-                      key={`energy-${card.id}-${index}`} 
-                      className="w-5 h-5 rounded-full border border-amber-500 flex items-center justify-center"
-                      title={`${card.name} (${card.element})`}
-                    >
+            <div 
+              className="relative"
+              onMouseEnter={() => setShowEnergyPopup(true)}
+              onMouseLeave={() => setShowEnergyPopup(false)}
+            >
+              <div className="flex items-center gap-1">
+                {game.player.energyPile.length > 0 ? (
+                  <div className="flex flex-wrap gap-0.5 max-w-[150px] cursor-help">
+                    {game.player.energyPile.map((card, index) => (
                       <div 
-                        className={`w-3 h-3 rounded-full ${
-                          card.element === 'fire' ? 'bg-red-500' : 
-                          card.element === 'water' ? 'bg-blue-500' : 
-                          card.element === 'ground' ? 'bg-amber-800' : 
-                          card.element === 'air' ? 'bg-cyan-300' : 
-                          'bg-gray-400'
-                        }`}
-                      />
-                    </div>
-                  ))}
+                        key={`energy-${card.id}-${index}`} 
+                        className="w-5 h-5 rounded-full border border-amber-500 flex items-center justify-center"
+                        title={`${card.name} (${card.element})`}
+                      >
+                        <div 
+                          className={`w-3 h-3 rounded-full ${
+                            card.element === 'fire' ? 'bg-red-500' : 
+                            card.element === 'water' ? 'bg-blue-500' : 
+                            card.element === 'ground' ? 'bg-amber-800' : 
+                            card.element === 'air' ? 'bg-cyan-300' : 
+                            'bg-gray-400'
+                          }`}
+                        />
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <span className="text-[10px] text-gray-400">Empty</span>
+                )}
+              </div>
+              
+              {/* Energy Pile Popup */}
+              {showEnergyPopup && game.player.energyPile.length > 0 && (
+                <div className="absolute -top-2 left-0 transform -translate-y-full z-50 bg-gray-900 bg-opacity-95 border border-blue-600 rounded p-2 shadow-lg w-60">
+                  <h4 className="text-xs font-bold mb-1 text-blue-400">Your Energy Pile</h4>
+                  <div className="max-h-40 overflow-y-auto">
+                    {game.player.energyPile.map((card, index) => (
+                      <div 
+                        key={`energy-detail-${card.id}-${index}`}
+                        className="text-xs mb-1 flex items-center gap-1 border-b border-gray-700 pb-1"
+                      >
+                        <div 
+                          className={`w-3 h-3 rounded-full flex-shrink-0 ${
+                            card.element === 'fire' ? 'bg-red-500' : 
+                            card.element === 'water' ? 'bg-blue-500' : 
+                            card.element === 'ground' ? 'bg-amber-800' : 
+                            card.element === 'air' ? 'bg-cyan-300' : 
+                            'bg-gray-400'
+                          }`}
+                        />
+                        <span className="truncate">{card.name}</span>
+                        <span className="text-gray-400 ml-auto">{card.element}</span>
+                      </div>
+                    ))}
+                  </div>
                 </div>
-              ) : (
-                <span className="text-[10px] text-gray-400">Empty</span>
               )}
             </div>
             
-            {game.player.usedEnergyPile.length > 0 && (
-              <>
-                <span className="text-xs font-semibold mt-1 mb-1 text-gray-400">Used Energy:</span>
-                <div className="flex flex-wrap gap-0.5 max-w-[150px]">
-                  {game.player.usedEnergyPile.map((card, index) => (
-                    <div 
-                      key={`used-energy-${card.id}-${index}`} 
-                      className="w-4 h-4 rounded-full border border-gray-500 flex items-center justify-center opacity-50"
-                      title={`${card.name} (${card.element})`}
-                    >
+            <div 
+              className="relative"
+              onMouseEnter={() => setShowUsedEnergyPopup(true)}
+              onMouseLeave={() => setShowUsedEnergyPopup(false)}
+            >
+              {game.player.usedEnergyPile.length > 0 && (
+                <>
+                  <span className="text-xs font-semibold mt-1 mb-1 text-gray-400">Used Energy:</span>
+                  <div className="flex flex-wrap gap-0.5 max-w-[150px] cursor-help">
+                    {game.player.usedEnergyPile.map((card, index) => (
                       <div 
-                        className={`w-2 h-2 rounded-full ${
-                          card.element === 'fire' ? 'bg-red-500' : 
-                          card.element === 'water' ? 'bg-blue-500' : 
-                          card.element === 'ground' ? 'bg-amber-800' : 
-                          card.element === 'air' ? 'bg-cyan-300' : 
-                          'bg-gray-400'
-                        }`}
-                      />
+                        key={`used-energy-${card.id}-${index}`} 
+                        className="w-4 h-4 rounded-full border border-gray-500 flex items-center justify-center opacity-50"
+                        title={`${card.name} (${card.element})`}
+                      >
+                        <div 
+                          className={`w-2 h-2 rounded-full ${
+                            card.element === 'fire' ? 'bg-red-500' : 
+                            card.element === 'water' ? 'bg-blue-500' : 
+                            card.element === 'ground' ? 'bg-amber-800' : 
+                            card.element === 'air' ? 'bg-cyan-300' : 
+                            'bg-gray-400'
+                          }`}
+                        />
+                      </div>
+                    ))}
+                  </div>
+                  
+                  {/* Used Energy Pile Popup */}
+                  {showUsedEnergyPopup && (
+                    <div className="absolute -top-2 left-0 transform -translate-y-full z-50 bg-gray-900 bg-opacity-95 border border-gray-600 rounded p-2 shadow-lg w-60">
+                      <h4 className="text-xs font-bold mb-1 text-gray-400">Your Used Energy</h4>
+                      <div className="max-h-40 overflow-y-auto">
+                        {game.player.usedEnergyPile.map((card, index) => (
+                          <div 
+                            key={`used-energy-detail-${card.id}-${index}`}
+                            className="text-xs mb-1 flex items-center gap-1 border-b border-gray-700 pb-1"
+                          >
+                            <div 
+                              className={`w-3 h-3 rounded-full flex-shrink-0 ${
+                                card.element === 'fire' ? 'bg-red-500' : 
+                                card.element === 'water' ? 'bg-blue-500' : 
+                                card.element === 'ground' ? 'bg-amber-800' : 
+                                card.element === 'air' ? 'bg-cyan-300' : 
+                                'bg-gray-400'
+                              }`}
+                            />
+                            <span className="truncate">{card.name}</span>
+                            <span className="text-gray-400 ml-auto">{card.element}</span>
+                          </div>
+                        ))}
+                      </div>
                     </div>
-                  ))}
-                </div>
-              </>
-            )}
+                  )}
+                </>
+              )}
+            </div>
           </div>
           
           {/* Player Avatar */}
