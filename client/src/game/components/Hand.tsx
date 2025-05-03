@@ -209,11 +209,11 @@ const Hand = ({ position = [0, 0, 0] }: HandProps) => {
       <group position={[position[0] - 4, position[1], position[2]]}>
         <mesh position={[0, 0, 0]} rotation={[-Math.PI / 2, 0, 0]}>
           <circleGeometry args={[0.8, 32]} />
-          <meshStandardMaterial color="#2a6e82" />
+          <meshBasicMaterial color="#2a6e82" wireframe={true} />
         </mesh>
         <mesh position={[0, 0.1, 0]}>
           <sphereGeometry args={[0.4, 16, 16]} />
-          <meshStandardMaterial color="white" />
+          <meshBasicMaterial color="white" wireframe={true} />
         </mesh>
       </group>
     </group>

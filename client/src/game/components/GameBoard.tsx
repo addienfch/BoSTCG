@@ -30,9 +30,9 @@ const GameBoard = () => {
     const t = clock.getElapsedTime();
     const floatY = Math.sin(t * 0.5) * 0.02; // Minimal float amount
     
-    // FIXED camera position - looking down at board from player's side
-    // Positioned to see both opponent (top/blue) and player (bottom/red) sides
-    const fixedCameraPosition = new THREE.Vector3(0, 4.5 + floatY, 2.0);
+    // FIXED camera position - looking down at board from player's side, adjusted for new elevation
+    // Positioned to see both opponent (top/blue) and player (bottom/red) sides, plus hand cards
+    const fixedCameraPosition = new THREE.Vector3(0, 3.5 + floatY, 2.5);
     
     // Smooth camera movement
     cameraRef.current.position.lerp(fixedCameraPosition, 0.05);
@@ -47,7 +47,7 @@ const GameBoard = () => {
       <PerspectiveCamera 
         makeDefault 
         ref={cameraRef} 
-        position={[0, 4.5, 2.0]} 
+        position={[0, 3.5, 2.5]} 
         fov={70} // Wider field of view for better visibility on mobile
       />
       
@@ -79,8 +79,8 @@ const GameBoard = () => {
         {/* Game areas - optimized for mobile portrait mode */}
         <Battlefield position={[0, 0, 0]} />
         
-        {/* Player hand positioned in front of camera view */}
-        <Hand position={[0, 0, 3.5]} />
+        {/* Player hand positioned in front of camera view - adjusted for better visibility */}
+        <Hand position={[0, 0.3, 4.0]} />
         
         {/* Player stats displays - positioned on sides */}
         <PlayerStats player="player" position={[3, 0, 1.5]} />
