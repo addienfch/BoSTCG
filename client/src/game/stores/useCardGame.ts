@@ -98,19 +98,23 @@ export const useCardGame = create<CardGameState>((set, get) => ({
   
   // Start a new game
   startGame: () => {
+    // Initialize decks for both players
     const playerDeck = shuffleDeck(getInitialDeck('player'));
     const opponentDeck = shuffleDeck(getInitialDeck('opponent'));
     
-    // Give each player a starting hand of 5 cards
+    // Set up life cards (exactly 4 cards for each player)
+    const playerLifeCards = playerDeck.splice(0, 4);
+    const opponentLifeCards = opponentDeck.splice(0, 4);
+    
+    // Draw 5 cards for starting hands
     const playerHand = playerDeck.splice(0, 5);
     const opponentHand = opponentDeck.splice(0, 5);
     
-    // Set up life cards (6 cards that will determine win condition)
-    const playerLifeCards = playerDeck.splice(0, 6);
-    const opponentLifeCards = opponentDeck.splice(0, 6);
+    // Random coin flip to determine first player
+    const randomStart = Math.random() >= 0.5 ? 'player' : 'opponent';
     
     set({
-      currentPlayer: 'player',
+      currentPlayer: randomStart,
       gamePhase: 'refresh',
       turn: 1,
       winner: null,
@@ -142,7 +146,8 @@ export const useCardGame = create<CardGameState>((set, get) => ({
       selectedTarget: null,
     });
     
-    toast.success('Game started! Begin by playing an avatar card or setting a card as energy.');
+    const firstPlayerMessage = randomStart === 'player' ? 'You go first!' : 'Opponent goes first!';
+    toast.success(`Game started! ${firstPlayerMessage} Each player has 4 life cards and 5 cards in hand.`);
   },
   
   // Draw a card from the deck

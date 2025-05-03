@@ -42,7 +42,7 @@ const Hand = ({ position = [0, 0, 0] }: HandProps) => {
     if (!playerHand.length) return;
     
     const isMobile = size.width < 768;
-    const cardSpacing = isMobile ? 0.7 : 1.2;
+    const cardSpacing = isMobile ? 0.8 : 1.2;
     const totalWidth = (playerHand.length - 1) * cardSpacing;
     const startX = -totalWidth / 2;
     
@@ -53,10 +53,10 @@ const Hand = ({ position = [0, 0, 0] }: HandProps) => {
       const x = startX + index * cardSpacing;
       
       // Calculate y and z to create an arc effect
-      const arcHeight = 0.1;
+      const arcHeight = 0.2; // Increased arc height
       const normalizedPos = (index / Math.max(1, playerHand.length - 1) - 0.5) * 2;
-      const y = -Math.abs(normalizedPos) * arcHeight + 0.1;
-      const z = Math.abs(normalizedPos) * 0.3;
+      const y = -Math.abs(normalizedPos) * arcHeight - 0.5; // Moved down for better visibility
+      const z = 0.5 - Math.abs(normalizedPos) * 0.2; // Moved forward for better visibility
       
       newPositions.push([
         x + position[0], 
