@@ -1,74 +1,61 @@
-import { create } from "zustand";
+import { create } from 'zustand';
 
 interface AudioState {
-  backgroundMusic: HTMLAudioElement | null;
-  hitSound: HTMLAudioElement | null;
-  successSound: HTMLAudioElement | null;
-  isMuted: boolean;
-  
-  // Setter functions
-  setBackgroundMusic: (music: HTMLAudioElement) => void;
-  setHitSound: (sound: HTMLAudioElement) => void;
-  setSuccessSound: (sound: HTMLAudioElement) => void;
-  
-  // Control functions
-  toggleMute: () => void;
+  sfxEnabled: boolean;
+  musicEnabled: boolean;
+  toggleSfx: () => void;
+  toggleMusic: () => void;
+  playButton: () => void;
+  playCard: () => void;
+  playDraw: () => void;
   playHit: () => void;
-  playSuccess: () => void;
+  playError: () => void;
 }
 
 export const useAudio = create<AudioState>((set, get) => ({
-  backgroundMusic: null,
-  hitSound: null,
-  successSound: null,
-  isMuted: true, // Start muted by default
+  sfxEnabled: true,
+  musicEnabled: true,
   
-  setBackgroundMusic: (music) => set({ backgroundMusic: music }),
-  setHitSound: (sound) => set({ hitSound: sound }),
-  setSuccessSound: (sound) => set({ successSound: sound }),
+  toggleSfx: () => set(state => ({ sfxEnabled: !state.sfxEnabled })),
+  toggleMusic: () => set(state => ({ musicEnabled: !state.musicEnabled })),
   
-  toggleMute: () => {
-    const { isMuted } = get();
-    const newMutedState = !isMuted;
-    
-    // Just update the muted state
-    set({ isMuted: newMutedState });
-    
-    // Log the change
-    console.log(`Sound ${newMutedState ? 'muted' : 'unmuted'}`);
-  },
-  
-  playHit: () => {
-    const { hitSound, isMuted } = get();
-    if (hitSound) {
-      // If sound is muted, don't play anything
-      if (isMuted) {
-        console.log("Hit sound skipped (muted)");
-        return;
-      }
-      
-      // Clone the sound to allow overlapping playback
-      const soundClone = hitSound.cloneNode() as HTMLAudioElement;
-      soundClone.volume = 0.3;
-      soundClone.play().catch(error => {
-        console.log("Hit sound play prevented:", error);
-      });
+  playButton: () => {
+    if (get().sfxEnabled) {
+      const audio = new Audio('/sounds/button-click.mp3');
+      audio.volume = 0.3;
+      audio.play();
     }
   },
   
-  playSuccess: () => {
-    const { successSound, isMuted } = get();
-    if (successSound) {
-      // If sound is muted, don't play anything
-      if (isMuted) {
-        console.log("Success sound skipped (muted)");
-        return;
-      }
-      
-      successSound.currentTime = 0;
-      successSound.play().catch(error => {
-        console.log("Success sound play prevented:", error);
-      });
+  playCard: () => {
+    if (get().sfxEnabled) {
+      const audio = new Audio('/sounds/card-play.mp3');
+      audio.volume = 0.4;
+      audio.play();
+    }
+  },
+  
+  playDraw: () => {
+    if (get().sfxEnabled) {
+      const audio = new Audio('/sounds/card-draw.mp3');
+      audio.volume = 0.3;
+      audio.play();
+    }
+  },
+  
+  playHit: () => {
+    if (get().sfxEnabled) {
+      const audio = new Audio('/sounds/hit.mp3');
+      audio.volume = 0.2;
+      audio.play();
+    }
+  },
+  
+  playError: () => {
+    if (get().sfxEnabled) {
+      const audio = new Audio('/sounds/error.mp3');
+      audio.volume = 0.2;
+      audio.play();
     }
   }
 }));

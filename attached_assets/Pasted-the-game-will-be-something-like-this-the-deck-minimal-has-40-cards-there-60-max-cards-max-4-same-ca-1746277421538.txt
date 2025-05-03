@@ -1,0 +1,318 @@
+the game will be something like this
+the deck minimal has 40 cards, there 60 max cards
+max 4 same cards in the deck
+
+there are 2 type of cards, avatar and action card
+all card there are several elements (fire, water, ground, wind and colorless)
+Avatar cards
+Avatar is like creature card
+There are 2 level of card in Avatar
+Level 1 and Level 2
+The Level 1 is basic Avatar, has element on it, subtype and so on
+Level 2 is an evolved form of Level 1 Avatar
+
+How to evolve from level 1 to level 2 is
+1st requirement
+the Level 1 and Level 2 must have same element on it
+Example : Fire to Fire, and Water to Water
+but there is an exception for colorless, it can be from any color
+
+2nd requirement
+The first subtype must has same word
+if Borah only can evolved into Borah
+Kobar to Kobar and so on
+example : Borah Trainee can evolved into Borah Fighter
+Borah Trainee into Borah Mage
+but if the first word were different, then it cant
+
+example : Borah Trainee to Kobar Fighter
+Kobar Trainee to Borah Fighter
+Borah Fighter to Kobar Fighter
+
+3rd requirement
+the card cant be evolved in the same turn that level 1 put into the field
+
+Card structure, the avatar card will be like this
+
+the structure is, in top there a element the card name and the level of avatar
+after that a image of the card
+then the subtype of the card
+
+After these structure, there are avatar skills
+The structure is
+1st skill, how many energy it need to consume, the skill name, and how many damage it does into enemy active avatar, also the effect
+
+2nd skill, how many energy it need to consume, the skill name, and how many damage it does into enemy active avatar, also the effect
+
+In the bottom right part is the Avatar card health point
+
+Avatar card also can be played as energy
+this game has energy system on it, how to make energy is putting avatar card into energy pile
+the color of the energy depends on the avatar element.
+
+Action card
+Action card can be divided into several category
+Spell
+Quick Spell
+Ritual Armor
+Field
+Equipment
+Item
+
+Now lets breakdown the structure of these action cards
+Mostly they had this structure
+In top of it has name and how many energy that needed to play action cards
+After that the illustration
+Then the action cards category, and then what the action can player do after playing that card
+
+Here is the difference in these category
+Spell
+This action card can only be played by the player in their respective turn and main phase part. After the player completed the action card, then the card went to the graveyard.
+Quick Spell
+This action card can be played whenever the player can pay the energy. After the player completed the action card, then the card went to the graveyard.
+
+Ritual Armor
+This action card can only be played by the player in their respective turn and main phase part. The card is attached automatically to the target Avatar card as long as the Avatar is still in play. If the Avatar went to the graveyard, this card would also go to the graveyard.
+Field
+This action card can only be played by the player in their respective turn and main phase part. The Field will stay on the play and will be affecting all the cards in play. The field card can be overwritten into another field card by paying the respective energy written on the action field card plus one extra energy of any type.
+Equipment
+This action card can only be played by the player in their respective turn and main phase part. The card is attached to the target Avatar card as long as the Avatar is still in play. If the Avatar went to the graveyard, this card stayed on the field. This card also can be attached into another avatar by paying energy written on the card description.
+Item
+This action card can only be played by the player in their respective turn and main phase part.
+And this card doesn't need to pay any energy to play. But, player can only play item card 1 time each turn. After the player completed the action card, then the card went to the graveyard.
+Gameplay
+Preparation
+preparation is when 2 players start the game. Players can start the game by determining who goes first with rock paper scissors or other methods.
+After that, each shuffles their deck of cards and shuffles the opponent's deck to ensure fair play.
+Then, players draw 4 cards and put them in the Life card section.
+Each player draws 6 cards, checks their cards, then each puts 1 avatar card as an active avatar
+IF a player does not have a level 1 avatar card, then the player puts all the cards in his hand into the deck and reshuffles, and takes 6 more cards from the deck
+IF the same thing happens again, then the player reshuffles and draws 5 cards.
+
+The player who goes first dont do draw phase in their first turn, also cannot do damage phase in its turn.
+
+The gameplay should be like this
+1. Refresh Phase
+2. Draw Phase
+3. Main Phase 1
+4. Battle Phase
+5. Damage Phase
+6. Main Phase 2
+7. End Phase
+
+Refresh Phase
+This phase is a phase where all the energy putted from used energy pile into energy pile. Also where the counter like bleed happened.
+
+Draw Phase
+Player Draw a card from their deck
+
+Main Phase 1
+Player can put avatar card into play (active or reserve). Play action cards. Put Avatar card in energy pile, evolving avatar cards
+
+Battle Phase
+Player can choose skill from the active avatar, pay the energy, do the damage and effect. The target is mostly opponent active avatar (it can be different if the card say so)
+
+Damage Phase
+Do the applied math from battle phase into target avatar
+
+Main Phase 2
+Player can put avatar card into play (active or reserve). Play action cards. Put Avatar card in energy pile (if the player don't do this in Main Phase 1), evolving avatar cards
+
+End Phase
+The player done their turn, changing to other player.
+
+Energy System
+Energy is the resource that is needed for a player to do action cards or avatar skill. Player can obtain energy by putting avatar card into the energy pile. The energy color is based on the avatar card itself. The player can only put 1 energy each turn into energy pile.
+Everytime the player need to play action card or avatar skill, the player must put energy card (the amount depends on energy needed to do so).
+The energy putted into used energy card can be used again in respective turn.
+But, the energy ‘refreshed’ each turn by put the cards back in ‘Refresh Phase” by putting each card back into energy pile.
+Card in Hand
+Every player has 6 card in start of the game
+There is a max card in hand, 10 cards. The max card is checked in every end phase; if there are more than 10 cards, the player must discard the excess card into the graveyard.
+Counter
+counter is a marker that is placed/written in the gameplay. counters can use many things such as dice or written manually. 
+Damage Counter
+Damage counter is a counter that indicates how much damage the avatar has received. When the number of counters is equal to or exceeds the number of health points of an avatar, the avatar will be moved to the graveyard. When the avatar card changes from level 1 to level 2, the damage counter does not disappear, and the same applies when the avatar moves from active avatar to reserve avatar or vice versa.
+Bleed Counter
+Bleed counter is a marker counter that decreases every round in the refresh phase. Every time one counter decreases in the refresh phase, one damage counter will be added to the avatar. The maximum number of bleed counters that an avatar can receive is 2 counters.
+Shield Counter
+Shield counter is a counter marker to withstand attacks from opponents. 1 shield counter can withstand 1x attack worth 1 damage to 10 damage. If the damage done is more than 10, then the attack can remove 2 shield counters. 1 avatar can only have a maximum of 2 shield counters.
+
+Life Card
+Life card is a marker of how many avatars have left the arena. Every time an avatar leaves the arena, the owner of the avatar takes 1 life card and makes it his hand card.
+
+Winning Condition
+If there are no life cards left, then the player loses.
+If there are no reserve avatar when the active avatar sent to graveyard, then the player loses.
+
+
+
+
+SUPER BREAKDOWN
+1. Card Class Structure
+AvatarCard.cs:
+Define attributes like element, level, subtype, skills, healthPoints, etc.
+Include methods for evolution and energy conversion.
+
+Attributes breakdown
+Element : Fire, Water, Ground, Air, Neutral (Colorless)
+Card Name : Differ each card
+Level : Level 1 (Base Card), Level 2 (Evolved Card from Level 1)
+Subtype : there is 4 main subtype > Kobar, Borah, Kuhaka, Kujana
+Health Points : Differ each card, for Level 1 Max 10 Points, for level 2 max 25 points
+Skills : Mostly Level 1 has 1 only skill, and Level 2 mostly has 2 skill
+Breakdown:
+Attributes:
+
+Element: Now includes the elements Fire, Water, Ground, Air, and Neutral.
+Card Name: A string to represent the card's unique name.
+Level: An integer that indicates if the card is Level 1 or Level 2.
+Subtype: An enum that represents the card's subtype: Kobar, Borah, Kuhaka, Kujana.
+Health Points: An integer representing the card's health, with Level 1 cards having a max of 10 and Level 2 cards having a max of 25.
+Skills: An array to hold the card’s skills. Level 1 cards usually have 1 skill, and Level 2 cards usually have 2 skills.
+Methods:
+
+Initialize(): Initializes an Avatar card with specific attributes.
+CanEvolveTo(): Checks if the current Avatar can evolve into the specified Level 2 Avatar based on element and subtype.
+Evolve(): Evolves the current Avatar to the specified Level 2 Avatar if it meets the criteria.
+ConvertToEnergy(): Converts the Avatar card into energy and removes it from play.
+
+ActionCard.cs:
+Define attributes like category, energyCost, effect, etc.
+Methods for applying effects depending on the card type.
+
+ActionCard 
+Breakdown:
+Attributes:
+
+Category: An enum representing the type of action card (Spell, QuickSpell, RitualArmor, Field, Equipment, Item).
+Card Name: A string representing the card's name.
+Energy Cost: An integer representing the amount of energy required to play the card.
+Effect Description: A string to describe the effect of the card, mainly for display purposes.
+Methods:
+
+Initialize(): Initializes an Action card with specific attributes.
+CanPlayCard(): Checks if the player has enough energy to play the card.
+ApplyEffect(): Applies the card’s effect based on its category, targeting a specified GameObject or applying a global effect in the case of Field cards.
+Individual Effect Methods:
+ApplySpellEffect(GameObject target): Handles the logic for Spell cards.
+ApplyQuickSpellEffect(GameObject target): Handles the logic for Quick Spell cards.
+ApplyRitualArmorEffect(GameObject target): Handles attaching Ritual Armor to a target Avatar.
+ApplyFieldEffect(): Handles activating Field effects, which typically affect the entire game state.
+ApplyEquipmentEffect(GameObject target): Handles equipping an Avatar with Equipment.
+ApplyItemEffect(GameObject target): Handles using an Item on a target.
+SendToGraveyard(): Moves the card to the graveyard after its effect has been applied.
+Notes:
+EnergyManager: The script assumes the existence of an EnergyManager class that handles energy calculation and availability.
+Targeting: The ApplyEffect() method takes a GameObject target, which represents the Avatar or game object affected by the action card.
+
+
+2. Deck and Hand Management
+DeckManager.cs:
+Manage the shuffling, drawing, and discarding of cards.
+Ensure deck rules like the minimum number of cards and identical card limits.
+DeckManager.cs:
+Deck Management: Handles the creation, shuffling, and drawing of cards from the deck.
+Discarding: Manages the graveyard where discarded cards are placed.
+Deck Validation: Ensures the deck meets the game's requirements, such as minimum deck size and limits on identical cards.
+
+HandManager.cs:
+Handle drawing cards, mulligans, and playing cards from the hand.
+Implement the logic for checking and enforcing the maximum hand size.
+HandManager.cs:
+Hand Management: Manages the player's hand, including drawing, playing, and discarding cards.
+Energy Conversion: Allows Avatar cards to be converted into energy by placing them into the energy pile.
+Field Card Management: Handles the placement of Field cards into play, including the logic for overwriting existing Field cards with additional energy costs.
+Mulligans: Provides a mulligan feature to redraw a hand at the start of the game.
+Hand Size Enforcement: Ensures the player's hand does not exceed the maximum allowed size.
+
+
+3. Game Phases
+GamePhaseManager.cs:
+Implement a state machine to manage the different phases of the game.
+Control the flow from one phase to another, ensuring players can only perform valid actions during each phase.
+Breakdown:
+Game Phases:
+
+Enum GamePhase: This enum defines the different phases of the game (Refresh, Draw, Main1, Battle, Damage, Main2, End).
+currentPhase: Tracks the current phase of the game.
+Turn Timer:
+
+turnTimer: A float that represents the remaining time in the turn (initially set to 180 seconds or 3 minutes).
+isTurnActive: A boolean to track whether the player's turn is currently active.
+countdownActive: A boolean to track whether the countdown timer (after 2 minutes) is active.
+timerText: A Text UI element that displays the remaining time to the player.
+Phase Management:
+
+StartTurn(): Initiates a new turn, resets the timer, and starts the phase sequence.
+PhaseSequence(): A coroutine that handles the sequence of game phases, ensuring that each phase is processed in order.
+Individual Phase Methods: (RefreshPhase(), DrawPhase(), MainPhase1(), BattlePhase(), DamagePhase(), MainPhase2(), EndPhase()) These methods simulate each phase. They can be expanded with specific game logic for each phase.
+Turn Management:
+
+EndTurn(): Ends the current player's turn, possibly passing control to the next player. This method is automatically called if the player exceeds 3 minutes.
+Timer UI:
+
+UpdateTimerUI(): Updates the timer display with the remaining time. It converts the time into minutes and seconds and formats it for the UI.
+Countdown Logic:
+
+After 2 minutes (120 seconds), the countdownActive flag is set to true, triggering any additional visual or audio cues you may want to add.
+If the timer reaches 0, the turn automatically ends, passing control to the next player.
+Integration Notes:
+UI Integration: The timerText field assumes you have a UI Text element in your Unity scene to display the countdown timer.
+Multiplayer Considerations: For multiplayer, you would replace StartTurn() with logic to determine the next player and handle turn transitions accordingly.
+Phase Logic: The phase methods (RefreshPhase, DrawPhase, etc.) are placeholders; you'll want to implement the actual game logic for each phase according to your game’s rules.
+
+
+4. Energy System
+EnergyManager.cs:
+Track the energy pile, used energy pile, and manage energy conversion from Avatar cards.
+Implement methods for energy consumption and refreshing during the refresh phase.
+
+Breakdown:
+Energy Limitation:
+
+energyAddedThisTurn: A boolean variable that tracks whether an Avatar card has been added to the energy pile during the current turn.
+Add Avatar to Energy Method:
+
+AddAvatarToEnergy(GameObject avatarCard):
+This method checks whether an Avatar card has already been added to the energy pile this turn.
+If an Avatar card has already been added, the method will return false and display a message indicating that only one energy card can be added per turn.
+If successful, the Avatar card is removed from the hand, its element type is added to the energy pile, and the method returns true.
+Resetting the Energy Added Flag:
+
+StartNewTurn(): This method resets the energyAddedThisTurn flag at the start of each new turn, allowing the player to add an Avatar card to the energy pile again.
+Resetting the Hand and Energy for New Game:
+
+ResetHand(): This method clears the player's hand and resets the energyAddedThisTurn flag, useful when starting a new game or when a player's turn begins.
+Integration Notes:
+Gameplay Flow: This logic enforces the rule that only one Avatar card can be added to the energy pile per turn, ensuring that players must strategically choose when to convert cards into energy.
+Turn Management: The StartNewTurn() method should be called at the beginning of each player's turn, resetting the energy-added flag and allowing them to add one energy card during their turn.
+
+
+
+5. Avatar Evolution
+EvolutionManager.cs:
+Implement the logic to check if an Avatar can evolve based on element, subtype, and timing (not in the same turn).
+Handle the evolution process, updating the Avatar’s stats and abilities.
+6. Card UI and Interaction
+CardUI.cs:
+Create a UI template for displaying cards with attributes like image, name, skills, etc.
+Implement drag-and-drop functionality for playing cards onto the field.
+EnergyPileUI.cs:
+Display the energy pile and used energy pile, showing the current available energy for the player.
+7. Battle System
+BattleManager.cs:
+Handle the battle phase, including skill selection, energy payment, and applying damage to Avatars.
+Implement damage and shield counter mechanics.
+8. Action Cards Mechanics
+Implement individual mechanics for each action card category in their respective classes:
+Spell and Quick Spell: Implement methods to apply their effects and send them to the graveyard.
+Ritual Armor, Field, Equipment: Attach to Avatars or the field and handle the conditions under which they stay or leave play.
+Item: Implement single-use logic with no energy cost.
+9. Counters
+CounterManager.cs:
+Manage the creation and application of damage, bleed, and shield counters.
+Update Avatar health points and other effects based on the counters present.
+10. Winning Condition
+WinConditionChecker.cs:
+Continuously check the state of the game for winning or losing conditions, such as no Life Cards or no reserve Avatars.

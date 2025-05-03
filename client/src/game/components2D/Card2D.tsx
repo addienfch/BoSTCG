@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
-import { CardData } from '../components/Card';
+import { AvatarCard, ActionCard, Card as CardType, ElementType } from '../data/cardTypes';
+import { useAudio } from '../../lib/stores/useAudio';
 import { toast } from 'sonner';
 
+// Accept either our new Card type or the legacy CardData type
 interface Card2DProps {
-  card: CardData;
+  card: CardType | any;
   isPlayable?: boolean;
   isInHand?: boolean;
   onClick?: () => void;
@@ -18,13 +20,75 @@ const Card2D: React.FC<Card2DProps> = ({
   isInHand = false,
   onClick,
   onAction,
+  isDragging = false,
   isTapped = false
 }) => {
   const [showActions, setShowActions] = useState(false);
+  const playHitSound = useAudio(state => state.playHit);
+  const playCard = useAudio(state => state.playCard);
   
   // Card dimensions - smaller for mobile view
   const width = 120;
   const height = 168;
+  
+  // Helper to display energy cost icons
+  const renderEnergyCost = (energyCost?: ElementType[] | number) => {
+    // Handle number format from old card data
+    if (typeof energyCost === 'number') {
+      return (
+        <div className="w-5 h-5 bg-blue-600 rounded-full flex items-center justify-center">
+          <span className="text-white text-xs">{energyCost}</span>
+        </div>
+      );
+    }
+    
+    if (!energyCost || energyCost.length === 0) return null;
+    
+    // Count energy by type
+    const energyCount: Record<ElementType, number> = {
+      fire: 0,
+      water: 0,
+      ground: 0,
+      air: 0,
+      neutral: 0
+    };
+    
+    // Make sure we're dealing with an array before forEach
+    if (Array.isArray(energyCost)) {
+      energyCost.forEach(type => {
+        energyCount[type]++;
+      });
+    }
+    return (
+      <div className="flex gap-0.5">
+        {energyCount.fire > 0 && (
+          <div className="w-4 h-4 bg-red-600 rounded-full flex items-center justify-center text-white text-[8px]">
+            {energyCount.fire}
+          </div>
+        )}
+        {energyCount.water > 0 && (
+          <div className="w-4 h-4 bg-blue-600 rounded-full flex items-center justify-center text-white text-[8px]">
+            {energyCount.water}
+          </div>
+        )}
+        {energyCount.ground > 0 && (
+          <div className="w-4 h-4 bg-amber-800 rounded-full flex items-center justify-center text-white text-[8px]">
+            {energyCount.ground}
+          </div>
+        )}
+        {energyCount.air > 0 && (
+          <div className="w-4 h-4 bg-cyan-300 rounded-full flex items-center justify-center text-black text-[8px]">
+            {energyCount.air}
+          </div>
+        )}
+        {energyCount.neutral > 0 && (
+          <div className="w-4 h-4 bg-gray-400 rounded-full flex items-center justify-center text-black text-[8px]">
+            {energyCount.neutral}
+          </div>
+        )}
+      </div>
+    );
+  };
   
   // Element-based colors for avatars
   let cardColor = '#5b3089'; // Default color for action cards
@@ -87,14 +151,17 @@ const Card2D: React.FC<Card2DProps> = ({
   
   const handleClick = () => {
     if (isPlayable && card.type === 'avatar' && isInHand) {
+      playHitSound();
       setShowActions(!showActions);
     } else if (onClick) {
+      playHitSound();
       onClick();
     }
   };
   
   const handleAction = (action: string) => {
     setShowActions(false);
+    playCard();
     
     if (onAction) {
       onAction(action);
@@ -114,6 +181,105 @@ const Card2D: React.FC<Card2DProps> = ({
     }
   };
   
+  const getElementIcon = () => {
+    switch (card.element) {
+      case 'fire':
+        return (
+          <div className="w-5 h-5 bg-red-600 rounded-full flex items-center justify-center">
+            <span className="text-white text-xs">🔥</span>
+          </div>
+        );
+      case 'water':
+        return (
+          <div className="w-5 h-5 bg-blue-600 rounded-full flex items-center justify-center">
+            <span className="text-white text-xs">💧</span>
+          </div>
+        );
+      case 'ground':
+        return (
+          <div className="w-5 h-5 bg-amber-800 rounded-full flex items-center justify-center">
+            <span className="text-white text-xs">🌋</span>
+          </div>
+        );
+      case 'air':
+        return (
+          <div className="w-5 h-5 bg-cyan-300 rounded-full flex items-center justify-center">
+            <span className="text-black text-xs">💨</span>
+          </div>
+        );
+      case 'neutral':
+        return (
+          <div className="w-5 h-5 bg-gray-400 rounded-full flex items-center justify-center">
+            <span className="text-black text-xs">⭐</span>
+          </div>
+        );
+      default:
+        return null;
+    }
+  };
+  
+  const renderAvatarContent = () => {
+    const avatarCard = card as AvatarCard;
+    return (
+      <>
+        {/* Level and Subtype */}
+        <div className="absolute top-2 right-2 flex gap-1">
+          <div className="bg-yellow-500 rounded-md px-1 text-[9px] font-bold text-white">
+            LVL {avatarCard.level}
+          </div>
+        </div>
+        
+        {/* Health */}
+        <div className="absolute bottom-2 right-2 bg-gray-700 rounded-md px-1 py-0.5 text-[10px] font-bold text-white">
+          HP {avatarCard.health}
+        </div>
+        
+        {/* Skill 1 */}
+        {avatarCard.skill1 && (
+          <div className="absolute bottom-2 left-2 flex items-center gap-1">
+            {renderEnergyCost(avatarCard.skill1.energyCost)}
+            <div className="bg-red-700 rounded-md px-1 py-0.5 text-[10px] font-bold text-white">
+              {avatarCard.skill1.damage}
+            </div>
+          </div>
+        )}
+        
+        {/* Damage counter if any */}
+        {avatarCard.counters && avatarCard.counters.damage > 0 && (
+          <div className="absolute top-7 right-2 bg-red-600 text-white text-[10px] font-bold px-1 rounded-full">
+            {avatarCard.counters.damage}
+          </div>
+        )}
+        
+        {/* Bleed counter if any */}
+        {avatarCard.counters && avatarCard.counters.bleed > 0 && (
+          <div className="absolute top-12 right-2 bg-purple-600 text-white text-[10px] font-bold px-1 rounded-full">
+            B{avatarCard.counters.bleed}
+          </div>
+        )}
+        
+        {/* Shield counter if any */}
+        {avatarCard.counters && avatarCard.counters.shield > 0 && (
+          <div className="absolute top-17 right-2 bg-blue-600 text-white text-[10px] font-bold px-1 rounded-full">
+            S{avatarCard.counters.shield}
+          </div>
+        )}
+      </>
+    );
+  };
+  
+  const renderActionContent = () => {
+    const actionCard = card as ActionCard;
+    return (
+      <>
+        {/* Energy cost for action cards */}
+        <div className="absolute top-2 right-2">
+          {renderEnergyCost(actionCard.energyCost)}
+        </div>
+      </>
+    );
+  };
+  
   return (
     <div 
       className="relative" 
@@ -126,7 +292,7 @@ const Card2D: React.FC<Card2DProps> = ({
     >
       {/* Card base */}
       <div 
-        className="absolute inset-0 rounded-lg shadow-lg cursor-pointer hover:scale-105 transition-transform"
+        className={`absolute inset-0 rounded-lg shadow-lg cursor-pointer ${isDragging ? 'scale-105' : 'hover:scale-105'} transition-transform`}
         style={{ 
           backgroundColor: cardColor,
           border: `3px solid ${borderColor}`,
@@ -136,63 +302,56 @@ const Card2D: React.FC<Card2DProps> = ({
       >
         {/* Card name */}
         <div 
-          className="absolute top-2 left-0 right-0 text-center font-bold text-white text-sm px-2"
+          className="absolute top-2 left-0 right-0 text-center font-bold text-white text-xs px-2 flex items-center justify-center gap-1"
         >
-          {card.name}
+          {getElementIcon()}
+          <span>{card.name}</span>
         </div>
         
         {/* Card art */}
         <div 
-          className="absolute top-7 left-2 right-2 h-16 bg-white bg-opacity-20 rounded"
+          className="absolute top-9 left-2 right-2 h-20 bg-black bg-opacity-30 rounded overflow-hidden"
         >
-          {/* Placeholder for card art */}
+          {card.art ? (
+            <img src={card.art} alt={card.name} className="h-full w-full object-cover" />
+          ) : (
+            <div className="h-full w-full flex items-center justify-center text-white text-opacity-70 text-xs">
+              [Card Art]
+            </div>
+          )}
         </div>
         
-        {/* Card description */}
+        {/* Card type */}
+        <div className="absolute top-[116px] left-2 right-2 text-center bg-black bg-opacity-70 py-0.5 px-1 rounded text-white text-[9px]">
+          {card.type === 'avatar' 
+            ? `Avatar - ${(card as AvatarCard).subType.charAt(0).toUpperCase() + (card as AvatarCard).subType.slice(1)}` 
+            : card.type.charAt(0).toUpperCase() + card.type.slice(1)}
+        </div>
+        
+        {/* Card description/skills */}
         <div 
-          className="absolute bottom-8 left-2 right-2 text-center text-white text-xs"
-          style={{ fontSize: '8px' }}
+          className="absolute top-[132px] left-2 right-2 text-white text-[8px] bg-black bg-opacity-50 p-1 rounded h-[28px] overflow-hidden"
         >
-          {card.description.length > 40
-            ? card.description.substring(0, 40) + '...' 
-            : card.description}
+          {card.type === 'avatar' ? (
+            <>
+              {(card as AvatarCard).skill1?.name} {(card as AvatarCard).skill1?.damage} dmg
+              {(card as AvatarCard).skill1?.effect && (
+                <> | {(card as AvatarCard).skill1.effect.length > 35 
+                  ? (card as AvatarCard).skill1.effect.substring(0, 35) + '...' 
+                  : (card as AvatarCard).skill1.effect}</>
+              )}
+            </>
+          ) : (
+            <>
+              {card.description && card.description.length > 40
+                ? card.description.substring(0, 40) + '...' 
+                : card.description}
+            </>
+          )}
         </div>
         
-        {/* Card stats */}
-        {card.type === 'avatar' && (
-          <>
-            {/* Level */}
-            <div className="absolute top-2 right-2 w-5 h-5 bg-yellow-500 rounded-full flex items-center justify-center">
-              <span className="text-white font-bold text-xs">{card.level || 1}</span>
-            </div>
-            
-            {/* Health */}
-            <div className="absolute bottom-2 right-2 w-5 h-5 bg-blue-500 rounded-full flex items-center justify-center">
-              <span className="text-white font-bold text-xs">{card.health || 0}</span>
-            </div>
-            
-            {/* Skill 1 */}
-            {card.skill1 && (
-              <div className="absolute bottom-2 left-2 w-5 h-5 bg-red-500 rounded-full flex items-center justify-center">
-                <span className="text-white font-bold text-xs">{card.skill1.damage}</span>
-              </div>
-            )}
-            
-            {/* Skill 2 */}
-            {card.skill2 && (
-              <div className="absolute bottom-2 left-9 w-5 h-5 bg-purple-500 rounded-full flex items-center justify-center">
-                <span className="text-white font-bold text-xs">{card.skill2.damage}</span>
-              </div>
-            )}
-          </>
-        )}
-        
-        {/* Energy cost for non-avatar cards */}
-        {card.type !== 'avatar' && (
-          <div className="absolute top-2 right-2 w-5 h-5 bg-blue-600 rounded-full flex items-center justify-center">
-            <span className="text-white font-bold text-xs">{card.energyCost || 0}</span>
-          </div>
-        )}
+        {/* Render card type specific content */}
+        {card.type === 'avatar' ? renderAvatarContent() : renderActionContent()}
       </div>
       
       {/* Popup action menu for avatar cards */}
