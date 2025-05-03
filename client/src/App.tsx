@@ -33,7 +33,7 @@ function SoundLoader() {
 }
 
 // Sample card data for testing
-const sampleCards: CardData[] = [
+const samplePlayerHand: CardData[] = [
   {
     id: "card1",
     name: "Fire Avatar",
@@ -125,6 +125,55 @@ const sampleCards: CardData[] = [
   }
 ];
 
+// Sample field spell
+const fieldSpell: CardData = {
+  id: "field1",
+  name: "Elemental Rift",
+  type: "field",
+  element: "neutral",
+  description: "All fire and water avatars gain +1 attack",
+  energyCost: 2,
+  effect: "+1 attack to fire/water avatars",
+  art: "field_spell.jpg"
+};
+
+// Sample opponent cards
+const sampleOpponentHand: CardData[] = [
+  {
+    id: "opp1",
+    name: "Air Elemental",
+    type: "avatar",
+    element: "air",
+    level: 1,
+    description: "Fast air elemental with evasion abilities",
+    attack: 4,
+    health: 6,
+    skill1: {
+      name: "Wind Slash",
+      energyCost: 1,
+      damage: 2,
+      effect: "Deals 2 damage"
+    },
+    skill2: {
+      name: "Tornado",
+      energyCost: 3,
+      damage: 4,
+      effect: "Deals 4 damage to all opponent avatars"
+    },
+    art: "air_avatar.jpg"
+  },
+  {
+    id: "opp2",
+    name: "Healing Spring",
+    type: "spell",
+    element: "water",
+    description: "Restore 5 health to target avatar",
+    energyCost: 2,
+    effect: "Heal 5 HP",
+    art: "healing_spring.jpg"
+  }
+];
+
 // Simple 2D App component for now
 function App() {
   const { phase, start } = useGame();
@@ -144,7 +193,7 @@ function App() {
       <SoundLoader />
       
       {/* Use our new SimpleGame2D component */}
-      <SimpleGame2D playerCards={sampleCards} />
+      <SimpleGame2D playerCards={samplePlayerHand} opponentCards={sampleOpponentHand} />
       
       {/* Sound controls */}
       <button 

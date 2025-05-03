@@ -22,9 +22,9 @@ const Card2D: React.FC<Card2DProps> = ({
 }) => {
   const [showActions, setShowActions] = useState(false);
   
-  // Card dimensions
-  const width = 160;
-  const height = 220;
+  // Card dimensions - smaller for mobile view
+  const width = 120;
+  const height = 168;
   
   // Element-based colors for avatars
   let cardColor = '#5b3089'; // Default color for action cards
@@ -143,17 +143,18 @@ const Card2D: React.FC<Card2DProps> = ({
         
         {/* Card art */}
         <div 
-          className="absolute top-8 left-3 right-3 h-24 bg-white bg-opacity-20 rounded"
+          className="absolute top-7 left-2 right-2 h-16 bg-white bg-opacity-20 rounded"
         >
           {/* Placeholder for card art */}
         </div>
         
         {/* Card description */}
         <div 
-          className="absolute bottom-12 left-3 right-3 text-center text-white text-xs"
+          className="absolute bottom-8 left-2 right-2 text-center text-white text-xs"
+          style={{ fontSize: '8px' }}
         >
-          {card.description.length > 60 
-            ? card.description.substring(0, 60) + '...' 
+          {card.description.length > 40
+            ? card.description.substring(0, 40) + '...' 
             : card.description}
         </div>
         
@@ -161,25 +162,25 @@ const Card2D: React.FC<Card2DProps> = ({
         {card.type === 'avatar' && (
           <>
             {/* Level */}
-            <div className="absolute top-3 right-3 w-6 h-6 bg-yellow-500 rounded-full flex items-center justify-center">
+            <div className="absolute top-2 right-2 w-5 h-5 bg-yellow-500 rounded-full flex items-center justify-center">
               <span className="text-white font-bold text-xs">{card.level || 1}</span>
             </div>
             
             {/* Health */}
-            <div className="absolute bottom-3 right-3 w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center">
+            <div className="absolute bottom-2 right-2 w-5 h-5 bg-blue-500 rounded-full flex items-center justify-center">
               <span className="text-white font-bold text-xs">{card.health || 0}</span>
             </div>
             
             {/* Skill 1 */}
             {card.skill1 && (
-              <div className="absolute bottom-3 left-3 w-6 h-6 bg-red-500 rounded-full flex items-center justify-center">
+              <div className="absolute bottom-2 left-2 w-5 h-5 bg-red-500 rounded-full flex items-center justify-center">
                 <span className="text-white font-bold text-xs">{card.skill1.damage}</span>
               </div>
             )}
             
             {/* Skill 2 */}
             {card.skill2 && (
-              <div className="absolute bottom-3 left-12 w-6 h-6 bg-purple-500 rounded-full flex items-center justify-center">
+              <div className="absolute bottom-2 left-9 w-5 h-5 bg-purple-500 rounded-full flex items-center justify-center">
                 <span className="text-white font-bold text-xs">{card.skill2.damage}</span>
               </div>
             )}
@@ -188,7 +189,7 @@ const Card2D: React.FC<Card2DProps> = ({
         
         {/* Energy cost for non-avatar cards */}
         {card.type !== 'avatar' && (
-          <div className="absolute top-3 right-3 w-6 h-6 bg-blue-600 rounded-full flex items-center justify-center">
+          <div className="absolute top-2 right-2 w-5 h-5 bg-blue-600 rounded-full flex items-center justify-center">
             <span className="text-white font-bold text-xs">{card.energyCost || 0}</span>
           </div>
         )}
