@@ -28,141 +28,239 @@ interface CardGameState {
   playerHealth: number;
   playerDeck: CardData[];
   playerHand: CardData[];
-  playerField: FieldCard[];
-  mana: number;
-  maxMana: number;
+  playerEnergyPile: CardData[]; // Energy pile (avatar cards used as energy)
+  playerActiveAvatar: AvatarInPlay | null; // Active avatar in play
+  playerReserveAvatars: AvatarInPlay[]; // Reserve avatars ready to switch in
+  playerFieldCards: CardData[]; // Field cards in play
+  playerLifeCards: CardData[]; // Life cards (when depleted, player loses)
+  playerGraveyard: CardData[]; // Discarded cards
   
   // Opponent state
   opponentHealth: number;
   opponentDeck: CardData[];
   opponentHand: CardData[];
-  opponentField: FieldCard[];
-  opponentMana: number;
-  opponentMaxMana: number;
+  opponentEnergyPile: CardData[]; // Energy pile (avatar cards used as energy)
+  opponentActiveAvatar: AvatarInPlay | null; // Active avatar in play
+  opponentReserveAvatars: AvatarInPlay[]; // Reserve avatars ready to switch in
+  opponentFieldCards: CardData[]; // Field cards in play
+  opponentLifeCards: CardData[]; // Life cards (when depleted, opponent loses)
+  opponentGraveyard: CardData[]; // Discarded cards
   
   // Selection state
-  selectedCreature: number | null;
+  selectedCard: number | null; // Index of selected card in hand
+  selectedTarget: string | null; // Target identifier (e.g., 'opponent-avatar', 'player-avatar-0')
   
   // Actions
   startGame: () => void;
   drawCard: () => void;
-  playCard: (handIndex: number) => void;
-  selectCreature: (fieldIndex: number) => void;
-  attackCreature: (attackerIndex: number, defenderIndex: number) => void;
-  attackPlayer: (attackerIndex: number) => void;
-  endTurn: () => void;
-  processPhase: () => void;
+  playCard: (handIndex: number, target?: string) => void;
+  selectCard: (handIndex: number) => void;
+  selectTarget: (targetId: string) => void;
+  useAvatarSkill: (skillIndex: 1 | 2, target: string) => void;
+  setEnergyCard: (handIndex: number) => void; // Use card as energy
+  switchAvatar: (reserveIndex: number) => void; // Switch active avatar
+  endPhase: () => void; // End current phase and move to next
+  endTurn: () => void; // End turn and give control to opponent
 }
 
 export const useCardGame = create<CardGameState>((set, get) => ({
   // Initial state
   currentPlayer: 'player',
-  gamePhase: 'draw',
+  gamePhase: 'refresh',
   turn: 1,
   winner: null,
   
+  // Player state
   playerHealth: 20,
   playerDeck: [],
   playerHand: [],
-  playerField: [],
-  mana: 1,
-  maxMana: 1,
+  playerEnergyPile: [],
+  playerActiveAvatar: null,
+  playerReserveAvatars: [],
+  playerFieldCards: [],
+  playerLifeCards: [],
+  playerGraveyard: [],
   
+  // Opponent state
   opponentHealth: 20,
   opponentDeck: [],
   opponentHand: [],
-  opponentField: [],
-  opponentMana: 1,
-  opponentMaxMana: 1,
+  opponentEnergyPile: [],
+  opponentActiveAvatar: null,
+  opponentReserveAvatars: [],
+  opponentFieldCards: [],
+  opponentLifeCards: [],
+  opponentGraveyard: [],
   
-  selectedCreature: null,
+  // Selection state
+  selectedCard: null,
+  selectedTarget: null,
   
   // Start a new game
   startGame: () => {
     const playerDeck = shuffleDeck(getInitialDeck('player'));
     const opponentDeck = shuffleDeck(getInitialDeck('opponent'));
     
-    // Give each player a starting hand of 3 cards
-    const playerHand = playerDeck.splice(0, 3);
-    const opponentHand = opponentDeck.splice(0, 3);
+    // Give each player a starting hand of 5 cards
+    const playerHand = playerDeck.splice(0, 5);
+    const opponentHand = opponentDeck.splice(0, 5);
+    
+    // Set up life cards (6 cards that will determine win condition)
+    const playerLifeCards = playerDeck.splice(0, 6);
+    const opponentLifeCards = opponentDeck.splice(0, 6);
     
     set({
       currentPlayer: 'player',
-      gamePhase: 'draw',
+      gamePhase: 'refresh',
       turn: 1,
       winner: null,
       
-      playerHealth: 20,
+      // Player state
+      playerHealth: 30,
       playerDeck,
       playerHand,
-      playerField: [],
-      mana: 1,
-      maxMana: 1,
+      playerEnergyPile: [],
+      playerActiveAvatar: null,
+      playerReserveAvatars: [],
+      playerFieldCards: [],
+      playerLifeCards,
+      playerGraveyard: [],
       
-      opponentHealth: 20,
+      // Opponent state
+      opponentHealth: 30,
       opponentDeck,
       opponentHand,
-      opponentField: [],
-      opponentMana: 1,
-      opponentMaxMana: 1,
+      opponentEnergyPile: [],
+      opponentActiveAvatar: null,
+      opponentReserveAvatars: [],
+      opponentFieldCards: [],
+      opponentLifeCards,
+      opponentGraveyard: [],
       
-      selectedCreature: null,
+      // Selection state
+      selectedCard: null,
+      selectedTarget: null,
     });
+    
+    toast.success('Game started! Begin by playing an avatar card or setting a card as energy.');
   },
   
   // Draw a card from the deck
   drawCard: () => {
-    const { currentPlayer, playerDeck, playerHand, opponentDeck, opponentHand } = get();
+    const { currentPlayer, playerDeck, playerHand, opponentDeck, opponentHand, gamePhase } = get();
     
     if (currentPlayer === 'player') {
       if (playerDeck.length === 0) {
-        // Player loses if they can't draw
-        set({ winner: 'opponent' });
-        return;
+        // If player can't draw, check life cards
+        if (get().playerLifeCards.length > 0) {
+          // Move a life card to deck and shuffle
+          const lifeCards = [...get().playerLifeCards];
+          const lifeCard = lifeCards.pop();
+          
+          if (lifeCard) {
+            set({
+              playerLifeCards: lifeCards,
+              playerDeck: [lifeCard]
+            });
+            toast.info('Your deck is empty. One life card moved to deck.');
+            
+            // Now draw the card
+            set({
+              playerDeck: [],
+              playerHand: [...playerHand, lifeCard]
+            });
+            toast.success(`Drew ${lifeCard.name}`);
+          }
+        } else {
+          // No life cards and no deck - player loses
+          set({ winner: 'opponent' });
+          toast.error('You have no cards left in your deck or life cards. You lose!');
+          return;
+        }
+      } else {
+        // Normal draw
+        const [newCard, ...remainingDeck] = playerDeck;
+        set({ 
+          playerDeck: remainingDeck, 
+          playerHand: [...playerHand, newCard]
+        });
+        
+        toast.success(`Drew ${newCard.name}`);
       }
       
-      const [newCard, ...remainingDeck] = playerDeck;
-      set({ 
-        playerDeck: remainingDeck, 
-        playerHand: [...playerHand, newCard],
-        gamePhase: 'play'
-      });
-      
-      toast.success(`Drew ${newCard.name}`);
+      // Only advance phase if in draw phase
+      if (gamePhase === 'draw') {
+        set({ gamePhase: 'main1' });
+      }
     } else {
+      // Opponent's turn
       if (opponentDeck.length === 0) {
-        // Opponent loses if they can't draw
-        set({ winner: 'player' });
-        return;
+        // If opponent can't draw, check life cards
+        if (get().opponentLifeCards.length > 0) {
+          // Move a life card to deck and shuffle
+          const lifeCards = [...get().opponentLifeCards];
+          const lifeCard = lifeCards.pop();
+          
+          if (lifeCard) {
+            set({
+              opponentLifeCards: lifeCards,
+              opponentDeck: [],
+              opponentHand: [...opponentHand, lifeCard]
+            });
+            toast.info('Opponent\'s deck is empty. One life card moved to hand.');
+          }
+        } else {
+          // No life cards and no deck - opponent loses
+          set({ winner: 'player' });
+          toast.success('Opponent has no cards left. You win!');
+          return;
+        }
+      } else {
+        // Normal draw
+        const [newCard, ...remainingDeck] = opponentDeck;
+        set({ 
+          opponentDeck: remainingDeck, 
+          opponentHand: [...opponentHand, newCard]
+        });
+        
+        toast.info('Opponent drew a card.');
       }
       
-      const [newCard, ...remainingDeck] = opponentDeck;
-      set({ 
-        opponentDeck: remainingDeck, 
-        opponentHand: [...opponentHand, newCard],
-        gamePhase: 'play'
-      });
+      // Only advance phase if in draw phase
+      if (gamePhase === 'draw') {
+        set({ gamePhase: 'main1' });
+      }
     }
   },
   
   // Play a card from hand
-  playCard: (handIndex: number) => {
+  playCard: (handIndex: number, target?: string) => {
     const { 
       currentPlayer, 
       playerHand, 
-      playerField, 
+      playerEnergyPile,
+      playerActiveAvatar,
+      playerReserveAvatars,
+      playerFieldCards,
       opponentHand, 
-      opponentField,
-      mana,
-      opponentMana
+      opponentActiveAvatar,
+      opponentReserveAvatars,
+      opponentFieldCards,
+      gamePhase
     } = get();
+    
+    // Can only play cards during main phases
+    if (currentPlayer === 'player' && gamePhase !== 'main1' && gamePhase !== 'main2') {
+      toast.error('You can only play cards during your main phases.');
+      return;
+    }
     
     if (currentPlayer === 'player') {
       const card = playerHand[handIndex];
       
-      // Check if player has enough mana
-      if (card.cost > mana) {
-        toast.error('Not enough mana!');
+      // Check if player has enough energy for action cards
+      if (card.type !== 'avatar' && (card.energyCost || 0) > playerEnergyPile.length) {
+        toast.error(`Not enough energy! This card needs ${card.energyCost} energy.`);
         return;
       }
       
@@ -170,72 +268,243 @@ export const useCardGame = create<CardGameState>((set, get) => ({
       const newHand = [...playerHand];
       newHand.splice(handIndex, 1);
       
-      // If it's a creature, add to field
-      if (card.type === 'creature') {
-        const fieldCard: FieldCard = {
-          ...card,
-          tapped: true, // Can't attack on the turn it's played
-          damage: 0
+      // Handle based on card type
+      if (card.type === 'avatar') {
+        // If no active avatar, make this the active avatar
+        if (!playerActiveAvatar) {
+          const avatarCard: AvatarInPlay = {
+            ...card,
+            tapped: false, // Can use skills this turn since it was just played
+            damageCounter: 0,
+            bleedCounter: 0,
+            shieldCounter: 0,
+            attachedCards: []
+          };
+          
+          set({
+            playerHand: newHand,
+            playerActiveAvatar: avatarCard,
+            selectedCard: null,
+            selectedTarget: null
+          });
+          
+          toast.success(`${card.name} is now your active avatar!`);
+        } 
+        // Otherwise add to reserve avatars
+        else {
+          const avatarCard: AvatarInPlay = {
+            ...card,
+            tapped: false,
+            damageCounter: 0,
+            bleedCounter: 0,
+            shieldCounter: 0,
+            attachedCards: []
+          };
+          
+          set({
+            playerHand: newHand,
+            playerReserveAvatars: [...playerReserveAvatars, avatarCard],
+            selectedCard: null,
+            selectedTarget: null
+          });
+          
+          toast.success(`${card.name} added to your reserve avatars.`);
+        }
+      }
+      // Handle field cards
+      else if (card.type === 'field') {
+        // Use energy
+        const newEnergyPile = [...playerEnergyPile];
+        const usedEnergy = newEnergyPile.splice(0, card.energyCost || 0);
+        
+        // Add to field cards
+        set({
+          playerHand: newHand,
+          playerEnergyPile: newEnergyPile,
+          playerFieldCards: [...playerFieldCards, card],
+          playerGraveyard: [...get().playerGraveyard, ...usedEnergy],
+          selectedCard: null,
+          selectedTarget: null
+        });
+        
+        toast.success(`Played field card: ${card.name}`);
+      }
+      // Handle equipment cards
+      else if (card.type === 'equipment' && playerActiveAvatar && target === 'player-avatar') {
+        // Use energy
+        const newEnergyPile = [...playerEnergyPile];
+        const usedEnergy = newEnergyPile.splice(0, card.energyCost || 0);
+        
+        // Attach to active avatar
+        const updatedAvatar = {
+          ...playerActiveAvatar,
+          attachedCards: [...playerActiveAvatar.attachedCards, card]
         };
         
-        set({ 
-          playerHand: newHand, 
-          playerField: [...playerField, fieldCard],
-          mana: mana - card.cost
-        });
-        
-        toast.success(`Played ${card.name}`);
-      } 
-      // If it's a spell, resolve effect immediately
-      else if (card.type === 'spell') {
-        const updatedState = handleSpellEffect(card, get());
-        set({ 
-          ...updatedState,
+        set({
           playerHand: newHand,
-          mana: mana - card.cost
+          playerEnergyPile: newEnergyPile,
+          playerActiveAvatar: updatedAvatar,
+          playerGraveyard: [...get().playerGraveyard, ...usedEnergy],
+          selectedCard: null,
+          selectedTarget: null
         });
         
-        toast.success(`Cast ${card.name}`);
+        toast.success(`Equipped ${card.name} to ${playerActiveAvatar.name}`);
       }
-    } else {
-      // Opponent's turn
-      const card = opponentHand[handIndex];
-      
-      // Check if opponent has enough mana
-      if (card.cost > opponentMana) {
+      // Handle ritual armor
+      else if (card.type === 'ritualArmor' && playerActiveAvatar && target === 'player-avatar') {
+        // Use energy
+        const newEnergyPile = [...playerEnergyPile];
+        const usedEnergy = newEnergyPile.splice(0, card.energyCost || 0);
+        
+        // Add shield counters to avatar
+        const updatedAvatar = {
+          ...playerActiveAvatar,
+          shieldCounter: playerActiveAvatar.shieldCounter + 2, // Standard amount
+          attachedCards: [...playerActiveAvatar.attachedCards, card]
+        };
+        
+        set({
+          playerHand: newHand,
+          playerEnergyPile: newEnergyPile,
+          playerActiveAvatar: updatedAvatar,
+          playerGraveyard: [...get().playerGraveyard, ...usedEnergy],
+          selectedCard: null,
+          selectedTarget: null
+        });
+        
+        toast.success(`Added ritual armor ${card.name} to ${playerActiveAvatar.name}`);
+      }
+      // Handle spells and quick spells
+      else if ((card.type === 'spell' || card.type === 'quickSpell') && target) {
+        // Use energy
+        const newEnergyPile = [...playerEnergyPile];
+        const usedEnergy = newEnergyPile.splice(0, card.energyCost || 0);
+        
+        // Apply spell effect based on target
+        if (target === 'opponent-avatar' && opponentActiveAvatar) {
+          // Deal damage to opponent's avatar (simple effect for now)
+          const updatedOpponentAvatar = {
+            ...opponentActiveAvatar,
+            damageCounter: opponentActiveAvatar.damageCounter + 2 // Standard damage
+          };
+          
+          set({
+            playerHand: newHand,
+            playerEnergyPile: newEnergyPile,
+            opponentActiveAvatar: updatedOpponentAvatar,
+            playerGraveyard: [...get().playerGraveyard, ...usedEnergy, card], // Spells go to graveyard
+            selectedCard: null,
+            selectedTarget: null
+          });
+          
+          toast.success(`${card.name} dealt 2 damage to opponent's ${opponentActiveAvatar.name}!`);
+        }
+        else if (target === 'player-avatar' && playerActiveAvatar) {
+          // Heal player's avatar (simple effect for now)
+          const updatedPlayerAvatar = {
+            ...playerActiveAvatar,
+            damageCounter: Math.max(0, playerActiveAvatar.damageCounter - 3) // Heal 3 damage
+          };
+          
+          set({
+            playerHand: newHand,
+            playerEnergyPile: newEnergyPile,
+            playerActiveAvatar: updatedPlayerAvatar,
+            playerGraveyard: [...get().playerGraveyard, ...usedEnergy, card], // Spells go to graveyard
+            selectedCard: null,
+            selectedTarget: null
+          });
+          
+          toast.success(`${card.name} healed 3 damage from ${playerActiveAvatar.name}!`);
+        }
+      }
+      // Handle items
+      else if (card.type === 'item') {
+        // Items typically don't need targets and have special effects
+        // For a sample energy crystal item
+        if (card.effect === 'add_energy') {
+          set({
+            playerHand: newHand,
+            playerEnergyPile: [...playerEnergyPile, card], // Use the card itself as energy
+            selectedCard: null,
+            selectedTarget: null
+          });
+          
+          toast.success(`Used ${card.name} to add 1 energy.`);
+        } else {
+          // Other item effects would go here
+          set({
+            playerHand: newHand,
+            playerGraveyard: [...get().playerGraveyard, card],
+            selectedCard: null,
+            selectedTarget: null
+          });
+          
+          toast.success(`Used item: ${card.name}`);
+        }
+      }
+      else {
+        // Invalid play (no target or wrong type)
+        toast.error('This card needs a valid target.');
         return;
       }
+    } 
+    else {
+      // Basic opponent AI card playing logic
+      // This would be expanded with more sophisticated rules based on card types
+      const card = opponentHand[handIndex];
       
       // Remove card from hand
       const newHand = [...opponentHand];
       newHand.splice(handIndex, 1);
       
-      // If it's a creature, add to field
-      if (card.type === 'creature') {
-        const fieldCard: FieldCard = {
-          ...card,
-          tapped: true, // Can't attack on the turn it's played
-          damage: 0
-        };
-        
-        set({ 
-          opponentHand: newHand, 
-          opponentField: [...opponentField, fieldCard],
-          opponentMana: opponentMana - card.cost
-        });
-        
-        toast.info(`Opponent played ${card.name}`);
-      } 
-      // If it's a spell, resolve effect immediately
-      else if (card.type === 'spell') {
-        const updatedState = handleSpellEffect(card, get());
-        set({ 
-          ...updatedState,
+      // Simple opponent logic - prioritize playing avatars
+      if (card.type === 'avatar') {
+        if (!opponentActiveAvatar) {
+          // Make this the active avatar
+          const avatarCard: AvatarInPlay = {
+            ...card,
+            tapped: false,
+            damageCounter: 0,
+            bleedCounter: 0,
+            shieldCounter: 0,
+            attachedCards: []
+          };
+          
+          set({
+            opponentHand: newHand,
+            opponentActiveAvatar: avatarCard
+          });
+          
+          toast.info(`Opponent played ${card.name} as active avatar.`);
+        } else {
+          // Add to reserve
+          const avatarCard: AvatarInPlay = {
+            ...card,
+            tapped: false,
+            damageCounter: 0,
+            bleedCounter: 0,
+            shieldCounter: 0,
+            attachedCards: []
+          };
+          
+          set({
+            opponentHand: newHand,
+            opponentReserveAvatars: [...opponentReserveAvatars, avatarCard]
+          });
+          
+          toast.info(`Opponent added ${card.name} to reserve avatars.`);
+        }
+      } else {
+        // For now, just discard other card types in AI
+        set({
           opponentHand: newHand,
-          opponentMana: opponentMana - card.cost
+          opponentGraveyard: [...get().opponentGraveyard, card]
         });
         
-        toast.info(`Opponent cast ${card.name}`);
+        toast.info(`Opponent played ${card.name}.`);
       }
     }
   },
@@ -364,73 +633,352 @@ export const useCardGame = create<CardGameState>((set, get) => ({
     const { 
       currentPlayer, 
       turn, 
-      maxMana, 
-      opponentMaxMana,
-      playerField, 
-      opponentField 
+      playerActiveAvatar,
+      opponentActiveAvatar
     } = get();
     
     if (currentPlayer === 'player') {
-      // Untap opponent's creatures
-      const newOpponentField = opponentField.map(card => ({
-        ...card,
-        tapped: false
-      }));
-      
-      // Increment opponent's mana to a maximum of 10
-      const newOpponentMaxMana = Math.min(opponentMaxMana + 1, 10);
-      
+      // Start opponent's turn
       set({ 
         currentPlayer: 'opponent', 
-        gamePhase: 'draw',
-        opponentField: newOpponentField,
-        opponentMana: newOpponentMaxMana,
-        opponentMaxMana: newOpponentMaxMana
+        gamePhase: 'refresh'
       });
+      
+      // Untap opponent's active avatar if one exists
+      if (opponentActiveAvatar) {
+        set({
+          opponentActiveAvatar: {
+            ...opponentActiveAvatar,
+            tapped: false
+          }
+        });
+      }
       
       // Simulate opponent's turn after a short delay
       setTimeout(() => {
-        get().simulateOpponentTurn();
+        // Draw phase
+        get().drawCard();
+        
+        // Main phase - play a card if possible (simplified AI)
+        setTimeout(() => {
+          // Simple algorithm: If no active avatar, play first avatar in hand if any
+          const opponentHand = get().opponentHand;
+          const avatarCardIndex = opponentHand.findIndex(card => card.type === 'avatar');
+          
+          if (avatarCardIndex !== -1 && !get().opponentActiveAvatar) {
+            get().playCard(avatarCardIndex);
+          }
+          
+          // End turn after brief delay
+          setTimeout(() => {
+            // Start player's turn
+            set({ 
+              currentPlayer: 'player', 
+              gamePhase: 'refresh',
+              turn: turn + 1
+            });
+            
+            toast.info('Your turn. Begin with refresh phase.');
+          }, 1000);
+        }, 1000);
       }, 1000);
     } else {
-      // Untap player's creatures
-      const newPlayerField = playerField.map(card => ({
-        ...card,
-        tapped: false
-      }));
-      
-      // Increment player's mana to a maximum of 10
-      const newMaxMana = Math.min(maxMana + 1, 10);
-      
+      // Start player's turn
       set({ 
         currentPlayer: 'player', 
-        gamePhase: 'draw',
-        turn: turn + 1,
-        playerField: newPlayerField,
-        mana: newMaxMana,
-        maxMana: newMaxMana,
+        gamePhase: 'refresh',
+        turn: turn + 1
       });
+      
+      toast.info('Your turn. Begin with refresh phase.');
     }
   },
   
-  // Process the current phase and move to the next one
-  processPhase: () => {
+  // Select a card from hand
+  selectCard: (handIndex: number) => {
+    const { currentPlayer, playerHand, gamePhase } = get();
+    
+    // Can only select cards during main phases
+    if (currentPlayer !== 'player' || (gamePhase !== 'main1' && gamePhase !== 'main2')) {
+      return;
+    }
+    
+    set({ selectedCard: handIndex });
+    toast.info(`Selected ${playerHand[handIndex].name}. Now choose a target.`);
+  },
+  
+  // Select a target for a card or skill
+  selectTarget: (targetId: string) => {
+    const { selectedCard, currentPlayer, playerHand, gamePhase } = get();
+    
+    // Must have a card selected first
+    if (selectedCard === null) {
+      toast.error('Select a card first before choosing a target.');
+      return;
+    }
+    
+    // Can only select targets during main phases
+    if (currentPlayer !== 'player' || (gamePhase !== 'main1' && gamePhase !== 'main2')) {
+      return;
+    }
+    
+    set({ selectedTarget: targetId });
+    
+    // Automatically play the card to the selected target
+    get().playCard(selectedCard as number, targetId);
+  },
+  
+  // Use avatar skill
+  useAvatarSkill: (skillIndex: 1 | 2, target: string) => {
+    const { 
+      currentPlayer, 
+      gamePhase, 
+      playerActiveAvatar, 
+      opponentActiveAvatar,
+      playerEnergyPile 
+    } = get();
+    
+    // Can only use skills during main phases
+    if (currentPlayer !== 'player' || (gamePhase !== 'main1' && gamePhase !== 'main2')) {
+      toast.error('You can only use skills during your main phases.');
+      return;
+    }
+    
+    // Must have an active avatar
+    if (!playerActiveAvatar) {
+      toast.error('You need an active avatar to use skills.');
+      return;
+    }
+    
+    // Avatar must not be tapped
+    if (playerActiveAvatar.tapped) {
+      toast.error('This avatar has already used a skill this turn.');
+      return;
+    }
+    
+    // Get the appropriate skill
+    const skill = skillIndex === 1 ? playerActiveAvatar.skill1 : playerActiveAvatar.skill2;
+    
+    // Check if skill exists
+    if (!skill) {
+      toast.error(`This avatar doesn't have skill ${skillIndex}.`);
+      return;
+    }
+    
+    // Check if player has enough energy
+    if (playerEnergyPile.length < skill.energyCost) {
+      toast.error(`Not enough energy. Need ${skill.energyCost} energy cards.`);
+      return;
+    }
+    
+    // Use the energy
+    const newEnergyPile = [...playerEnergyPile];
+    const usedEnergy = newEnergyPile.splice(0, skill.energyCost);
+    
+    // Move used energy to graveyard
+    const newGraveyard = [...get().playerGraveyard, ...usedEnergy];
+    
+    // Apply skill effect based on target
+    if (target === 'opponent-avatar' && opponentActiveAvatar) {
+      // Deal damage to opponent's avatar
+      const updatedOpponentAvatar = {
+        ...opponentActiveAvatar,
+        damageCounter: opponentActiveAvatar.damageCounter + skill.damage
+      };
+      
+      // Check if opponent's avatar is defeated
+      if (updatedOpponentAvatar.damageCounter >= (updatedOpponentAvatar.health || 0)) {
+        // Avatar is defeated, move it to graveyard
+        const newOpponentGraveyard = [...get().opponentGraveyard, opponentActiveAvatar];
+        
+        // Move a life card to opponent's hand if available
+        let newOpponentLifeCards = [...get().opponentLifeCards];
+        let updatedOpponentHand = [...get().opponentHand];
+        
+        if (newOpponentLifeCards.length > 0) {
+          const lifeCard = newOpponentLifeCards.pop();
+          if (lifeCard) {
+            updatedOpponentHand.push(lifeCard);
+          }
+        }
+        
+        // If no life cards left, player wins
+        if (newOpponentLifeCards.length === 0) {
+          set({ winner: 'player' });
+          toast.success('You win! Your opponent has no more life cards.');
+        }
+        
+        set({
+          playerActiveAvatar: {
+            ...playerActiveAvatar,
+            tapped: true
+          },
+          playerEnergyPile: newEnergyPile,
+          playerGraveyard: newGraveyard,
+          opponentActiveAvatar: null,
+          opponentGraveyard: newOpponentGraveyard,
+          opponentLifeCards: newOpponentLifeCards,
+          opponentHand: updatedOpponentHand,
+          selectedCard: null,
+          selectedTarget: null
+        });
+        
+        toast.success(`${skill.name} defeated opponent's ${opponentActiveAvatar.name}!`);
+      } else {
+        // Avatar survives, update its state
+        set({
+          playerActiveAvatar: {
+            ...playerActiveAvatar,
+            tapped: true
+          },
+          playerEnergyPile: newEnergyPile,
+          playerGraveyard: newGraveyard,
+          opponentActiveAvatar: updatedOpponentAvatar,
+          selectedCard: null,
+          selectedTarget: null
+        });
+        
+        toast.success(`${skill.name} dealt ${skill.damage} damage to opponent's ${opponentActiveAvatar.name}!`);
+      }
+    }
+  },
+  
+  // Set a card from hand as energy
+  setEnergyCard: (handIndex: number) => {
+    const { 
+      currentPlayer, 
+      gamePhase, 
+      playerHand 
+    } = get();
+    
+    // Can only set energy during main phases
+    if (currentPlayer !== 'player' || (gamePhase !== 'main1' && gamePhase !== 'main2')) {
+      toast.error('You can only set energy during your main phases.');
+      return;
+    }
+    
+    // Remove card from hand
+    const newHand = [...playerHand];
+    const energyCard = newHand.splice(handIndex, 1)[0];
+    
+    // Add to energy pile
+    set({
+      playerHand: newHand,
+      playerEnergyPile: [...get().playerEnergyPile, energyCard],
+      selectedCard: null,
+      selectedTarget: null
+    });
+    
+    toast.success(`Set ${energyCard.name} as energy.`);
+  },
+  
+  // Switch to a different avatar from reserves
+  switchAvatar: (reserveIndex: number) => {
+    const { 
+      currentPlayer, 
+      gamePhase, 
+      playerReserveAvatars, 
+      playerActiveAvatar,
+      playerEnergyPile 
+    } = get();
+    
+    // Can only switch avatars during main phases
+    if (currentPlayer !== 'player' || (gamePhase !== 'main1' && gamePhase !== 'main2')) {
+      toast.error('You can only switch avatars during your main phases.');
+      return;
+    }
+    
+    // Check if player has enough energy (costs 1 energy to switch)
+    if (playerEnergyPile.length < 1) {
+      toast.error('Not enough energy. Need 1 energy card to switch avatars.');
+      return;
+    }
+    
+    // Get the new active avatar
+    const newActiveAvatar = playerReserveAvatars[reserveIndex];
+    
+    // Update reserve avatars list
+    const newReserveAvatars = [...playerReserveAvatars];
+    newReserveAvatars.splice(reserveIndex, 1);
+    
+    // If there was an active avatar, add it to reserves
+    if (playerActiveAvatar) {
+      newReserveAvatars.push(playerActiveAvatar);
+    }
+    
+    // Use 1 energy card
+    const newEnergyPile = [...playerEnergyPile];
+    const usedEnergy = newEnergyPile.splice(0, 1);
+    
+    // Move used energy to graveyard
+    const newGraveyard = [...get().playerGraveyard, ...usedEnergy];
+    
+    set({
+      playerActiveAvatar: newActiveAvatar,
+      playerReserveAvatars: newReserveAvatars,
+      playerEnergyPile: newEnergyPile,
+      playerGraveyard: newGraveyard,
+      selectedCard: null,
+      selectedTarget: null
+    });
+    
+    toast.success(`Switched to ${newActiveAvatar.name}!`);
+  },
+  
+  // End the current phase and move to the next
+  endPhase: () => {
     const { gamePhase, currentPlayer } = get();
     
     if (currentPlayer !== 'player') {
       return;
     }
     
+    // Phase progression
     switch (gamePhase) {
+      case 'refresh':
+        // Untap avatar
+        if (get().playerActiveAvatar) {
+          set({
+            playerActiveAvatar: {
+              ...get().playerActiveAvatar!,
+              tapped: false
+            }
+          });
+        }
+        set({ gamePhase: 'draw' });
+        toast.info('Draw Phase: Draw a card from your deck.');
+        break;
+        
       case 'draw':
         get().drawCard();
+        set({ gamePhase: 'main1' });
+        toast.info('Main Phase 1: Play cards or use avatar skills.');
         break;
-      case 'play':
-        set({ gamePhase: 'attack' });
+        
+      case 'main1':
+        set({ gamePhase: 'battle' });
+        toast.info('Battle Phase: Attack with your active avatar.');
         break;
-      case 'attack':
+        
+      case 'battle':
+        set({ gamePhase: 'damage' });
+        toast.info('Damage Phase: Resolve damage from the battle.');
+        break;
+        
+      case 'damage':
+        set({ gamePhase: 'main2' });
+        toast.info('Main Phase 2: Play more cards or use skills.');
+        break;
+        
+      case 'main2':
+        set({ gamePhase: 'end' });
+        toast.info('End Phase: End your turn.');
+        break;
+        
+      case 'end':
         get().endTurn();
         break;
+        
       default:
         break;
     }
