@@ -193,7 +193,11 @@ function App() {
       <SoundLoader />
       
       {/* Use our new SimpleGame2D component */}
-      <SimpleGame2D playerCards={samplePlayerHand} opponentCards={sampleOpponentHand} />
+      <SimpleGame2D 
+        playerCards={samplePlayerHand} 
+        opponentCards={sampleOpponentHand}
+        fieldCard={fieldSpell}
+      />
       
       {/* Sound controls */}
       <button 

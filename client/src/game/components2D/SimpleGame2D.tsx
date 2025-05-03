@@ -6,11 +6,13 @@ import { toast } from 'sonner';
 interface SimpleGame2DProps {
   playerCards: CardData[];
   opponentCards?: CardData[];
+  fieldCard?: CardData;
 }
 
 const SimpleGame2D: React.FC<SimpleGame2DProps> = ({ 
   playerCards, 
-  opponentCards = [] 
+  opponentCards = [],
+  fieldCard
 }) => {
   // Handle card actions (avatar placement, energy, etc)
   const handleCardAction = (card: CardData, action: string) => {
@@ -147,7 +149,16 @@ const SimpleGame2D: React.FC<SimpleGame2DProps> = ({
         
         {/* Player Field Card */}
         <div className="aspect-[2/3] w-full">
-          <EmptyZone name="Field Card" color="border-red-500" />
+          {fieldCard ? (
+            <div className="transform scale-90">
+              <Card2D 
+                card={fieldCard} 
+                isPlayable={true}
+              />
+            </div>
+          ) : (
+            <EmptyZone name="Field Card" color="border-red-500" />
+          )}
         </div>
       </div>
       
