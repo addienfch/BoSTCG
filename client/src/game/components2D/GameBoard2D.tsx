@@ -303,13 +303,26 @@ const GameBoard2D: React.FC<GameBoard2DProps> = ({ onAction }) => {
       <div className="mb-4">
         <h3 className="text-sm font-bold mb-1">Field</h3>
         <div className="flex justify-center gap-4 bg-gray-800 bg-opacity-30 p-4 rounded min-h-[100px]">
-          {/* Field cards would go here */}
-          <div className="border-2 border-dashed border-gray-600 rounded p-2 w-24 h-28 flex items-center justify-center">
-            <span className="text-xs text-gray-400">Field Zone</span>
-          </div>
-          <div className="border-2 border-dashed border-gray-600 rounded p-2 w-24 h-28 flex items-center justify-center">
-            <span className="text-xs text-gray-400">Field Zone</span>
-          </div>
+          {/* Display field cards if available */}
+          {game.player.fieldCards.length > 0 ? (
+            game.player.fieldCards.map((card, index) => (
+              <div key={`field-card-${index}`} className="w-24 h-32">
+                <Card2D 
+                  card={card} 
+                  isPlayable={false}
+                />
+              </div>
+            ))
+          ) : (
+            <>
+              <div className="border-2 border-dashed border-gray-600 rounded p-2 w-24 h-28 flex items-center justify-center">
+                <span className="text-xs text-gray-400">Field Zone</span>
+              </div>
+              <div className="border-2 border-dashed border-gray-600 rounded p-2 w-24 h-28 flex items-center justify-center">
+                <span className="text-xs text-gray-400">Field Zone</span>
+              </div>
+            </>
+          )}
         </div>
       </div>
       

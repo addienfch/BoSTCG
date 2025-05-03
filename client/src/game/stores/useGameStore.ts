@@ -778,12 +778,16 @@ export const useGameStore = create<GameState>((set, get) => ({
         player: {
           ...state.player,
           hand: updatedHand,
-          energyPile: [...state.player.energyPile, card]
+          energyPile: [...state.player.energyPile, card],
+          // Increment avatar to energy counter if this is an avatar
+          avatarToEnergyCount: card.type === 'avatar' 
+            ? state.player.avatarToEnergyCount + 1 
+            : state.player.avatarToEnergyCount
         }
       };
     });
     
-    get().addLog(`Turn ${turn}: You added ${card.name} (avatar) to your energy pile.`);
+    get().addLog(`Turn ${turn}: You added ${card.name} ${card.type === 'avatar' ? '(avatar)' : ''} to your energy pile.`);
   },
   
   // Evolve an avatar from level 1 to level 2
