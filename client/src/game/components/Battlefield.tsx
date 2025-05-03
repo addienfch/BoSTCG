@@ -562,7 +562,7 @@ const Battlefield = ({ position = [0, 0, 0] }: BattlefieldProps) => {
         position={[playerReserveZonePosition[0], -0.04, playerReserveZonePosition[2]]} 
         rotation={[-Math.PI / 2, 0, 0]}
       >
-        <planeGeometry args={[2, 1.5]} />
+        <planeGeometry args={[1.4, 0.9]} /> {/* Smaller zone */}
         <meshStandardMaterial color="#802626" transparent opacity={0.6} />
       </mesh>
       <Text
@@ -581,7 +581,7 @@ const Battlefield = ({ position = [0, 0, 0] }: BattlefieldProps) => {
         position={[playerEnergyZonePosition[0], -0.04, playerEnergyZonePosition[2]]} 
         rotation={[-Math.PI / 2, 0, 0]}
       >
-        <planeGeometry args={[1.2, 1.2]} />
+        <planeGeometry args={[0.8, 0.8]} /> {/* Smaller zone */}
         <meshStandardMaterial color="#802626" transparent opacity={0.6} />
       </mesh>
       <Text
@@ -716,7 +716,7 @@ const Battlefield = ({ position = [0, 0, 0] }: BattlefieldProps) => {
         position={[opponentReserveZonePosition[0], -0.04, opponentReserveZonePosition[2]]} 
         rotation={[-Math.PI / 2, 0, 0]}
       >
-        <planeGeometry args={[2, 1.5]} />
+        <planeGeometry args={[1.4, 0.9]} /> {/* Smaller zone */}
         <meshStandardMaterial color="#2a5480" transparent opacity={0.6} />
       </mesh>
       <Text
@@ -735,7 +735,7 @@ const Battlefield = ({ position = [0, 0, 0] }: BattlefieldProps) => {
         position={[opponentEnergyZonePosition[0], -0.04, opponentEnergyZonePosition[2]]} 
         rotation={[-Math.PI / 2, 0, 0]}
       >
-        <planeGeometry args={[1.2, 1.2]} />
+        <planeGeometry args={[0.8, 0.8]} /> {/* Smaller zone */}
         <meshStandardMaterial color="#2a5480" transparent opacity={0.6} />
       </mesh>
       <Text
