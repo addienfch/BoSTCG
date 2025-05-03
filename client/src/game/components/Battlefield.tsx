@@ -12,20 +12,25 @@ interface BattlefieldProps {
 
 const Battlefield = ({ position = [0, 0, 0] }: BattlefieldProps) => {
   const battlefieldRef = useRef<Group>(null);
+  const cardGame = useCardGame();
   const { 
     playerActiveAvatar,
     playerReserveAvatars, 
     playerFieldCards,
+    playerLifeCards,
+    playerEnergyPile,
     opponentActiveAvatar,
     opponentReserveAvatars,
     opponentFieldCards,
+    opponentLifeCards,
+    opponentEnergyPile,
     currentPlayer, 
     selectedCard,
     selectedTarget, 
     selectTarget,
     useAvatarSkill,
     gamePhase
-  } = useCardGame();
+  } = cardGame;
   const { playHit } = useAudio();
   
   // For highlighting possible attack targets
@@ -182,6 +187,54 @@ const Battlefield = ({ position = [0, 0, 0] }: BattlefieldProps) => {
         />
       ))}
       
+      {/* Render player's life cards as stacked cards */}
+      {playerLifeCards.length > 0 && (
+        <group position={[playerLifeCardsPosition[0], playerLifeCardsPosition[1], playerLifeCardsPosition[2]]}>
+          {/* Render a stack of card backs */}
+          {[...Array(playerLifeCards.length)].map((_, index) => (
+            <mesh 
+              key={`player-life-card-${index}`}
+              position={[index * 0.05, index * 0.05, 0]} 
+              scale={[0.7, 1, 0.05]}
+            >
+              <boxGeometry />
+              <meshStandardMaterial color="#802626" />
+            </mesh>
+          ))}
+          <Text
+            position={[0, 0.5, 0.5]}
+            fontSize={0.3}
+            color="white"
+          >
+            {playerLifeCards.length}
+          </Text>
+        </group>
+      )}
+      
+      {/* Render player's energy cards as stacked cards */}
+      {playerEnergyPile.length > 0 && (
+        <group position={[playerEnergyZonePosition[0], playerEnergyZonePosition[1], playerEnergyZonePosition[2]]}>
+          {/* Render a stack of card backs */}
+          {[...Array(Math.min(playerEnergyPile.length, 5))].map((_, index) => (
+            <mesh 
+              key={`player-energy-${index}`}
+              position={[index * 0.05, index * 0.05, 0]} 
+              scale={[0.7, 1, 0.05]}
+            >
+              <boxGeometry />
+              <meshStandardMaterial color="#802a73" />
+            </mesh>
+          ))}
+          <Text
+            position={[0, 0.5, 0.5]}
+            fontSize={0.3}
+            color="white"
+          >
+            {playerEnergyPile.length}
+          </Text>
+        </group>
+      )}
+      
       {/* Render the opponent's active avatar */}
       {opponentActiveAvatar && (
         <Card
@@ -221,6 +274,54 @@ const Battlefield = ({ position = [0, 0, 0] }: BattlefieldProps) => {
           onClick={() => toast.info(`Opponent's field card: ${card.name}`)}
         />
       ))}
+      
+      {/* Render opponent's life cards as stacked cards */}
+      {opponentLifeCards.length > 0 && (
+        <group position={[opponentLifeCardsPosition[0], opponentLifeCardsPosition[1], opponentLifeCardsPosition[2]]}>
+          {/* Render a stack of card backs */}
+          {[...Array(opponentLifeCards.length)].map((_, index) => (
+            <mesh 
+              key={`opponent-life-card-${index}`}
+              position={[index * 0.05, index * 0.05, 0]} 
+              scale={[0.7, 1, 0.05]}
+            >
+              <boxGeometry />
+              <meshStandardMaterial color="#802626" />
+            </mesh>
+          ))}
+          <Text
+            position={[0, 0.5, 0.5]}
+            fontSize={0.3}
+            color="white"
+          >
+            {opponentLifeCards.length}
+          </Text>
+        </group>
+      )}
+      
+      {/* Render opponent's energy cards as stacked cards */}
+      {opponentEnergyPile.length > 0 && (
+        <group position={[opponentEnergyZonePosition[0], opponentEnergyZonePosition[1], opponentEnergyZonePosition[2]]}>
+          {/* Render a stack of card backs */}
+          {[...Array(Math.min(opponentEnergyPile.length, 5))].map((_, index) => (
+            <mesh 
+              key={`opponent-energy-${index}`}
+              position={[index * 0.05, index * 0.05, 0]} 
+              scale={[0.7, 1, 0.05]}
+            >
+              <boxGeometry />
+              <meshStandardMaterial color="#802a73" />
+            </mesh>
+          ))}
+          <Text
+            position={[0, 0.5, 0.5]}
+            fontSize={0.3}
+            color="white"
+          >
+            {opponentEnergyPile.length}
+          </Text>
+        </group>
+      )}
       
       {/* Battlefield grid */}
       <mesh 
