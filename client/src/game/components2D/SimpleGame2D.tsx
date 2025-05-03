@@ -79,36 +79,33 @@ const SimpleGame2D: React.FC<SimpleGame2DProps> = ({
         </div>
       </div>
       
-      {/* Opponent Area (Blue) - Horizontally mirrored layout */}
+      {/* Opponent Area (Blue) - Vertically mirrored layout */}
       <div className="grid grid-cols-12 gap-2 mb-4">
-        {/* Left Column - Life Cards & Deck/Graveyard (mirrored from right side) */}
+        {/* Left Column - Energy Piles (same as player) */}
         <div className="col-span-3 flex flex-col gap-2">
-          {/* Life Cards Section - Moved to top left */}
-          <div className="border-2 border-dashed border-blue-400 rounded-lg p-1 mb-2">
-            <div className="text-xs text-center text-blue-300 mb-1">Life Cards</div>
-            <div className="grid grid-cols-2 gap-1">
-              <div className="aspect-square w-full border border-blue-300 rounded"></div>
-              <div className="aspect-square w-full border border-blue-300 rounded"></div>
-              <div className="aspect-square w-full border border-blue-300 rounded"></div>
-              <div className="aspect-square w-full border border-blue-300 rounded"></div>
-            </div>
+          {/* Energy Piles */}
+          <div className="aspect-[2/3] w-1/4 mx-auto">
+            <EmptyZone name="Energy Pile" color="border-blue-500" />
           </div>
-          
-          {/* Opponent Deck */}
-          <div className="aspect-[2/3] w-full">
-            <EmptyZone name="Deck" color="border-blue-500" />
-          </div>
-          
-          {/* Opponent Graveyard - small */}
-          <div className="aspect-[2/3] h-10">
-            <EmptyZone name="Grave" color="border-blue-300" />
+          <div className="aspect-[2/3] w-1/4 mx-auto">
+            <EmptyZone name="Used Energy Pile" color="border-blue-300" />
           </div>
         </div>
         
         {/* Middle Column - Opponent Avatar Areas */}
         <div className="col-span-6 flex flex-col gap-2">
-          {/* Active Avatar - Smaller size like energy pile */}
-          <div className="aspect-[2/3] w-1/2 mx-auto border-4 border-blue-600 rounded-lg">
+          {/* Reserve Avatars (2) - First in the vertical order */}
+          <div className="grid grid-cols-2 gap-2 mb-2">
+            <div className="w-1/4 mx-auto">
+              <EmptyZone name="Reserve" color="border-blue-500" />
+            </div>
+            <div className="w-1/4 mx-auto">
+              <EmptyZone name="Reserve" color="border-blue-500" />
+            </div>
+          </div>
+          
+          {/* Active Avatar - After reserve avatars (vertical mirroring) */}
+          <div className="aspect-[2/3] w-1/4 mx-auto border-4 border-blue-600 rounded-lg">
             {opponentCards.length > 0 && opponentCards[0].type === 'avatar' ? (
               <div className="transform scale-90">
                 <Card2D 
@@ -118,39 +115,44 @@ const SimpleGame2D: React.FC<SimpleGame2DProps> = ({
               </div>
             ) : (
               <div className="w-full h-full flex items-center justify-center">
-                <span className="text-white text-xs font-bold">Active Avatar</span>
+                <span className="text-white text-xs font-bold">Active</span>
               </div>
             )}
           </div>
-          
-          {/* Reserve Avatars (2) */}
-          <div className="grid grid-cols-2 gap-2 mt-2">
-            <EmptyZone name="Reserve Avatar" color="border-blue-500" />
-            <EmptyZone name="Reserve Avatar" color="border-blue-500" />
-          </div>
         </div>
         
-        {/* Right Column - Energy Piles (mirrored from left side) */}
+        {/* Right Column - Life Cards & Deck (same as player) */}
         <div className="col-span-3 flex flex-col gap-2">
-          {/* Energy Piles */}
-          <div className="aspect-[2/3] w-full">
-            <EmptyZone name="Energy Pile" color="border-blue-500" />
+          {/* Life Cards Section */}
+          <div className="border-2 border-dashed border-blue-400 rounded-lg p-1 mb-2 w-1/4 mx-auto">
+            <div className="text-xs text-center text-blue-300 mb-1">Life</div>
+            <div className="grid grid-cols-2 gap-1">
+              <div className="aspect-square w-full border border-blue-300 rounded"></div>
+              <div className="aspect-square w-full border border-blue-300 rounded"></div>
+              <div className="aspect-square w-full border border-blue-300 rounded"></div>
+              <div className="aspect-square w-full border border-blue-300 rounded"></div>
+            </div>
           </div>
-          <div className="aspect-[2/3] w-full">
-            <EmptyZone name="Used Energy Pile" color="border-blue-300" />
+          
+          {/* Deck & Graveyard */}
+          <div className="aspect-[2/3] w-1/4 mx-auto">
+            <EmptyZone name="Deck" color="border-blue-500" />
+          </div>
+          <div className="aspect-[2/3] h-8 w-1/4 mx-auto">
+            <EmptyZone name="Grave" color="border-blue-300" />
           </div>
         </div>
       </div>
       
-      {/* Field Cards Row - Made smaller and more compact */}
+      {/* Field Cards Row - Reduced to 1/4 size */}
       <div className="flex justify-center gap-4 mb-4">
         {/* Opponent Field Card */}
-        <div style={{ width: '120px' }} className="aspect-[2/3]">
-          <EmptyZone name="Field Card" color="border-blue-500" />
+        <div className="aspect-[2/3] w-1/4 max-w-[80px]">
+          <EmptyZone name="Field" color="border-blue-500" />
         </div>
         
         {/* Player Field Card */}
-        <div style={{ width: '120px' }} className="aspect-[2/3]">
+        <div className="aspect-[2/3] w-1/4 max-w-[80px]">
           {fieldCard ? (
             <div className="transform scale-90 w-full h-full">
               <Card2D 
@@ -159,7 +161,7 @@ const SimpleGame2D: React.FC<SimpleGame2DProps> = ({
               />
             </div>
           ) : (
-            <EmptyZone name="Field Card" color="border-red-500" />
+            <EmptyZone name="Field" color="border-red-500" />
           )}
         </div>
       </div>
@@ -171,21 +173,21 @@ const SimpleGame2D: React.FC<SimpleGame2DProps> = ({
       
       {/* Player Area (Red) */}
       <div className="grid grid-cols-12 gap-2 mb-4">
-        {/* Left Column - Player Energy Piles (moved here) */}
+        {/* Left Column - Player Energy Piles */}
         <div className="col-span-3 flex flex-col gap-2">
-          {/* Energy Piles */}
-          <div className="aspect-[2/3] w-full">
+          {/* Energy Piles - Reduced to 1/4 size */}
+          <div className="aspect-[2/3] w-1/4 mx-auto">
             <EmptyZone name="Energy Pile" color="border-red-500" />
           </div>
-          <div className="aspect-[2/3] w-full">
+          <div className="aspect-[2/3] w-1/4 mx-auto">
             <EmptyZone name="Used Energy Pile" color="border-red-300" />
           </div>
         </div>
         
         {/* Middle Column - Player Avatar Areas */}
         <div className="col-span-6 flex flex-col gap-2">
-          {/* Active Avatar - Smaller size like energy pile */}
-          <div className="aspect-[2/3] w-1/2 mx-auto border-4 border-red-600 rounded-lg">
+          {/* Active Avatar - Reduced to 1/4 size */}
+          <div className="aspect-[2/3] w-1/4 mx-auto border-4 border-red-600 rounded-lg">
             {playerCards.some(card => card.type === 'avatar') ? (
               <div className="transform scale-90">
                 <Card2D 
@@ -195,23 +197,27 @@ const SimpleGame2D: React.FC<SimpleGame2DProps> = ({
               </div>
             ) : (
               <div className="w-full h-full flex items-center justify-center">
-                <span className="text-white text-xs font-bold">Active Avatar</span>
+                <span className="text-white text-xs font-bold">Active</span>
               </div>
             )}
           </div>
           
-          {/* Reserve Avatars (2) */}
+          {/* Reserve Avatars (2) - Reduced to 1/4 size */}
           <div className="grid grid-cols-2 gap-2 mt-2">
-            <EmptyZone name="Reserve Avatar" color="border-red-500" />
-            <EmptyZone name="Reserve Avatar" color="border-red-500" />
+            <div className="w-1/4 mx-auto">
+              <EmptyZone name="Reserve" color="border-red-500" />
+            </div>
+            <div className="w-1/4 mx-auto">
+              <EmptyZone name="Reserve" color="border-red-500" />
+            </div>
           </div>
         </div>
         
         {/* Right Column - Life Cards Section & Deck/Graveyard */}
         <div className="col-span-3 flex flex-col gap-2">
-          {/* Life Cards Section - Moved to top right and made smaller */}
-          <div className="border-2 border-dashed border-red-400 rounded-lg p-1 mb-2">
-            <div className="text-xs text-center text-red-300 mb-1">Life Cards</div>
+          {/* Life Cards Section - Reduced to 1/4 size */}
+          <div className="border-2 border-dashed border-red-400 rounded-lg p-1 mb-2 w-1/4 mx-auto">
+            <div className="text-xs text-center text-red-300 mb-1">Life</div>
             <div className="grid grid-cols-2 gap-1">
               <div className="aspect-square w-full border border-red-300 rounded"></div>
               <div className="aspect-square w-full border border-red-300 rounded"></div>
@@ -220,13 +226,11 @@ const SimpleGame2D: React.FC<SimpleGame2DProps> = ({
             </div>
           </div>
           
-          {/* Player Deck */}
-          <div className="aspect-[2/3] w-full">
+          {/* Deck & Graveyard - Reduced to 1/4 size */}
+          <div className="aspect-[2/3] w-1/4 mx-auto">
             <EmptyZone name="Deck" color="border-red-500" />
           </div>
-          
-          {/* Player Graveyard - small */}
-          <div className="aspect-[2/3] h-10">
+          <div className="aspect-[2/3] h-8 w-1/4 mx-auto">
             <EmptyZone name="Grave" color="border-red-300" />
           </div>
         </div>
