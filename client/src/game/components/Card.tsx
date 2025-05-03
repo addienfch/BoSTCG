@@ -40,6 +40,9 @@ export interface CardData {
   damageCounter?: number;
   bleedCounter?: number;
   shieldCounter?: number;
+  
+  // Animation state flags
+  isBeingDrawn?: boolean; // Flag for draw card animation
 }
 
 interface CardProps {

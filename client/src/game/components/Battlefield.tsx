@@ -4,6 +4,7 @@ import Card from './Card';
 import { useAudio } from '@/lib/stores/useAudio';
 import { toast } from 'sonner';
 import { Group } from 'three';
+import { Text } from '@react-three/drei';
 
 interface BattlefieldProps {
   position?: [number, number, number];
@@ -56,9 +57,43 @@ const Battlefield = ({ position = [0, 0, 0] }: BattlefieldProps) => {
     }
   }, [currentPlayer, gamePhase, playerActiveAvatar, opponentActiveAvatar]);
   
-  // Calculate positions for field cards
-  const playerFieldPositions = calculateFieldPositions(playerFieldCards.length, 1.5);
-  const opponentFieldPositions = calculateFieldPositions(opponentFieldCards.length, -1.5);
+  // Define zone positions for different card types
+  // Player zones
+  const playerAvatarPosition: [number, number, number] = [0, 0, 3]; // Center front
+  const playerReserveZonePosition: [number, number, number] = [3, 0, 3]; // Right of avatar
+  const playerEnergyZonePosition: [number, number, number] = [-3, 0, 3]; // Left of avatar
+  const playerFieldZonePosition: [number, number, number] = [0, 0, 1.5]; // In front of avatar
+  const playerLifeCardsPosition: [number, number, number] = [-4, 0, 2]; // Far left
+  
+  // Opponent zones
+  const opponentAvatarPosition: [number, number, number] = [0, 0, -3]; // Center back
+  const opponentReserveZonePosition: [number, number, number] = [3, 0, -3]; // Right of avatar
+  const opponentEnergyZonePosition: [number, number, number] = [-3, 0, -3]; // Left of avatar  
+  const opponentFieldZonePosition: [number, number, number] = [0, 0, -1.5]; // In front of avatar
+  const opponentLifeCardsPosition: [number, number, number] = [-4, 0, -2]; // Far left
+  
+  // Calculate positions for field cards - now positioned in the field zone area
+  const playerFieldPositions = playerFieldCards.length > 0
+    ? playerFieldCards.map((_, index) => {
+      const offset = (index - (playerFieldCards.length - 1) / 2) * 1.3;
+      return [
+        playerFieldZonePosition[0] + offset,
+        playerFieldZonePosition[1],
+        playerFieldZonePosition[2]
+      ] as [number, number, number];
+    })
+    : [];
+    
+  const opponentFieldPositions = opponentFieldCards.length > 0
+    ? opponentFieldCards.map((_, index) => {
+      const offset = (index - (opponentFieldCards.length - 1) / 2) * 1.3;
+      return [
+        opponentFieldZonePosition[0] + offset,
+        opponentFieldZonePosition[1],
+        opponentFieldZonePosition[2]
+      ] as [number, number, number];
+    })
+    : [];
   
   // Handle attacking opponent's avatar
   const handleAttackOpponentAvatar = () => {
@@ -87,15 +122,26 @@ const Battlefield = ({ position = [0, 0, 0] }: BattlefieldProps) => {
     }
   };
   
-  // Calculate player avatar position
-  const playerAvatarPosition: [number, number, number] = [0, 0, 3];
-  
-  // Calculate opponent avatar position
-  const opponentAvatarPosition: [number, number, number] = [0, 0, -3];
-  
-  // Calculate reserve avatar positions (to the right of active avatars)
-  const playerReservePositions = calculateFieldPositions(playerReserveAvatars.length, 4);
-  const opponentReservePositions = calculateFieldPositions(opponentReserveAvatars.length, -4);
+  // Calculate positions within zones
+  const playerReservePositions = playerReserveAvatars.length > 0 
+    ? playerReserveAvatars.map((_, index) => {
+      return [
+        playerReserveZonePosition[0] + (index * 0.3), 
+        playerReserveZonePosition[1] + (index * 0.05), 
+        playerReserveZonePosition[2]
+      ] as [number, number, number];
+    }) 
+    : [];
+    
+  const opponentReservePositions = opponentReserveAvatars.length > 0
+    ? opponentReserveAvatars.map((_, index) => {
+      return [
+        opponentReserveZonePosition[0] + (index * 0.3), 
+        opponentReserveZonePosition[1] + (index * 0.05), 
+        opponentReserveZonePosition[2]
+      ] as [number, number, number];
+    })
+    : [];
   
   return (
     <group ref={battlefieldRef} position={[position[0], position[1], position[2]]}>
@@ -189,6 +235,197 @@ const Battlefield = ({ position = [0, 0, 0] }: BattlefieldProps) => {
           roughness={0.8}
         />
       </mesh>
+      
+      {/* Zone indicators with labels */}
+      {/* Player Avatar Zone */}
+      <mesh 
+        position={[playerAvatarPosition[0], -0.04, playerAvatarPosition[2]]} 
+        rotation={[-Math.PI / 2, 0, 0]}
+      >
+        <circleGeometry args={[1.2, 32]} />
+        <meshStandardMaterial color="#2a5480" transparent opacity={0.6} />
+      </mesh>
+      <Text
+        position={[playerAvatarPosition[0], -0.03, playerAvatarPosition[2]]}
+        rotation={[-Math.PI / 2, 0, 0]}
+        fontSize={0.2}
+        color="white"
+        anchorX="center"
+        anchorY="middle"
+      >
+        ACTIVE AVATAR
+      </Text>
+      
+      {/* Player Reserve Zone */}
+      <mesh 
+        position={[playerReserveZonePosition[0], -0.04, playerReserveZonePosition[2]]} 
+        rotation={[-Math.PI / 2, 0, 0]}
+      >
+        <planeGeometry args={[2, 1.5]} />
+        <meshStandardMaterial color="#2a7d80" transparent opacity={0.6} />
+      </mesh>
+      <Text
+        position={[playerReserveZonePosition[0], -0.03, playerReserveZonePosition[2]]}
+        rotation={[-Math.PI / 2, 0, 0]}
+        fontSize={0.2}
+        color="white"
+        anchorX="center"
+        anchorY="middle"
+      >
+        RESERVE
+      </Text>
+      
+      {/* Player Energy Zone */}
+      <mesh 
+        position={[playerEnergyZonePosition[0], -0.04, playerEnergyZonePosition[2]]} 
+        rotation={[-Math.PI / 2, 0, 0]}
+      >
+        <circleGeometry args={[1, 32]} />
+        <meshStandardMaterial color="#802a73" transparent opacity={0.6} />
+      </mesh>
+      <Text
+        position={[playerEnergyZonePosition[0], -0.03, playerEnergyZonePosition[2]]}
+        rotation={[-Math.PI / 2, 0, 0]}
+        fontSize={0.2}
+        color="white"
+        anchorX="center"
+        anchorY="middle"
+      >
+        ENERGY
+      </Text>
+      
+      {/* Player Field Zone */}
+      <mesh 
+        position={[playerFieldZonePosition[0], -0.04, playerFieldZonePosition[2]]} 
+        rotation={[-Math.PI / 2, 0, 0]}
+      >
+        <planeGeometry args={[7, 1.5]} />
+        <meshStandardMaterial color="#608026" transparent opacity={0.6} />
+      </mesh>
+      <Text
+        position={[playerFieldZonePosition[0], -0.03, playerFieldZonePosition[2]]}
+        rotation={[-Math.PI / 2, 0, 0]}
+        fontSize={0.2}
+        color="white"
+        anchorX="center"
+        anchorY="middle"
+      >
+        FIELD CARDS
+      </Text>
+      
+      {/* Player Life Cards Zone */}
+      <mesh 
+        position={[playerLifeCardsPosition[0], -0.04, playerLifeCardsPosition[2]]} 
+        rotation={[-Math.PI / 2, 0, 0]}
+      >
+        <planeGeometry args={[1.5, 1.5]} />
+        <meshStandardMaterial color="#802626" transparent opacity={0.6} />
+      </mesh>
+      <Text
+        position={[playerLifeCardsPosition[0], -0.03, playerLifeCardsPosition[2]]}
+        rotation={[-Math.PI / 2, 0, 0]}
+        fontSize={0.15}
+        color="white"
+        anchorX="center"
+        anchorY="middle"
+      >
+        LIFE CARDS
+      </Text>
+      
+      {/* Opponent Avatar Zone */}
+      <mesh 
+        position={[opponentAvatarPosition[0], -0.04, opponentAvatarPosition[2]]} 
+        rotation={[-Math.PI / 2, 0, 0]}
+      >
+        <circleGeometry args={[1.2, 32]} />
+        <meshStandardMaterial color="#2a5480" transparent opacity={0.6} />
+      </mesh>
+      <Text
+        position={[opponentAvatarPosition[0], -0.03, opponentAvatarPosition[2]]}
+        rotation={[-Math.PI / 2, 0, 0]}
+        fontSize={0.2}
+        color="white"
+        anchorX="center"
+        anchorY="middle"
+      >
+        ACTIVE AVATAR
+      </Text>
+      
+      {/* Opponent Reserve Zone */}
+      <mesh 
+        position={[opponentReserveZonePosition[0], -0.04, opponentReserveZonePosition[2]]} 
+        rotation={[-Math.PI / 2, 0, 0]}
+      >
+        <planeGeometry args={[2, 1.5]} />
+        <meshStandardMaterial color="#2a7d80" transparent opacity={0.6} />
+      </mesh>
+      <Text
+        position={[opponentReserveZonePosition[0], -0.03, opponentReserveZonePosition[2]]}
+        rotation={[-Math.PI / 2, 0, 0]}
+        fontSize={0.2}
+        color="white"
+        anchorX="center"
+        anchorY="middle"
+      >
+        RESERVE
+      </Text>
+      
+      {/* Opponent Energy Zone */}
+      <mesh 
+        position={[opponentEnergyZonePosition[0], -0.04, opponentEnergyZonePosition[2]]} 
+        rotation={[-Math.PI / 2, 0, 0]}
+      >
+        <circleGeometry args={[1, 32]} />
+        <meshStandardMaterial color="#802a73" transparent opacity={0.6} />
+      </mesh>
+      <Text
+        position={[opponentEnergyZonePosition[0], -0.03, opponentEnergyZonePosition[2]]}
+        rotation={[-Math.PI / 2, 0, 0]}
+        fontSize={0.2}
+        color="white"
+        anchorX="center"
+        anchorY="middle"
+      >
+        ENERGY
+      </Text>
+      
+      {/* Opponent Field Zone */}
+      <mesh 
+        position={[opponentFieldZonePosition[0], -0.04, opponentFieldZonePosition[2]]} 
+        rotation={[-Math.PI / 2, 0, 0]}
+      >
+        <planeGeometry args={[7, 1.5]} />
+        <meshStandardMaterial color="#608026" transparent opacity={0.6} />
+      </mesh>
+      <Text
+        position={[opponentFieldZonePosition[0], -0.03, opponentFieldZonePosition[2]]}
+        rotation={[-Math.PI / 2, 0, 0]}
+        fontSize={0.2}
+        color="white"
+        anchorX="center"
+        anchorY="middle"
+      >
+        FIELD CARDS
+      </Text>
+      
+      {/* Opponent Life Cards Zone */}
+      <mesh 
+        position={[opponentLifeCardsPosition[0], -0.04, opponentLifeCardsPosition[2]]} 
+        rotation={[-Math.PI / 2, 0, 0]}
+      >
+        <planeGeometry args={[1.5, 1.5]} />
+        <meshStandardMaterial color="#802626" transparent opacity={0.6} />
+      </mesh>
+      <Text
+        position={[opponentLifeCardsPosition[0], -0.03, opponentLifeCardsPosition[2]]}
+        rotation={[-Math.PI / 2, 0, 0]}
+        fontSize={0.15}
+        color="white"
+        anchorX="center"
+        anchorY="middle"
+      >
+        LIFE CARDS
+      </Text>
     </group>
   );
 };
