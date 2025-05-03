@@ -107,6 +107,46 @@ const GameBoard2D: React.FC<GameBoard2DProps> = ({ onAction }) => {
             <div className="text-xs">Deck: {game.opponent.deck.length}</div>
             <div className="text-xs">Hand: {game.opponent.hand.length}</div>
             <div className="text-xs">Life: {game.opponent.lifeCards.length}</div>
+            <div className="text-xs flex flex-col">
+              <span>Energy: {game.opponent.energyPile.length} available</span>
+              {game.opponent.usedEnergyPile.length > 0 && 
+                <span className="text-gray-400 text-[10px]">(+ {game.opponent.usedEnergyPile.length} used)</span>
+              }
+            </div>
+          </div>
+          
+          {/* Opponent Energy Display */}
+          <div className="flex flex-col mr-4">
+            <div className="flex items-center gap-1">
+              {game.opponent.energyPile.length > 0 && (
+                <div className="flex flex-wrap gap-0.5 max-w-[100px]">
+                  {/* Show energy count by element type */}
+                  {Object.entries(
+                    game.opponent.energyPile.reduce((acc, card) => {
+                      acc[card.element] = (acc[card.element] || 0) + 1;
+                      return acc;
+                    }, {} as Record<string, number>)
+                  ).map(([element, count]) => (
+                    <div 
+                      key={`opp-energy-${element}`} 
+                      className="text-[10px] px-1 rounded flex items-center gap-0.5"
+                      title={`${count} ${element} energy`}
+                    >
+                      <div 
+                        className={`w-2 h-2 rounded-full ${
+                          element === 'fire' ? 'bg-red-500' : 
+                          element === 'water' ? 'bg-blue-500' : 
+                          element === 'ground' ? 'bg-amber-800' : 
+                          element === 'air' ? 'bg-cyan-300' : 
+                          'bg-gray-400'
+                        }`}
+                      />
+                      <span>{count}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
           
           {/* Opponent Avatar */}
@@ -126,13 +166,14 @@ const GameBoard2D: React.FC<GameBoard2DProps> = ({ onAction }) => {
             )}
           </div>
           
-          {/* Opponent Energy */}
+          {/* Opponent Reserves */}
           <div className="flex flex-col">
-            <div className="text-xs">Energy: {game.opponent.energyPile.length}</div>
-            <div className="text-xs">Used: {game.opponent.usedEnergyPile.length}</div>
-            <div className="text-xs">
-              Reserve: {game.opponent.reserveAvatars.length}
-            </div>
+            <div className="text-xs mb-1">Reserves: {game.opponent.reserveAvatars.length}/2</div>
+            {game.opponent.reserveAvatars.map((avatar, index) => (
+              <div key={index} className="text-xs mb-0.5 bg-red-900 bg-opacity-50 px-1 py-0.5 rounded">
+                {avatar.name}
+              </div>
+            ))}
           </div>
         </div>
       </div>
@@ -159,11 +200,67 @@ const GameBoard2D: React.FC<GameBoard2DProps> = ({ onAction }) => {
           <div className="flex flex-col">
             <div className="text-xs">Deck: {game.player.deck.length}</div>
             <div className="text-xs">Life: {game.player.lifeCards.length}</div>
-            <div className="text-xs">
-              Energy: {game.player.energyPile.length + game.player.usedEnergyPile.length}
+            <div className="text-xs flex flex-col">
+              <span>Energy: {game.player.energyPile.length} available</span>
               {game.player.usedEnergyPile.length > 0 && 
-               ` (${game.player.usedEnergyPile.length} used)`}
+                <span className="text-gray-400 text-[10px]">(+ {game.player.usedEnergyPile.length} used)</span>
+              }
             </div>
+          </div>
+          
+          {/* Energy Display */}
+          <div className="flex flex-col mr-4">
+            <span className="text-xs font-semibold mb-1">Energy Pile:</span>
+            <div className="flex items-center gap-1">
+              {game.player.energyPile.length > 0 ? (
+                <div className="flex flex-wrap gap-0.5 max-w-[150px]">
+                  {game.player.energyPile.map((card, index) => (
+                    <div 
+                      key={`energy-${card.id}-${index}`} 
+                      className="w-5 h-5 rounded-full border border-amber-500 flex items-center justify-center"
+                      title={`${card.name} (${card.element})`}
+                    >
+                      <div 
+                        className={`w-3 h-3 rounded-full ${
+                          card.element === 'fire' ? 'bg-red-500' : 
+                          card.element === 'water' ? 'bg-blue-500' : 
+                          card.element === 'ground' ? 'bg-amber-800' : 
+                          card.element === 'air' ? 'bg-cyan-300' : 
+                          'bg-gray-400'
+                        }`}
+                      />
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <span className="text-[10px] text-gray-400">Empty</span>
+              )}
+            </div>
+            
+            {game.player.usedEnergyPile.length > 0 && (
+              <>
+                <span className="text-xs font-semibold mt-1 mb-1 text-gray-400">Used Energy:</span>
+                <div className="flex flex-wrap gap-0.5 max-w-[150px]">
+                  {game.player.usedEnergyPile.map((card, index) => (
+                    <div 
+                      key={`used-energy-${card.id}-${index}`} 
+                      className="w-4 h-4 rounded-full border border-gray-500 flex items-center justify-center opacity-50"
+                      title={`${card.name} (${card.element})`}
+                    >
+                      <div 
+                        className={`w-2 h-2 rounded-full ${
+                          card.element === 'fire' ? 'bg-red-500' : 
+                          card.element === 'water' ? 'bg-blue-500' : 
+                          card.element === 'ground' ? 'bg-amber-800' : 
+                          card.element === 'air' ? 'bg-cyan-300' : 
+                          'bg-gray-400'
+                        }`}
+                      />
+                    </div>
+                  ))}
+                </div>
+              </>
+            )}
           </div>
           
           {/* Player Avatar */}

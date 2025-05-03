@@ -69,14 +69,16 @@ const initializeDeck = (isPlayer: boolean): Card[] => {
   const avatars = fireAvatarCards.filter(card => card.level === 1);
   const actions = fireActionCards;
   
-  // Create a simple deck: 60% avatars, 40% spells
-  // Normally would be customized by the player
+  // Create a deck with a minimum of 40 cards
+  // Balance between avatars and action cards
   const deck: Card[] = [];
   
-  // Add 8 copies of level 1 avatars (2 of each for 4 types)
+  // Add copies of level 1 avatars (at least 2 of each)
   avatars.forEach(avatar => {
-    deck.push({...avatar, id: `${avatar.id}-1`});
-    deck.push({...avatar, id: `${avatar.id}-2`});
+    // Add 3 copies of each level 1 avatar for more consistency
+    for (let i = 1; i <= 3; i++) {
+      deck.push({...avatar, id: `${avatar.id}-${i}`});
+    }
   });
   
   // Add 4 copies of each action card
@@ -86,8 +88,7 @@ const initializeDeck = (isPlayer: boolean): Card[] => {
     }
   });
   
-  // Also add 1 copy of each level 2 avatar for testing purposes
-  // In a real game, level 2 avatars would be evolved from level 1
+  // Also add 1 copy of each level 2 avatar for evolution possibilities
   if (isPlayer) {
     const level2Avatars = fireAvatarCards.filter(card => card.level === 2);
     level2Avatars.forEach(avatar => {
@@ -95,6 +96,20 @@ const initializeDeck = (isPlayer: boolean): Card[] => {
     });
   }
   
+  // If deck size is less than 40, add more action cards until we reach minimum size
+  if (deck.length < 40) {
+    const cardsNeeded = 40 - deck.length;
+    let index = 0;
+    
+    for (let i = 0; i < cardsNeeded; i++) {
+      const action = actions[index % actions.length]; // Cycle through action cards
+      const copyId = Math.floor(i / actions.length) + 5; // Start from copy #5
+      deck.push({...action, id: `${action.id}-extra-${copyId}`});
+      index++;
+    }
+  }
+  
+  console.log(`Initialized deck with ${deck.length} cards (minimum 40 required)`);
   return deck;
 };
 
