@@ -56,6 +56,10 @@ interface GameState {
   useEnergy: (energyCost: ElementType[], player: Player) => boolean;
   checkDefeatedAvatars: () => void;
   
+  // Card management
+  moveCardToEnergy: (handIndex: number) => void; // Move a card from hand to energy pile
+  discardCard: (handIndex: number, player: Player) => void; // Discard a card to graveyard
+  
   // Selection helpers
   selectCard: (handIndex: number) => void;
   selectTarget: (targetId: string) => void;
@@ -141,6 +145,11 @@ const initPlayerState = (isPlayer: boolean): PlayerState => {
     graveyard: [],
     avatarToEnergyCount: 0 // Track avatars moved to energy this turn
   };
+};
+
+// Check if a card is an avatar
+const isAvatarCard = (card: Card): boolean => {
+  return card.type === 'avatar';
 };
 
 export const useGameStore = create<GameState>((set, get) => ({
@@ -1000,13 +1009,13 @@ export const useGameStore = create<GameState>((set, get) => ({
   endTurn: () => {
     const { currentPlayer, turn } = get();
     
-    // Check for hand size limit (10) and discard excess cards
+    // Check for hand size limit (8) and discard excess cards
     set(state => {
       const playerState = currentPlayer === 'player' ? state.player : state.opponent;
       
-      if (playerState.hand.length > 10) {
-        // Need to discard down to 10 cards
-        const cardsToDiscard = playerState.hand.length - 10;
+      if (playerState.hand.length > 8) {
+        // Need to discard down to 8 cards
+        const cardsToDiscard = playerState.hand.length - 8;
         const updatedHand = [...playerState.hand];
         const discardedCards = updatedHand.splice(-cardsToDiscard); // Discard from the end
         
@@ -1034,6 +1043,25 @@ export const useGameStore = create<GameState>((set, get) => ({
       }
       
       return {};
+    });
+    
+    // Reset the avatar to energy counter for the current player
+    set(state => {
+      if (currentPlayer === 'player') {
+        return {
+          player: {
+            ...state.player,
+            avatarToEnergyCount: 0 // Reset for next turn
+          }
+        };
+      } else {
+        return {
+          opponent: {
+            ...state.opponent,
+            avatarToEnergyCount: 0 // Reset for next turn
+          }
+        };
+      }
     });
     
     // Switch players
@@ -1332,5 +1360,85 @@ export const useGameStore = create<GameState>((set, get) => ({
     set(state => ({
       logs: [...state.logs, message].slice(-20) // Keep last 20 logs
     }));
+  },
+  
+  // Move a card from hand to energy
+  moveCardToEnergy: (handIndex: number) => {
+    const { currentPlayer, gamePhase, player } = get();
+    
+    // Can only add energy during your turn and in main phases
+    if (currentPlayer !== 'player' || (gamePhase !== 'main1' && gamePhase !== 'main2')) {
+      toast.error("You can only add energy during your Main Phases!");
+      return;
+    }
+    
+    if (handIndex < 0 || handIndex >= player.hand.length) {
+      toast.error("Invalid card selection!");
+      return;
+    }
+    
+    const card = player.hand[handIndex];
+    
+    // Check if it's an avatar and if we've already added an avatar to energy this turn
+    if (isAvatarCard(card)) {
+      if (player.avatarToEnergyCount >= 1) {
+        toast.error("You can only add 1 avatar to your energy pile per turn!");
+        return;
+      }
+    }
+    
+    // Move the card to energy
+    set(state => {
+      const updatedHand = [...state.player.hand];
+      updatedHand.splice(handIndex, 1);
+      
+      // Add to energy pile
+      return {
+        player: {
+          ...state.player,
+          hand: updatedHand,
+          energyPile: [...state.player.energyPile, card],
+          avatarToEnergyCount: isAvatarCard(card) 
+            ? state.player.avatarToEnergyCount + 1 
+            : state.player.avatarToEnergyCount
+        }
+      };
+    });
+    
+    get().addLog(`You added ${card.name} to your energy pile.`);
+    toast.success(`Added ${card.name} to energy`);
+  },
+  
+  // Discard a card to graveyard
+  discardCard: (handIndex: number, player: Player) => {
+    set(state => {
+      const targetState = player === 'player' ? state.player : state.opponent;
+      const updatedHand = [...targetState.hand];
+      
+      if (handIndex >= 0 && handIndex < updatedHand.length) {
+        const discardedCard = updatedHand[handIndex];
+        updatedHand.splice(handIndex, 1);
+        
+        if (player === 'player') {
+          return {
+            player: {
+              ...targetState,
+              hand: updatedHand,
+              graveyard: [...targetState.graveyard, discardedCard]
+            }
+          };
+        } else {
+          return {
+            opponent: {
+              ...targetState,
+              hand: updatedHand,
+              graveyard: [...targetState.graveyard, discardedCard]
+            }
+          };
+        }
+      }
+      
+      return {};
+    });
   }
 }));
