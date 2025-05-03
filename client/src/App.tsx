@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { useAudio } from "./lib/stores/useAudio";
 import "@fontsource/inter";
 import { Toaster } from "sonner";
-import GameDemo from "./game/components2D/GameDemo";
+import GameBoard2D from "./game/components2D/GameBoard2D";
 
 // Define control keys for the game
 const controls = [
@@ -24,7 +24,7 @@ function SoundLoader() {
   return null;
 }
 
-// Simple 2D App component for now
+// Game App component with full gameplay UI
 function App() {
   const { sfxEnabled, toggleSfx } = useAudio();
 
@@ -34,8 +34,12 @@ function App() {
       
       <SoundLoader />
       
-      {/* Use our GameDemo component */}
-      <GameDemo />
+      {/* Full gameplay UI */}
+      <div className="w-full h-full flex items-center justify-center p-2">
+        <div className="w-full h-full max-w-4xl rounded-lg overflow-hidden shadow-2xl">
+          <GameBoard2D onAction={(action, data) => console.log(action, data)} />
+        </div>
+      </div>
       
       {/* Sound controls */}
       <button 
