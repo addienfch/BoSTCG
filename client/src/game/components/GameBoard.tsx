@@ -11,7 +11,7 @@ import { useGame } from '@/lib/stores/useGame';
 const GameBoard = () => {
   const cameraRef = useRef<THREE.PerspectiveCamera>(null);
   const { phase: gamePhase } = useGame();
-  const { currentPlayer, gameState, startGame } = useCardGame();
+  const { currentPlayer, startGame } = useCardGame();
   const isUserTurn = currentPlayer === 'player';
 
   // Setting up the game when component mounts

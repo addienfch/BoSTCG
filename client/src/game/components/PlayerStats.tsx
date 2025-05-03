@@ -1,6 +1,7 @@
 import { useRef } from 'react';
 import { Text } from '@react-three/drei';
 import { useCardGame } from '../stores/useCardGame';
+import { Group } from 'three';
 
 interface PlayerStatsProps {
   player: 'player' | 'opponent';
@@ -8,21 +9,20 @@ interface PlayerStatsProps {
 }
 
 const PlayerStats = ({ player, position }: PlayerStatsProps) => {
-  const statsRef = useRef<THREE.Group>(null);
+  const statsRef = useRef<Group>(null);
   const { 
-    playerHealth, 
-    opponentHealth, 
-    mana, 
-    maxMana, 
-    opponentMana, 
-    opponentMaxMana,
+    playerLifeCards,
+    opponentLifeCards,
+    playerEnergyPile,
+    opponentEnergyPile,
+    playerDeck,
+    opponentDeck,
     currentPlayer
   } = useCardGame();
   
   // Get appropriate stats based on which player this is
-  const health = player === 'player' ? playerHealth : opponentHealth;
-  const currentMana = player === 'player' ? mana : opponentMana;
-  const playerMaxMana = player === 'player' ? maxMana : opponentMaxMana;
+  const lifeCards = player === 'player' ? playerLifeCards : opponentLifeCards;
+  const energyPile = player === 'player' ? playerEnergyPile : opponentEnergyPile;
   
   // Determine if this is the current active player
   const isActive = currentPlayer === player;
@@ -49,9 +49,9 @@ const PlayerStats = ({ player, position }: PlayerStatsProps) => {
         {player === 'player' ? 'You' : 'Opponent'}
       </Text>
       
-      {/* Health display */}
+      {/* Life Cards display */}
       <group position={[-0.65, -0.1, 0.06]}>
-        {/* Health icon */}
+        {/* Life Cards icon */}
         <mesh position={[0, 0, 0]}>
           <circleGeometry args={[0.18, 32]} />
           <meshStandardMaterial color="#c92626" />
@@ -63,7 +63,7 @@ const PlayerStats = ({ player, position }: PlayerStatsProps) => {
           anchorX="center"
           anchorY="middle"
         >
-          {health}
+          {lifeCards?.length || 0}
         </Text>
         <Text
           position={[0, -0.22, 0]}
@@ -72,13 +72,13 @@ const PlayerStats = ({ player, position }: PlayerStatsProps) => {
           anchorX="center"
           anchorY="middle"
         >
-          HP
+          LIFE
         </Text>
       </group>
       
-      {/* Mana display */}
+      {/* Energy display */}
       <group position={[0.65, -0.1, 0.06]}>
-        {/* Mana icon */}
+        {/* Energy icon */}
         <mesh position={[0, 0, 0]}>
           <circleGeometry args={[0.18, 32]} />
           <meshStandardMaterial color="#3a70cc" />
@@ -90,7 +90,7 @@ const PlayerStats = ({ player, position }: PlayerStatsProps) => {
           anchorX="center"
           anchorY="middle"
         >
-          {`${currentMana}/${playerMaxMana}`}
+          {energyPile?.length || 0}
         </Text>
         <Text
           position={[0, -0.22, 0]}
@@ -99,7 +99,7 @@ const PlayerStats = ({ player, position }: PlayerStatsProps) => {
           anchorX="center"
           anchorY="middle"
         >
-          MANA
+          ENERGY
         </Text>
       </group>
     </group>
