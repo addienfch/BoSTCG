@@ -57,11 +57,11 @@ const Hand = ({ position = [0, 0, 0] }: HandProps) => {
       const arcHeight = 0.15; // Reduced arc height to fit view
       const normalizedPos = (index / Math.max(1, playerHand.length - 1) - 0.5) * 2;
       
-      // Move cards up in frame for better visibility in mobile portrait mode
-      const y = -Math.abs(normalizedPos) * arcHeight - 0.1; // Closer to eye level
+      // Move cards up in frame for better visibility in mobile portrait mode - player is at bottom
+      const y = -Math.abs(normalizedPos) * arcHeight + 0.1; // Higher for better visibility with fixed camera
       
-      // Curve the hand toward the camera for better visibility
-      const z = 1.0 - Math.abs(normalizedPos) * 0.3; // More prominent fan for visibility
+      // Curve the hand toward the camera for better visibility - more pronounced curve
+      const z = 0.8 - Math.abs(normalizedPos) * 0.5; // Closer to camera view
       
       newPositions.push([
         x + position[0], 

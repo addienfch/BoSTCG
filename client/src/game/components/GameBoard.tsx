@@ -22,35 +22,33 @@ const GameBoard = () => {
     }
   }, [gamePhase, startGame]);
   
-  // Update camera position based on whose turn it is - optimized for mobile vertical view
+  // Fixed camera position for consistent layout view, optimized for mobile
   useFrame(({ clock }) => {
     if (!cameraRef.current) return;
     
     // Make camera gently float for a dynamic feel
     const t = clock.getElapsedTime();
-    const floatY = Math.sin(t * 0.5) * 0.05; // Reduced float amount
+    const floatY = Math.sin(t * 0.5) * 0.02; // Minimal float amount
     
-    // Mobile optimized camera position (portrait mode)
-    // Higher up and more centered above the battlefield
-    const targetPosition = isUserTurn
-      ? new THREE.Vector3(0, 6 + floatY, 0) // Player's turn - centered position
-      : new THREE.Vector3(0, 6 + floatY, -1); // Opponent's turn - slight shift toward opponent
+    // FIXED camera position - looking down at board from player's side
+    // Positioned to see both opponent (top/blue) and player (bottom/red) sides
+    const fixedCameraPosition = new THREE.Vector3(0, 4.5 + floatY, 2.0);
     
     // Smooth camera movement
-    cameraRef.current.position.lerp(targetPosition, 0.05);
+    cameraRef.current.position.lerp(fixedCameraPosition, 0.05);
     
-    // Look slightly down at the battlefield center
-    cameraRef.current.lookAt(0, 0, 0);
+    // Look down at the battlefield center with slight tilt toward opponent side
+    cameraRef.current.lookAt(0, 0, -0.5);
   });
 
   return (
     <>
-      {/* Main Camera - optimized for mobile portrait mode */}
+      {/* Fixed Camera - optimized for mobile portrait mode (1080x1920) */}
       <PerspectiveCamera 
         makeDefault 
         ref={cameraRef} 
-        position={[0, 6, 0]} 
-        fov={75} // Wider field of view for better visibility on mobile
+        position={[0, 4.5, 2.0]} 
+        fov={70} // Wider field of view for better visibility on mobile
       />
       
       {/* Lighting */}

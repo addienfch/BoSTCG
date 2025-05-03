@@ -70,12 +70,12 @@ const Battlefield = ({ position = [0, 0, 0] }: BattlefieldProps) => {
     }
   }, [currentPlayer, gamePhase, playerActiveAvatar, opponentActiveAvatar]);
   
-  // Define zone positions for different card types - mobile optimized, square layout
-  // Distance between player and opponent zones
-  const zDistance = 1.5; // Reduced distance for face-to-face confrontation
+  // Define fixed zone positions for different card types - mobile optimized, square layout
+  // Distance between player and opponent zones - even closer
+  const zDistance = 1.0; // Very close for direct face-off
   
-  // Player zones (red)
-  const playerAvatarPosition: [number, number, number] = [0, 0, zDistance]; // Center front
+  // Player zones (red) - MUST BE AT BOTTOM
+  const playerAvatarPosition: [number, number, number] = [0, 0, zDistance]; // Center front (bottom)
   const playerReserveZonePosition: [number, number, number] = [0, 0, zDistance * 2]; // Behind active avatar
   const playerEnergyZonePosition: [number, number, number] = [zDistance, 0, zDistance]; // Right of avatar
   const playerUsedEnergyZonePosition: [number, number, number] = [zDistance * 2, 0, zDistance]; // Far right
@@ -83,10 +83,10 @@ const Battlefield = ({ position = [0, 0, 0] }: BattlefieldProps) => {
   const playerLifeCardsPosition: [number, number, number] = [-zDistance * 2, 0, zDistance]; // Far left
   const playerDeckPosition: [number, number, number] = [-zDistance * 2, 0, zDistance * 2]; // Back left
   const playerGraveyardPosition: [number, number, number] = [zDistance * 2, 0, zDistance * 2]; // Back right
-  const playerHandPosition: [number, number, number] = [0, 0, zDistance * 3]; // Bottom center, further back
+  const playerHandPosition: [number, number, number] = [0, 0, zDistance * 2.5]; // Bottom center, further back
   
-  // Opponent zones (blue)
-  const opponentAvatarPosition: [number, number, number] = [0, 0, -zDistance]; // Center back
+  // Opponent zones (blue) - MUST BE AT TOP
+  const opponentAvatarPosition: [number, number, number] = [0, 0, -zDistance]; // Center back (top)
   const opponentReserveZonePosition: [number, number, number] = [0, 0, -zDistance * 2]; // Behind active avatar
   const opponentEnergyZonePosition: [number, number, number] = [zDistance, 0, -zDistance]; // Right of avatar
   const opponentUsedEnergyZonePosition: [number, number, number] = [zDistance * 2, 0, -zDistance]; // Far right
@@ -94,7 +94,7 @@ const Battlefield = ({ position = [0, 0, 0] }: BattlefieldProps) => {
   const opponentLifeCardsPosition: [number, number, number] = [-zDistance * 2, 0, -zDistance]; // Far left
   const opponentDeckPosition: [number, number, number] = [-zDistance * 2, 0, -zDistance * 2]; // Back left
   const opponentGraveyardPosition: [number, number, number] = [zDistance * 2, 0, -zDistance * 2]; // Back right
-  const opponentHandPosition: [number, number, number] = [0, 0, -zDistance * 3]; // Top center, further back
+  const opponentHandPosition: [number, number, number] = [0, 0, -zDistance * 2.5]; // Top center, further back
   
   // Calculate positions for field cards - now positioned in the field zone area
   const playerFieldPositions = playerFieldCards.length > 0
