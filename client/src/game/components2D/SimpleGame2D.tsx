@@ -148,6 +148,16 @@ const SimpleGame2D: React.FC<SimpleGame2DProps> = ({
         </div>
       </div>
       
+      {/* Opponent Hand */}
+      <div className="absolute top-0 left-0 right-0 bg-black bg-opacity-30 p-1">
+        <div className="text-white text-xs mb-1 text-center">Opponent's Hand ({opponentCards.length || 5})</div>
+        <div className="flex justify-center gap-1 h-8">
+          {Array.from({ length: opponentCards.length || 5 }).map((_, index) => (
+            <div key={index} className="w-10 h-7 bg-blue-800 border border-blue-400 rounded-sm transform rotate-180"></div>
+          ))}
+        </div>
+      </div>
+      
       {/* BOTTOM HALF - PLAYER BOARD */}
       <div className="h-1/2 w-full relative">
         {/* Left side: Energy Pile, Used Energy */}
@@ -240,35 +250,38 @@ const SimpleGame2D: React.FC<SimpleGame2DProps> = ({
       </div>
       
       {/* Player Hand */}
-      <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-30 p-2">
-        <div className="text-white text-xs mb-1">Your Hand ({playerCards.length})</div>
-        <div className="flex justify-center gap-2 overflow-x-auto pb-2">
-          {playerCards.map((card, index) => (
-            <div key={index} style={{ minWidth: '70px', maxWidth: '70px' }} className="transform hover:scale-110 transition-transform">
-              <Card2D 
-                card={card} 
-                isPlayable={true} 
-                isInHand={true}
-                onAction={(action) => handleCardAction(card, action)}
-              />
-            </div>
-          ))}
-        </div>
-        
-        {/* Game controls */}
-        <div className="mt-2 grid grid-cols-4 gap-1">
-          <button className="p-1 bg-yellow-700 text-white rounded text-xs font-bold hover:bg-yellow-600">
-            Draw Card
-          </button>
-          <button className="p-1 bg-red-700 text-white rounded text-xs font-bold hover:bg-red-600">
-            Main Phase 1
-          </button>
-          <button className="p-1 bg-purple-700 text-white rounded text-xs font-bold hover:bg-purple-600">
-            Battle Phase
-          </button>
-          <button className="p-1 bg-blue-700 text-white rounded text-xs font-bold hover:bg-blue-600">
-            End Turn
-          </button>
+      <div className="absolute bottom-0 left-0 right-0 pt-4 pb-1 px-2">
+        {/* Hand background that stays above the reserve cards */}
+        <div className="bg-black bg-opacity-50 rounded-t-lg p-2">
+          <div className="text-white text-xs mb-1">Your Hand ({playerCards.length})</div>
+          <div className="flex justify-center gap-2 overflow-x-auto pb-2">
+            {playerCards.map((card, index) => (
+              <div key={index} style={{ minWidth: '70px', maxWidth: '70px' }} className="transform hover:scale-110 transition-transform">
+                <Card2D 
+                  card={card} 
+                  isPlayable={true} 
+                  isInHand={true}
+                  onAction={(action) => handleCardAction(card, action)}
+                />
+              </div>
+            ))}
+          </div>
+          
+          {/* Game controls */}
+          <div className="mt-2 grid grid-cols-4 gap-1">
+            <button className="p-1 bg-yellow-700 text-white rounded text-xs font-bold hover:bg-yellow-600">
+              Draw Card
+            </button>
+            <button className="p-1 bg-red-700 text-white rounded text-xs font-bold hover:bg-red-600">
+              Main Phase 1
+            </button>
+            <button className="p-1 bg-purple-700 text-white rounded text-xs font-bold hover:bg-purple-600">
+              Battle Phase
+            </button>
+            <button className="p-1 bg-blue-700 text-white rounded text-xs font-bold hover:bg-blue-600">
+              End Turn
+            </button>
+          </div>
         </div>
       </div>
     </div>
