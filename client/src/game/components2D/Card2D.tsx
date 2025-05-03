@@ -150,21 +150,22 @@ const Card2D: React.FC<Card2DProps> = ({
   const borderColor = isPlayable ? '#f5d76a' : '#666666';
   
   const handleClick = () => {
-    if (isPlayable && card.type === 'avatar' && isInHand) {
-      playHitSound();
+    if (isPlayable && isInHand) {
+      // Don't play sound automatically - only on explicit user interaction
       setShowActions(!showActions);
     } else if (onClick) {
-      playHitSound();
       onClick();
     }
   };
   
   const handleAction = (action: string) => {
     setShowActions(false);
-    playCard();
+    // Don't play sound automatically to avoid autoplay errors
     
     if (onAction) {
-      onAction(action);
+      // This ensures both "energy" and "toEnergy" work 
+      const normalizedAction = action === 'energy' ? 'toEnergy' : action;
+      onAction(normalizedAction);
     } else {
       // Fallback notifications if no handler is provided
       switch(action) {
@@ -175,7 +176,11 @@ const Card2D: React.FC<Card2DProps> = ({
           toast.success(`${card.name} will be played as reserve avatar`);
           break;
         case 'energy':
+        case 'toEnergy':
           toast.success(`${card.name} will be used as energy`);
+          break;
+        case 'play':
+          toast.success(`${card.name} will be played to the field`);
           break;
       }
     }
@@ -364,28 +369,45 @@ const Card2D: React.FC<Card2DProps> = ({
         {card.type === 'avatar' ? renderAvatarContent() : renderActionContent()}
       </div>
       
-      {/* Popup action menu for avatar cards */}
-      {showActions && isPlayable && card.type === 'avatar' && isInHand && (
+      {/* Action menu for all cards */}
+      {showActions && isPlayable && isInHand && (
         <div 
           className="absolute -top-24 left-0 right-0 bg-black bg-opacity-90 rounded-lg p-2 z-50 border-2 border-yellow-400 shadow-xl"
           style={{ width: `${width + 40}px`, left: '-20px' }}
         >
           <div className="flex flex-col gap-2">
-            <button 
-              className="bg-red-600 text-white rounded p-1 text-xs font-bold hover:bg-red-700"
-              onClick={() => handleAction('active')}
-            >
-              Place as Active Avatar
-            </button>
-            <button 
-              className="bg-blue-600 text-white rounded p-1 text-xs font-bold hover:bg-blue-700"
-              onClick={() => handleAction('reserve')}
-            >
-              Place as Reserve Avatar
-            </button>
+            {/* Avatar-specific actions */}
+            {card.type === 'avatar' && (
+              <>
+                <button 
+                  className="bg-red-600 text-white rounded p-1 text-xs font-bold hover:bg-red-700"
+                  onClick={() => handleAction('active')}
+                >
+                  Place as Active Avatar
+                </button>
+                <button 
+                  className="bg-blue-600 text-white rounded p-1 text-xs font-bold hover:bg-blue-700"
+                  onClick={() => handleAction('reserve')}
+                >
+                  Place as Reserve Avatar
+                </button>
+              </>
+            )}
+            
+            {/* Play action for non-avatar cards */}
+            {card.type !== 'avatar' && (
+              <button 
+                className="bg-green-600 text-white rounded p-1 text-xs font-bold hover:bg-green-700"
+                onClick={() => handleAction('play')}
+              >
+                Play Card
+              </button>
+            )}
+            
+            {/* Energy option for all cards */}
             <button 
               className="bg-amber-700 text-white rounded p-1 text-xs font-bold hover:bg-amber-800"
-              onClick={() => handleAction('energy')}
+              onClick={() => handleAction('toEnergy')}
             >
               Use as Energy
             </button>
