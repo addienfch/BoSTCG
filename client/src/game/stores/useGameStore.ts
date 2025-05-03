@@ -14,6 +14,7 @@ interface PlayerState {
   fieldCards: ActionCard[];
   lifeCards: Card[];
   graveyard: Card[];
+  avatarToEnergyCount: number; // Track how many avatars were moved to energy this turn
 }
 
 interface GameState {
@@ -137,7 +138,8 @@ const initPlayerState = (isPlayer: boolean): PlayerState => {
     reserveAvatars: [],
     fieldCards: [],
     lifeCards: [],
-    graveyard: []
+    graveyard: [],
+    avatarToEnergyCount: 0 // Track avatars moved to energy this turn
   };
 };
 

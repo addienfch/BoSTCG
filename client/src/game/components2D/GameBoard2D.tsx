@@ -108,6 +108,38 @@ const GameBoard2D: React.FC<GameBoard2DProps> = ({ onAction }) => {
   const [showUsedEnergyPopup, setShowUsedEnergyPopup] = React.useState(false);
   const [showOpponentEnergyPopup, setShowOpponentEnergyPopup] = React.useState(false);
   
+  // Initialize the game once on mount
+  React.useEffect(() => {
+    // Initialize game state
+    game.initGame();
+    
+    // Log message about hand limit
+    game.addLog('Hand limit is 8 cards. If you have more, you must discard at the end of your turn.');
+  }, []);
+  
+  // Check for hand size limit at the end of the turn
+  React.useEffect(() => {
+    if (game.gamePhase === 'end' && game.currentPlayer === 'player' && game.player.hand.length > 8) {
+      // Need to discard cards
+      const cardsToDiscard = game.player.hand.length - 8;
+      if (cardsToDiscard > 0) {
+        toast.error(`You must discard ${cardsToDiscard} card${cardsToDiscard > 1 ? 's' : ''} to meet the 8 card hand limit!`);
+        
+        // Force the player to discard before ending turn
+        // (This should be handled by the UI, but for now we'll auto-discard)
+        for (let i = 0; i < cardsToDiscard; i++) {
+          // Discard from the end of the hand to the graveyard
+          const handLength = game.player.hand.length;
+          if (handLength > 8) {
+            const card = game.player.hand[handLength - 1];
+            game.discardCard(handLength - 1, 'player');
+            game.addLog(`Discarded ${card.name} due to hand size limit.`);
+          }
+        }
+      }
+    }
+  }, [game.gamePhase, game.currentPlayer]);
+  
   return (
     <div className="w-full h-full bg-gray-900 text-white p-4 relative">
       {/* Game header with phase and turn info */}
