@@ -54,6 +54,8 @@ interface CardProps {
   onDragEnd?: () => void;
   isDragging?: boolean;
   isTapped?: boolean; // For avatars and creatures that have used skills/attacked
+  isBeingDrawn?: boolean; // For draw card animation
+  drawAnimationDelay?: number; // Delay before draw animation starts
 }
 
 const Card = ({
@@ -67,7 +69,9 @@ const Card = ({
   onDragStart,
   onDragEnd,
   isDragging = false,
-  isTapped = false
+  isTapped = false,
+  isBeingDrawn = false,
+  drawAnimationDelay = 0
 }: CardProps) => {
   const meshRef = useRef<THREE.Group>(null);
   const [hovered, setHovered] = useState(false);
@@ -85,13 +89,41 @@ const Card = ({
   const [targetY, setTargetY] = useState(position[1]);
   const [targetRotationX, setTargetRotationX] = useState(rotation[0]);
   const [targetRotationZ, setTargetRotationZ] = useState(rotation[2]);
+  const [targetScale, setTargetScale] = useState(scale);
+  const [animationStarted, setAnimationStarted] = useState(false);
+  
+  // Draw card animation
+  useEffect(() => {
+    if (isBeingDrawn && !animationStarted) {
+      // Card starts offscreen and comes in with animation
+      if (meshRef.current) {
+        // Start position (off-screen)
+        meshRef.current.position.set(position[0] - 5, position[1] + 3, position[2] - 2);
+        meshRef.current.rotation.set(Math.PI / 2, 0, 0);
+        meshRef.current.scale.set(0.5, 0.5, 0.5);
+        
+        // After delay, start animation
+        setTimeout(() => {
+          // Move to target position
+          setTargetY(position[1]);
+          setTargetRotationX(rotation[0]);
+          setTargetScale(scale);
+          
+          // Play sound effect
+          playHit();
+        }, drawAnimationDelay);
+        
+        setAnimationStarted(true);
+      }
+    }
+  }, [isBeingDrawn, animationStarted, position, rotation, scale, drawAnimationDelay, playHit]);
   
   // Hover effect - card rises slightly when hovered
   useEffect(() => {
-    if (isInHand) {
+    if (isInHand && !isBeingDrawn) {
       setTargetY(hovered ? position[1] + 0.3 : position[1]);
     }
-  }, [hovered, position, isInHand]);
+  }, [hovered, position, isInHand, isBeingDrawn]);
   
   // When card is tapped (has attacked), rotate it
   useEffect(() => {
@@ -120,6 +152,27 @@ const Card = ({
       targetRotationZ, 
       0.1
     );
+    
+    // Handle scale animation (for card draw)
+    if (isBeingDrawn) {
+      meshRef.current.scale.x = THREE.MathUtils.lerp(
+        meshRef.current.scale.x, 
+        targetScale, 
+        0.05
+      );
+      
+      meshRef.current.scale.y = THREE.MathUtils.lerp(
+        meshRef.current.scale.y, 
+        targetScale, 
+        0.05
+      );
+      
+      meshRef.current.scale.z = THREE.MathUtils.lerp(
+        meshRef.current.scale.z, 
+        targetScale, 
+        0.05
+      );
+    }
     
     // If card is being dragged, it should follow a different logic
     if (isDragging && meshRef.current) {

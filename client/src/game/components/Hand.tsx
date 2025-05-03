@@ -174,6 +174,8 @@ const Hand = ({ position = [0, 0, 0] }: HandProps) => {
             rotation={[0, rotationY, 0]}
             isPlayable={playable}
             isInHand={true}
+            isBeingDrawn={card.isBeingDrawn}
+            drawAnimationDelay={index * 300} // Stagger animations
             onDragStart={() => {
               if (playable) {
                 startDrag(index);

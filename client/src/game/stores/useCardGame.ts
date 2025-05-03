@@ -185,9 +185,15 @@ export const useCardGame = create<CardGameState>((set, get) => ({
       } else {
         // Normal draw
         const [newCard, ...remainingDeck] = playerDeck;
+        // Add a property to the card to mark it as newly drawn for animation
+        const newCardWithAnimation = {
+          ...newCard,
+          isBeingDrawn: true // This will be used by the Hand component to animate the card
+        };
+        
         set({ 
           playerDeck: remainingDeck, 
-          playerHand: [...playerHand, newCard]
+          playerHand: [...playerHand, newCardWithAnimation]
         });
         
         toast.success(`Drew ${newCard.name}`);
@@ -223,9 +229,15 @@ export const useCardGame = create<CardGameState>((set, get) => ({
       } else {
         // Normal draw
         const [newCard, ...remainingDeck] = opponentDeck;
+        // Add animation for opponent card draw as well
+        const newCardWithAnimation = {
+          ...newCard,
+          isBeingDrawn: true
+        };
+        
         set({ 
           opponentDeck: remainingDeck, 
-          opponentHand: [...opponentHand, newCard]
+          opponentHand: [...opponentHand, newCardWithAnimation]
         });
         
         toast.info('Opponent drew a card.');
