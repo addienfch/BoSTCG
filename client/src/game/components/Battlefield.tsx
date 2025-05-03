@@ -5,6 +5,7 @@ import { useAudio } from '@/lib/stores/useAudio';
 import { toast } from 'sonner';
 import { Group } from 'three';
 import { Text } from '@react-three/drei';
+import * as THREE from 'three';
 
 interface BattlefieldProps {
   position?: [number, number, number];
@@ -19,14 +20,21 @@ const Battlefield = ({ position = [0, 0, 0] }: BattlefieldProps) => {
     playerFieldCards,
     playerLifeCards,
     playerEnergyPile,
+    playerDeck,
+    playerGraveyard,
+    playerHand,
     opponentActiveAvatar,
     opponentReserveAvatars,
     opponentFieldCards,
     opponentLifeCards,
     opponentEnergyPile,
+    opponentDeck,
+    opponentGraveyard,
+    opponentHand,
     currentPlayer, 
     selectedCard,
     selectedTarget, 
+    selectCard,
     selectTarget,
     useAvatarSkill,
     gamePhase
@@ -62,20 +70,28 @@ const Battlefield = ({ position = [0, 0, 0] }: BattlefieldProps) => {
     }
   }, [currentPlayer, gamePhase, playerActiveAvatar, opponentActiveAvatar]);
   
-  // Define zone positions for different card types
-  // Player zones
+  // Define zone positions for different card types based on the provided layout
+  // Player zones (red)
   const playerAvatarPosition: [number, number, number] = [0, 0, 3]; // Center front
-  const playerReserveZonePosition: [number, number, number] = [3, 0, 3]; // Right of avatar
-  const playerEnergyZonePosition: [number, number, number] = [-3, 0, 3]; // Left of avatar
-  const playerFieldZonePosition: [number, number, number] = [0, 0, 1.5]; // In front of avatar
-  const playerLifeCardsPosition: [number, number, number] = [-4, 0, 2]; // Far left
+  const playerReserveZonePosition: [number, number, number] = [-2, 0, 4]; // Left row, middle two slots
+  const playerEnergyZonePosition: [number, number, number] = [3, 0, 4]; // Right, top slot
+  const playerUsedEnergyZonePosition: [number, number, number] = [3, 0, 5]; // Right, below energy pile
+  const playerFieldZonePosition: [number, number, number] = [3, 0, 3]; // Right, middle slot
+  const playerLifeCardsPosition: [number, number, number] = [-4, 0, 3]; // Far left
+  const playerDeckPosition: [number, number, number] = [-4, 0, 5]; // Far left, top row
+  const playerGraveyardPosition: [number, number, number] = [5, 0, 5]; // Far right
+  const playerHandPosition: [number, number, number] = [0, 0, 6]; // Bottom center
   
-  // Opponent zones
+  // Opponent zones (blue)
   const opponentAvatarPosition: [number, number, number] = [0, 0, -3]; // Center back
-  const opponentReserveZonePosition: [number, number, number] = [3, 0, -3]; // Right of avatar
-  const opponentEnergyZonePosition: [number, number, number] = [-3, 0, -3]; // Left of avatar  
-  const opponentFieldZonePosition: [number, number, number] = [0, 0, -1.5]; // In front of avatar
-  const opponentLifeCardsPosition: [number, number, number] = [-4, 0, -2]; // Far left
+  const opponentReserveZonePosition: [number, number, number] = [-2, 0, -4]; // Left row, middle two slots
+  const opponentEnergyZonePosition: [number, number, number] = [3, 0, -4]; // Right, top slot
+  const opponentUsedEnergyZonePosition: [number, number, number] = [3, 0, -5]; // Right, below energy pile
+  const opponentFieldZonePosition: [number, number, number] = [3, 0, -3]; // Right, middle slot
+  const opponentLifeCardsPosition: [number, number, number] = [-4, 0, -3]; // Far left
+  const opponentDeckPosition: [number, number, number] = [-4, 0, -5]; // Far left, top row
+  const opponentGraveyardPosition: [number, number, number] = [5, 0, -5]; // Far right
+  const opponentHandPosition: [number, number, number] = [0, 0, -6]; // Top center
   
   // Calculate positions for field cards - now positioned in the field zone area
   const playerFieldPositions = playerFieldCards.length > 0
@@ -310,7 +326,7 @@ const Battlefield = ({ position = [0, 0, 0] }: BattlefieldProps) => {
               scale={[0.7, 1, 0.05]}
             >
               <boxGeometry />
-              <meshStandardMaterial color="#802a73" />
+              <meshStandardMaterial color="#2a5480" />
             </mesh>
           ))}
           <Text
@@ -322,6 +338,185 @@ const Battlefield = ({ position = [0, 0, 0] }: BattlefieldProps) => {
           </Text>
         </group>
       )}
+      
+      {/* Render player deck */}
+      <group position={[playerDeckPosition[0], playerDeckPosition[1], playerDeckPosition[2]]}>
+        {playerDeck.length > 0 && (
+          <>
+            {/* Stack of cards */}
+            {[...Array(Math.min(5, playerDeck.length))].map((_, index) => (
+              <mesh 
+                key={`player-deck-${index}`}
+                position={[index * 0.02, index * 0.03, 0]} 
+                scale={[0.8, 1.2, 0.05]}
+              >
+                <boxGeometry />
+                <meshStandardMaterial color="#802626" />
+              </mesh>
+            ))}
+            <Text
+              position={[0, 0.6, 0.5]}
+              fontSize={0.3}
+              color="white"
+            >
+              {playerDeck.length}
+            </Text>
+          </>
+        )}
+      </group>
+      
+      {/* Render opponent deck */}
+      <group position={[opponentDeckPosition[0], opponentDeckPosition[1], opponentDeckPosition[2]]}>
+        {opponentDeck.length > 0 && (
+          <>
+            {/* Stack of cards */}
+            {[...Array(Math.min(5, opponentDeck.length))].map((_, index) => (
+              <mesh 
+                key={`opponent-deck-${index}`}
+                position={[index * 0.02, index * 0.03, 0]} 
+                scale={[0.8, 1.2, 0.05]}
+              >
+                <boxGeometry />
+                <meshStandardMaterial color="#2a5480" />
+              </mesh>
+            ))}
+            <Text
+              position={[0, 0.6, 0.5]}
+              fontSize={0.3}
+              color="white"
+            >
+              {opponentDeck.length}
+            </Text>
+          </>
+        )}
+      </group>
+      
+      {/* Render player graveyard */}
+      <group position={[playerGraveyardPosition[0], playerGraveyardPosition[1], playerGraveyardPosition[2]]}>
+        {playerGraveyard.length > 0 && (
+          <>
+            {/* Top card face-up */}
+            <mesh scale={[0.8, 1.2, 0.05]}>
+              <boxGeometry />
+              <meshStandardMaterial color="#8A6642" />
+            </mesh>
+            <Text
+              position={[0, 0.6, 0.2]}
+              fontSize={0.2}
+              color="white"
+            >
+              {playerGraveyard.length}
+            </Text>
+          </>
+        )}
+      </group>
+      
+      {/* Render opponent graveyard */}
+      <group position={[opponentGraveyardPosition[0], opponentGraveyardPosition[1], opponentGraveyardPosition[2]]}>
+        {opponentGraveyard.length > 0 && (
+          <>
+            {/* Top card face-up */}
+            <mesh scale={[0.8, 1.2, 0.05]}>
+              <boxGeometry />
+              <meshStandardMaterial color="#4A6682" />
+            </mesh>
+            <Text
+              position={[0, 0.6, 0.2]}
+              fontSize={0.2}
+              color="white"
+            >
+              {opponentGraveyard.length}
+            </Text>
+          </>
+        )}
+      </group>
+      
+      {/* Render player hand */}
+      <group position={[playerHandPosition[0], playerHandPosition[1], playerHandPosition[2]]}>
+        {playerHand.length > 0 && (
+          <>
+            {/* Fan out cards in hand */}
+            {playerHand.map((card, index) => {
+              const totalCards = playerHand.length;
+              const fanSpread = 5; // Total width of the fan
+              const offset = (index - (totalCards - 1) / 2) * (fanSpread / Math.max(totalCards, 1));
+              const cardRotation = offset * 0.1; // Small rotation for fan effect
+              
+              return (
+                <Card
+                  key={`player-hand-${card.id}`}
+                  card={card}
+                  position={[offset, 0, 0]}
+                  rotation={[0, cardRotation, 0]}
+                  scale={0.8}
+                  isPlayable={currentPlayer === 'player' && (gamePhase === 'main1' || gamePhase === 'main2')}
+                  isInHand={true}
+                  onClick={() => selectCard(index)}
+                />
+              );
+            })}
+            
+            {/* Hand indicator */}
+            <mesh 
+              position={[0, -0.1, -2]} 
+              rotation={[-Math.PI / 2, 0, 0]}
+            >
+              <planeGeometry args={[6, 1.5]} />
+              <meshStandardMaterial color="#802626" transparent opacity={0.3} />
+            </mesh>
+            <Text
+              position={[0, -0.2, -2]}
+              fontSize={0.2}
+              color="white"
+            >
+              HAND
+            </Text>
+          </>
+        )}
+      </group>
+      
+      {/* Render opponent hand (face down) */}
+      <group position={[opponentHandPosition[0], opponentHandPosition[1], opponentHandPosition[2]]}>
+        {opponentHand.length > 0 && (
+          <>
+            {/* Fan out cards in hand (face down) */}
+            {[...Array(opponentHand.length)].map((_, index) => {
+              const totalCards = opponentHand.length;
+              const fanSpread = 5; // Total width of the fan
+              const offset = (index - (totalCards - 1) / 2) * (fanSpread / Math.max(totalCards, 1));
+              const cardRotation = offset * 0.1; // Small rotation for fan effect
+              
+              return (
+                <mesh 
+                  key={`opponent-hand-${index}`}
+                  position={[offset, 0, 0]} 
+                  rotation={[0, Math.PI + cardRotation, 0]}
+                  scale={[0.7, 1, 0.05]}
+                >
+                  <boxGeometry />
+                  <meshStandardMaterial color="#2a5480" />
+                </mesh>
+              );
+            })}
+            
+            {/* Hand indicator */}
+            <mesh 
+              position={[0, -0.1, 2]} 
+              rotation={[-Math.PI / 2, 0, 0]}
+            >
+              <planeGeometry args={[6, 1.5]} />
+              <meshStandardMaterial color="#2a5480" transparent opacity={0.3} />
+            </mesh>
+            <Text
+              position={[0, -0.2, 2]}
+              fontSize={0.2}
+              color="white"
+            >
+              OPPONENT HAND: {opponentHand.length}
+            </Text>
+          </>
+        )}
+      </group>
       
       {/* Battlefield grid */}
       <mesh 
@@ -338,13 +533,15 @@ const Battlefield = ({ position = [0, 0, 0] }: BattlefieldProps) => {
       </mesh>
       
       {/* Zone indicators with labels */}
+      {/* PLAYER ZONES (RED) */}
+      
       {/* Player Avatar Zone */}
       <mesh 
         position={[playerAvatarPosition[0], -0.04, playerAvatarPosition[2]]} 
         rotation={[-Math.PI / 2, 0, 0]}
       >
         <circleGeometry args={[1.2, 32]} />
-        <meshStandardMaterial color="#2a5480" transparent opacity={0.6} />
+        <meshStandardMaterial color="#802626" transparent opacity={0.6} />
       </mesh>
       <Text
         position={[playerAvatarPosition[0], -0.03, playerAvatarPosition[2]]}
@@ -357,13 +554,13 @@ const Battlefield = ({ position = [0, 0, 0] }: BattlefieldProps) => {
         ACTIVE AVATAR
       </Text>
       
-      {/* Player Reserve Zone */}
+      {/* Player Reserve Zones */}
       <mesh 
         position={[playerReserveZonePosition[0], -0.04, playerReserveZonePosition[2]]} 
         rotation={[-Math.PI / 2, 0, 0]}
       >
         <planeGeometry args={[2, 1.5]} />
-        <meshStandardMaterial color="#2a7d80" transparent opacity={0.6} />
+        <meshStandardMaterial color="#802626" transparent opacity={0.6} />
       </mesh>
       <Text
         position={[playerReserveZonePosition[0], -0.03, playerReserveZonePosition[2]]}
@@ -373,7 +570,7 @@ const Battlefield = ({ position = [0, 0, 0] }: BattlefieldProps) => {
         anchorX="center"
         anchorY="middle"
       >
-        RESERVE
+        RESERVE AVATARS
       </Text>
       
       {/* Player Energy Zone */}
@@ -381,18 +578,37 @@ const Battlefield = ({ position = [0, 0, 0] }: BattlefieldProps) => {
         position={[playerEnergyZonePosition[0], -0.04, playerEnergyZonePosition[2]]} 
         rotation={[-Math.PI / 2, 0, 0]}
       >
-        <circleGeometry args={[1, 32]} />
-        <meshStandardMaterial color="#802a73" transparent opacity={0.6} />
+        <planeGeometry args={[1.2, 1.2]} />
+        <meshStandardMaterial color="#802626" transparent opacity={0.6} />
       </mesh>
       <Text
         position={[playerEnergyZonePosition[0], -0.03, playerEnergyZonePosition[2]]}
         rotation={[-Math.PI / 2, 0, 0]}
-        fontSize={0.2}
+        fontSize={0.15}
         color="white"
         anchorX="center"
         anchorY="middle"
       >
-        ENERGY
+        ENERGY PILE
+      </Text>
+      
+      {/* Player Used Energy Zone */}
+      <mesh 
+        position={[playerUsedEnergyZonePosition[0], -0.04, playerUsedEnergyZonePosition[2]]} 
+        rotation={[-Math.PI / 2, 0, 0]}
+      >
+        <planeGeometry args={[1.2, 1.2]} />
+        <meshStandardMaterial color="#802626" transparent opacity={0.6} />
+      </mesh>
+      <Text
+        position={[playerUsedEnergyZonePosition[0], -0.03, playerUsedEnergyZonePosition[2]]}
+        rotation={[-Math.PI / 2, 0, 0]}
+        fontSize={0.12}
+        color="white"
+        anchorX="center"
+        anchorY="middle"
+      >
+        USED ENERGY
       </Text>
       
       {/* Player Field Zone */}
@@ -400,18 +616,18 @@ const Battlefield = ({ position = [0, 0, 0] }: BattlefieldProps) => {
         position={[playerFieldZonePosition[0], -0.04, playerFieldZonePosition[2]]} 
         rotation={[-Math.PI / 2, 0, 0]}
       >
-        <planeGeometry args={[7, 1.5]} />
-        <meshStandardMaterial color="#608026" transparent opacity={0.6} />
+        <planeGeometry args={[1.5, 1.5]} />
+        <meshStandardMaterial color="#802626" transparent opacity={0.6} />
       </mesh>
       <Text
         position={[playerFieldZonePosition[0], -0.03, playerFieldZonePosition[2]]}
         rotation={[-Math.PI / 2, 0, 0]}
-        fontSize={0.2}
+        fontSize={0.15}
         color="white"
         anchorX="center"
         anchorY="middle"
       >
-        FIELD CARDS
+        FIELD CARD
       </Text>
       
       {/* Player Life Cards Zone */}
@@ -419,7 +635,7 @@ const Battlefield = ({ position = [0, 0, 0] }: BattlefieldProps) => {
         position={[playerLifeCardsPosition[0], -0.04, playerLifeCardsPosition[2]]} 
         rotation={[-Math.PI / 2, 0, 0]}
       >
-        <planeGeometry args={[1.5, 1.5]} />
+        <planeGeometry args={[2, 2]} />
         <meshStandardMaterial color="#802626" transparent opacity={0.6} />
       </mesh>
       <Text
@@ -432,6 +648,46 @@ const Battlefield = ({ position = [0, 0, 0] }: BattlefieldProps) => {
       >
         LIFE CARDS
       </Text>
+      
+      {/* Player Deck Zone */}
+      <mesh 
+        position={[playerDeckPosition[0], -0.04, playerDeckPosition[2]]} 
+        rotation={[-Math.PI / 2, 0, 0]}
+      >
+        <planeGeometry args={[1.2, 1.5]} />
+        <meshStandardMaterial color="#802626" transparent opacity={0.6} />
+      </mesh>
+      <Text
+        position={[playerDeckPosition[0], -0.03, playerDeckPosition[2]]}
+        rotation={[-Math.PI / 2, 0, 0]}
+        fontSize={0.2}
+        color="white"
+        anchorX="center"
+        anchorY="middle"
+      >
+        DECK
+      </Text>
+      
+      {/* Player Graveyard Zone */}
+      <mesh 
+        position={[playerGraveyardPosition[0], -0.04, playerGraveyardPosition[2]]} 
+        rotation={[-Math.PI / 2, 0, 0]}
+      >
+        <planeGeometry args={[1, 1]} />
+        <meshStandardMaterial color="#802626" transparent opacity={0.6} />
+      </mesh>
+      <Text
+        position={[playerGraveyardPosition[0], -0.03, playerGraveyardPosition[2]]}
+        rotation={[-Math.PI / 2, 0, 0]}
+        fontSize={0.12}
+        color="white"
+        anchorX="center"
+        anchorY="middle"
+      >
+        GRAVEYARD
+      </Text>
+      
+      {/* OPPONENT ZONES (BLUE) */}
       
       {/* Opponent Avatar Zone */}
       <mesh 
@@ -452,13 +708,13 @@ const Battlefield = ({ position = [0, 0, 0] }: BattlefieldProps) => {
         ACTIVE AVATAR
       </Text>
       
-      {/* Opponent Reserve Zone */}
+      {/* Opponent Reserve Zones */}
       <mesh 
         position={[opponentReserveZonePosition[0], -0.04, opponentReserveZonePosition[2]]} 
         rotation={[-Math.PI / 2, 0, 0]}
       >
         <planeGeometry args={[2, 1.5]} />
-        <meshStandardMaterial color="#2a7d80" transparent opacity={0.6} />
+        <meshStandardMaterial color="#2a5480" transparent opacity={0.6} />
       </mesh>
       <Text
         position={[opponentReserveZonePosition[0], -0.03, opponentReserveZonePosition[2]]}
@@ -468,7 +724,7 @@ const Battlefield = ({ position = [0, 0, 0] }: BattlefieldProps) => {
         anchorX="center"
         anchorY="middle"
       >
-        RESERVE
+        RESERVE AVATARS
       </Text>
       
       {/* Opponent Energy Zone */}
@@ -476,18 +732,37 @@ const Battlefield = ({ position = [0, 0, 0] }: BattlefieldProps) => {
         position={[opponentEnergyZonePosition[0], -0.04, opponentEnergyZonePosition[2]]} 
         rotation={[-Math.PI / 2, 0, 0]}
       >
-        <circleGeometry args={[1, 32]} />
-        <meshStandardMaterial color="#802a73" transparent opacity={0.6} />
+        <planeGeometry args={[1.2, 1.2]} />
+        <meshStandardMaterial color="#2a5480" transparent opacity={0.6} />
       </mesh>
       <Text
         position={[opponentEnergyZonePosition[0], -0.03, opponentEnergyZonePosition[2]]}
         rotation={[-Math.PI / 2, 0, 0]}
-        fontSize={0.2}
+        fontSize={0.15}
         color="white"
         anchorX="center"
         anchorY="middle"
       >
-        ENERGY
+        ENERGY PILE
+      </Text>
+      
+      {/* Opponent Used Energy Zone */}
+      <mesh 
+        position={[opponentUsedEnergyZonePosition[0], -0.04, opponentUsedEnergyZonePosition[2]]} 
+        rotation={[-Math.PI / 2, 0, 0]}
+      >
+        <planeGeometry args={[1.2, 1.2]} />
+        <meshStandardMaterial color="#2a5480" transparent opacity={0.6} />
+      </mesh>
+      <Text
+        position={[opponentUsedEnergyZonePosition[0], -0.03, opponentUsedEnergyZonePosition[2]]}
+        rotation={[-Math.PI / 2, 0, 0]}
+        fontSize={0.12}
+        color="white"
+        anchorX="center"
+        anchorY="middle"
+      >
+        USED ENERGY
       </Text>
       
       {/* Opponent Field Zone */}
@@ -495,18 +770,18 @@ const Battlefield = ({ position = [0, 0, 0] }: BattlefieldProps) => {
         position={[opponentFieldZonePosition[0], -0.04, opponentFieldZonePosition[2]]} 
         rotation={[-Math.PI / 2, 0, 0]}
       >
-        <planeGeometry args={[7, 1.5]} />
-        <meshStandardMaterial color="#608026" transparent opacity={0.6} />
+        <planeGeometry args={[1.5, 1.5]} />
+        <meshStandardMaterial color="#2a5480" transparent opacity={0.6} />
       </mesh>
       <Text
         position={[opponentFieldZonePosition[0], -0.03, opponentFieldZonePosition[2]]}
         rotation={[-Math.PI / 2, 0, 0]}
-        fontSize={0.2}
+        fontSize={0.15}
         color="white"
         anchorX="center"
         anchorY="middle"
       >
-        FIELD CARDS
+        FIELD CARD
       </Text>
       
       {/* Opponent Life Cards Zone */}
@@ -514,8 +789,8 @@ const Battlefield = ({ position = [0, 0, 0] }: BattlefieldProps) => {
         position={[opponentLifeCardsPosition[0], -0.04, opponentLifeCardsPosition[2]]} 
         rotation={[-Math.PI / 2, 0, 0]}
       >
-        <planeGeometry args={[1.5, 1.5]} />
-        <meshStandardMaterial color="#802626" transparent opacity={0.6} />
+        <planeGeometry args={[2, 2]} />
+        <meshStandardMaterial color="#2a5480" transparent opacity={0.6} />
       </mesh>
       <Text
         position={[opponentLifeCardsPosition[0], -0.03, opponentLifeCardsPosition[2]]}
@@ -526,6 +801,44 @@ const Battlefield = ({ position = [0, 0, 0] }: BattlefieldProps) => {
         anchorY="middle"
       >
         LIFE CARDS
+      </Text>
+      
+      {/* Opponent Deck Zone */}
+      <mesh 
+        position={[opponentDeckPosition[0], -0.04, opponentDeckPosition[2]]} 
+        rotation={[-Math.PI / 2, 0, 0]}
+      >
+        <planeGeometry args={[1.2, 1.5]} />
+        <meshStandardMaterial color="#2a5480" transparent opacity={0.6} />
+      </mesh>
+      <Text
+        position={[opponentDeckPosition[0], -0.03, opponentDeckPosition[2]]}
+        rotation={[-Math.PI / 2, 0, 0]}
+        fontSize={0.2}
+        color="white"
+        anchorX="center"
+        anchorY="middle"
+      >
+        DECK
+      </Text>
+      
+      {/* Opponent Graveyard Zone */}
+      <mesh 
+        position={[opponentGraveyardPosition[0], -0.04, opponentGraveyardPosition[2]]} 
+        rotation={[-Math.PI / 2, 0, 0]}
+      >
+        <planeGeometry args={[1, 1]} />
+        <meshStandardMaterial color="#2a5480" transparent opacity={0.6} />
+      </mesh>
+      <Text
+        position={[opponentGraveyardPosition[0], -0.03, opponentGraveyardPosition[2]]}
+        rotation={[-Math.PI / 2, 0, 0]}
+        fontSize={0.12}
+        color="white"
+        anchorX="center"
+        anchorY="middle"
+      >
+        GRAVEYARD
       </Text>
     </group>
   );
