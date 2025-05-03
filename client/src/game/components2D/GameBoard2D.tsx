@@ -87,7 +87,8 @@ const GameBoard2D: React.FC<GameBoard2DProps> = ({ onAction }) => {
     }
     
     // Handle skill use logic
-    game.useAvatarSkill(skillNumber);
+    // Third parameter is target (optional)
+    game.useAvatarSkill('player', skillNumber, undefined);
   };
   
   // Function to handle phase progression
