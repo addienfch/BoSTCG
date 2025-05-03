@@ -30,9 +30,9 @@ const GameBoard = () => {
     const t = clock.getElapsedTime();
     const floatY = Math.sin(t * 0.5) * 0.02; // Minimal float amount
     
-    // FIXED camera position - pulled back significantly to see hand cards clearly
-    // Positioned to see both opponent (top/blue) and player (bottom/red) sides, plus hand cards
-    const fixedCameraPosition = new THREE.Vector3(0, 3.0 + floatY, 5.0);
+    // FIXED camera position - even higher and farther back for a complete battlefield view
+    // Positioned high above to see everything in one view
+    const fixedCameraPosition = new THREE.Vector3(0, 5.0 + floatY, 6.0);
     
     // Smooth camera movement
     cameraRef.current.position.lerp(fixedCameraPosition, 0.05);
@@ -47,7 +47,7 @@ const GameBoard = () => {
       <PerspectiveCamera 
         makeDefault 
         ref={cameraRef} 
-        position={[0, 3.0, 5.0]} 
+        position={[0, 5.0, 6.0]} 
         fov={75} // Wider field of view for better visibility on mobile
       />
       
