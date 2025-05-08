@@ -14,6 +14,7 @@ const DeckBuilderPage: React.FC = () => {
   const [selectedCards, setSelectedCards] = useState<Card[]>([]);
   const [elementFilter, setElementFilter] = useState<ElementType | 'all'>('all');
   const [typeFilter, setTypeFilter] = useState<string | 'all'>('all');
+  const [tribeFilter, setTribeFilter] = useState<string | 'all'>('all');
   
   // Get all available cards for deck building
   const allCards = getAvailableCards();
@@ -22,7 +23,16 @@ const DeckBuilderPage: React.FC = () => {
   const filteredCards = allCards.filter(card => {
     const elementMatch = elementFilter === 'all' || card.element === elementFilter;
     const typeMatch = typeFilter === 'all' || card.type === typeFilter;
-    return elementMatch && typeMatch;
+    
+    // Tribe filter (for avatar cards)
+    let tribeMatch = true;
+    if (tribeFilter !== 'all' && card.type === 'avatar') {
+      const avatarCard = card as AvatarCard;
+      // Check if the avatar's subType contains the tribe keyword
+      tribeMatch = avatarCard.subType?.includes(tribeFilter.toLowerCase()) || false;
+    }
+    
+    return elementMatch && typeMatch && tribeMatch;
   });
   
   // Calculate card counts for the current selection
@@ -154,11 +164,29 @@ const DeckBuilderPage: React.FC = () => {
               }`}
               onClick={() => handleEditDeck(deck)}
             >
-              <div className="w-24 h-32 bg-gray-600 rounded-md mb-2 flex items-center justify-center">
+              <div className="w-24 h-32 bg-gray-600 rounded-md mb-2 flex items-center justify-center overflow-hidden">
                 {deck.coverCardId ? (
-                  <span className="text-xs text-center p-1">
-                    Deck Cover
-                  </span>
+                  <>
+                    {/* Try to find the card and display its image */}
+                    {(() => {
+                      const coverCard = useDeckStore.getState().findCard(deck.coverCardId);
+                      if (coverCard && coverCard.art) {
+                        return (
+                          <img 
+                            src={coverCard.art} 
+                            alt={`${deck.name} cover`} 
+                            className="w-full h-full object-cover"
+                          />
+                        );
+                      } else {
+                        return (
+                          <span className="text-xs text-center p-1">
+                            Deck Cover
+                          </span>
+                        );
+                      }
+                    })()}
+                  </>
                 ) : (
                   <span className="text-xs text-center">No Cover</span>
                 )}
@@ -329,6 +357,25 @@ const DeckBuilderPage: React.FC = () => {
                   <option value="avatar">Avatar</option>
                   <option value="spell">Spell</option>
                   <option value="quickSpell">Quick Spell</option>
+                  <option value="ritualArmor">Ritual Armor</option>
+                  <option value="equipment">Equipment</option>
+                </select>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-1">
+                  Tribe
+                </label>
+                <select 
+                  value={tribeFilter}
+                  onChange={(e) => setTribeFilter(e.target.value)}
+                  className="px-3 py-1 rounded bg-gray-700 text-white border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="all">All Tribes</option>
+                  <option value="kobar">Kobar</option>
+                  <option value="borah">Borah</option>
+                  <option value="kujana">Kujana</option>
+                  <option value="kuhaka">Kuhaka</option>
                 </select>
               </div>
             </div>
@@ -347,7 +394,7 @@ const DeckBuilderPage: React.FC = () => {
                       isMaxed ? 'opacity-50' : ''
                     }`}
                   >
-                    <div className="relative">
+                    <div className="relative group">
                       <div 
                         className={`h-36 flex items-center justify-center relative ${
                           card.element === 'fire' ? 'bg-red-900' : 
@@ -371,8 +418,70 @@ const DeckBuilderPage: React.FC = () => {
                                 )}
                               </div>
                               <div className="bg-black bg-opacity-50 text-white text-xs px-1 py-0.5 rounded self-start">
-                                {card.type}
+                                {card.type} 
+                                {card.type === 'avatar' && (card as AvatarCard).subType && 
+                                  ` • ${(card as AvatarCard).subType.charAt(0).toUpperCase() + (card as AvatarCard).subType.slice(1)}`
+                                }
                               </div>
+                            </div>
+                            
+                            {/* Hover tooltip for card details */}
+                            <div className="absolute opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10 bg-gray-900 bg-opacity-90 border border-gray-600 rounded-md p-3 shadow-lg w-64 text-sm text-left right-0 mt-2" style={{ top: '100%' }}>
+                              <h3 className="font-bold text-lg mb-1">{card.name}</h3>
+                              <div className="flex justify-between mb-2">
+                                <div className="text-gray-300">
+                                  {card.type} • {card.element}
+                                  {card.type === 'avatar' && ` • Lv${(card as AvatarCard).level}`}
+                                </div>
+                                <div className="flex items-center gap-1">
+                                  {card.energyCost?.map((energy, i) => (
+                                    <div 
+                                      key={i}
+                                      className={`w-3 h-3 rounded-full ${
+                                        energy === 'fire' ? 'bg-red-500' : 
+                                        energy === 'water' ? 'bg-blue-500' : 
+                                        energy === 'air' ? 'bg-cyan-300' : 
+                                        energy === 'earth' ? 'bg-amber-700' : 
+                                        energy === 'neutral' ? 'bg-gray-400' : 'bg-gray-400'
+                                      }`}
+                                    />
+                                  ))}
+                                </div>
+                              </div>
+                              {card.type === 'avatar' && (
+                                <div className="mb-2">
+                                  <div>Health: {(card as AvatarCard).health}</div>
+                                  {(card as AvatarCard).skill1 && (
+                                    <div className="mt-2">
+                                      <div className="font-medium">{(card as AvatarCard).skill1.name}</div>
+                                      <div className="text-xs text-gray-300 mb-1">
+                                        Energy: {(card as AvatarCard).skill1.energyCost?.map(e => 
+                                          e.charAt(0).toUpperCase() + e.slice(1)
+                                        ).join(', ')}
+                                      </div>
+                                      <div>Damage: {(card as AvatarCard).skill1.damage}</div>
+                                      <div className="text-xs mt-1">{(card as AvatarCard).skill1.effect}</div>
+                                    </div>
+                                  )}
+                                  {(card as AvatarCard).skill2 && (
+                                    <div className="mt-2 border-t border-gray-700 pt-2">
+                                      <div className="font-medium">{(card as AvatarCard).skill2.name}</div>
+                                      <div className="text-xs text-gray-300 mb-1">
+                                        Energy: {(card as AvatarCard).skill2.energyCost?.map(e => 
+                                          e.charAt(0).toUpperCase() + e.slice(1)
+                                        ).join(', ')}
+                                      </div>
+                                      <div>Damage: {(card as AvatarCard).skill2.damage}</div>
+                                      <div className="text-xs mt-1">{(card as AvatarCard).skill2.effect}</div>
+                                    </div>
+                                  )}
+                                </div>
+                              )}
+                              {(card.type === 'spell' || card.type === 'quickSpell' || card.type === 'ritualArmor' || card.type === 'equipment') && (
+                                <div className="mb-2">
+                                  <div className="text-gray-100">{card.description}</div>
+                                </div>
+                              )}
                             </div>
                           </>
                         ) : (
@@ -388,7 +497,7 @@ const DeckBuilderPage: React.FC = () => {
                       
                       {/* Count badge */}
                       {count > 0 && (
-                        <div className="absolute top-1 right-1 bg-blue-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                        <div className="absolute top-1 right-1 bg-blue-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center z-20">
                           {count}
                         </div>
                       )}

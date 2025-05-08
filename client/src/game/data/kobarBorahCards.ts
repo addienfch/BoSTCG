@@ -96,12 +96,12 @@ export const borahTraineeA: AvatarCard = {
   level: 1,
   subType: 'borah',
   health: 6,
-  art: '/textures/cards/borah-trainee-a.png',
+  art: '/attached_assets/Red Elemental Avatar_Ava - Borah Trainee A.png',
   skill1: {
     name: 'Punch',
     energyCost: createEnergyCost(1),
     damage: 1,
-    effect: 'Basic attack damage.'
+    effect: 'Quick strike that costs minimal energy.'
   }
 };
 
@@ -113,12 +113,12 @@ export const borahTraineeB: AvatarCard = {
   level: 1,
   subType: 'borah',
   health: 5,
-  art: '/textures/cards/borah-trainee-b.png',
+  art: '/attached_assets/Red Elemental Avatar_Ava - Borah Trainee B.png',
   skill1: {
     name: 'Slash',
     energyCost: createEnergyCost(1, 1),
     damage: 2,
-    effect: ''
+    effect: 'A stronger attack that requires both fire and neutral energy.'
   }
 };
 
