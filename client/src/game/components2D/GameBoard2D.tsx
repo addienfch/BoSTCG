@@ -141,6 +141,12 @@ const GameBoard2D: React.FC<GameBoard2DProps> = ({ onAction }) => {
           return;
         }
         
+        // Check if the current active avatar is already level 2
+        if (game.player.activeAvatar.level === 2) {
+          toast.error("You cannot replace a level 2 avatar with another level 2 avatar!");
+          return;
+        }
+        
         // Check if the avatar has been in play for at least one turn
         if (game.player.activeAvatar.turnPlayed !== undefined && 
             game.turn <= game.player.activeAvatar.turnPlayed) {
@@ -202,8 +208,14 @@ const GameBoard2D: React.FC<GameBoard2DProps> = ({ onAction }) => {
           return;
         }
         
-        // Check if the avatar has been in play for at least one turn
+        // Check if the reserve avatar to be upgraded is already level 2
         const reserveToUpgrade = game.player.reserveAvatars[matchingReserveIndex];
+        if (reserveToUpgrade.level === 2) {
+          toast.error("You cannot replace a level 2 avatar with another level 2 avatar!");
+          return;
+        }
+        
+        // Check if the avatar has been in play for at least one turn
         if (reserveToUpgrade.turnPlayed !== undefined && 
             game.turn <= reserveToUpgrade.turnPlayed) {
           toast.error("You need to wait at least one turn before upgrading your reserve avatar!");
@@ -1165,7 +1177,7 @@ const GameBoard2D: React.FC<GameBoard2DProps> = ({ onAction }) => {
       
       {/* Game winner notification */}
       {game.winner && (
-        <div className="absolute inset-0 bg-black bg-opacity-80 flex items-center justify-center">
+        <div className="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50">
           <div className="bg-purple-900 p-4 rounded-lg text-center">
             <h2 className="text-2xl font-bold mb-2">
               {game.winner === 'player' ? 'You Win!' : 'You Lose!'}
