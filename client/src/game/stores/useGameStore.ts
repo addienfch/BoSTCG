@@ -417,15 +417,6 @@ export const useGameStore = create<GameState>((set, get) => ({
       return;
     }
     
-    // During setup phase, only allow playing avatar cards
-    if (isSetupPhase) {
-      const card = player.hand[handIndex];
-      if (card.type !== 'avatar' || (card as AvatarCard).level !== 1) {
-        toast.error("You can only play a Level 1 Avatar during the Setup Phase!");
-        return;
-      }
-    }
-    
     if (handIndex < 0 || handIndex >= player.hand.length) {
       toast.error("Invalid card selection!");
       return;
@@ -433,7 +424,41 @@ export const useGameStore = create<GameState>((set, get) => ({
     
     const card = player.hand[handIndex];
     
-    // Check if the card can be played
+    // Special handling for setup phase
+    if (isSetupPhase) {
+      if (card.type !== 'avatar' || (card as AvatarCard).level !== 1) {
+        toast.error("You can only play a Level 1 Avatar during the Setup Phase!");
+        return;
+      }
+      
+      if (player.activeAvatar !== null) {
+        toast.error("You already have an active avatar! Click 'Next Phase' to continue.");
+        return;
+      }
+      
+      // Place level 1 avatar as active avatar in setup phase
+      set(state => {
+        const updatedHand = [...state.player.hand];
+        updatedHand.splice(handIndex, 1);
+        
+        const avatarCard = card as AvatarCard;
+        avatarCard.turnPlayed = state.turn; // Record when it was played
+        
+        return {
+          player: {
+            ...state.player,
+            hand: updatedHand,
+            activeAvatar: avatarCard
+          }
+        };
+      });
+      
+      get().addLog(`Setup: You played ${card.name} as your active avatar.`);
+      toast.success(`${card.name} placed as active avatar. Click 'Next Phase' to continue.`);
+      return; // Exit early to skip the regular card playing logic
+    }
+    
+    // For non-setup phases, check if the card can be played
     if (!get().canPlayCard(card)) {
       toast.error("You can't play this card right now!");
       return;
@@ -449,11 +474,14 @@ export const useGameStore = create<GameState>((set, get) => ({
             const updatedHand = [...state.player.hand];
             updatedHand.splice(handIndex, 1);
             
+            const avatarCard = card as AvatarCard;
+            avatarCard.turnPlayed = state.turn; // Record when it was played
+            
             return {
               player: {
                 ...state.player,
                 hand: updatedHand,
-                activeAvatar: card as AvatarCard
+                activeAvatar: avatarCard
               }
             };
           });
@@ -467,11 +495,14 @@ export const useGameStore = create<GameState>((set, get) => ({
             const updatedHand = [...state.player.hand];
             updatedHand.splice(handIndex, 1);
             
+            const avatarCard = card as AvatarCard;
+            avatarCard.turnPlayed = state.turn; // Record when it was played
+            
             return {
               player: {
                 ...state.player,
                 hand: updatedHand,
-                reserveAvatars: [...state.player.reserveAvatars, card as AvatarCard]
+                reserveAvatars: [...state.player.reserveAvatars, avatarCard]
               }
             };
           });
