@@ -517,10 +517,15 @@ export const useGameStore = create<GameState>((set, get) => ({
               
               // Apply damage if the opponent has an active avatar
               if (get().opponent.activeAvatar) {
+                // Default damage for spells is 2
+                const damageAmount = 2;
+                
                 set(state => {
                   const opponentAvatar = state.opponent.activeAvatar!;
                   const currentDamage = opponentAvatar.counters?.damage || 0;
+                  const newDamage = currentDamage + damageAmount;
                   
+                  // Update opponent avatar with new damage
                   return {
                     opponent: {
                       ...state.opponent,
@@ -528,24 +533,36 @@ export const useGameStore = create<GameState>((set, get) => ({
                         ...opponentAvatar,
                         counters: {
                           ...opponentAvatar.counters || { damage: 0, bleed: 0, shield: 0 },
-                          damage: currentDamage + 2
+                          damage: newDamage
                         }
                       }
                     }
                   };
                 });
                 
-                get().addLog(`${card.name} deals 2 damage to opponent's avatar!`);
+                // Show animation and log
+                get().addLog(`${card.name} deals ${damageAmount} damage to opponent's avatar!`);
+                toast.success(`Dealt ${damageAmount} damage to opponent's avatar!`);
+                
+                // Check if this damage defeats the avatar
+                setTimeout(() => get().checkDefeatedAvatars(), 500);
+              } else {
+                toast.info("Spell had no effect - opponent has no active avatar.");
               }
             } else if (card.type === 'quickSpell') {
               toast.success(`You cast quick spell ${card.name}!`);
               
               // Apply effects for quick spells
               if (get().opponent.activeAvatar) {
+                // Default damage for quick spells is 1
+                const damageAmount = 1;
+                
                 set(state => {
                   const opponentAvatar = state.opponent.activeAvatar!;
                   const currentDamage = opponentAvatar.counters?.damage || 0;
+                  const newDamage = currentDamage + damageAmount;
                   
+                  // Update opponent avatar with new damage
                   return {
                     opponent: {
                       ...state.opponent,
@@ -553,14 +570,21 @@ export const useGameStore = create<GameState>((set, get) => ({
                         ...opponentAvatar,
                         counters: {
                           ...opponentAvatar.counters || { damage: 0, bleed: 0, shield: 0 },
-                          damage: currentDamage + 1
+                          damage: newDamage
                         }
                       }
                     }
                   };
                 });
                 
-                get().addLog(`${card.name} deals 1 damage to opponent's avatar!`);
+                // Show animation and log
+                get().addLog(`${card.name} deals ${damageAmount} damage to opponent's avatar!`);
+                toast.success(`Dealt ${damageAmount} damage to opponent's avatar!`);
+                
+                // Check if this damage defeats the avatar
+                setTimeout(() => get().checkDefeatedAvatars(), 500);
+              } else {
+                toast.info("Quick spell had no effect - opponent has no active avatar.");
               }
             }
             
@@ -575,8 +599,123 @@ export const useGameStore = create<GameState>((set, get) => ({
   
   // Use an avatar skill
   useAvatarSkill: (player, skillIndex, target) => {
-    // Implementation for avatar skills
-    toast.info('Avatar skill functionality will be implemented soon!');
+    const state = get();
+    const currentPhase = state.gamePhase;
+    const currentPlayer = state.currentPlayer;
+    
+    // Can only use skills during battle phase on your turn
+    if (currentPhase !== 'battle' || currentPlayer !== player) {
+      toast.error(`You can only use avatar skills during your Battle Phase!`);
+      return;
+    }
+    
+    // Get the player state
+    const playerState = player === 'player' ? state.player : state.opponent;
+    
+    // Check if player has an active avatar
+    if (!playerState.activeAvatar) {
+      toast.error(`You need an active avatar to use a skill!`);
+      return;
+    }
+    
+    // Get the avatar and skill
+    const avatar = playerState.activeAvatar;
+    
+    // Check if avatar is tapped (already used)
+    if (avatar.isTapped) {
+      toast.error(`This avatar has already used a skill this turn!`);
+      return;
+    }
+    
+    // Get the skill based on the index
+    const skill = skillIndex === 1 ? avatar.skill1 : avatar.skill2;
+    
+    // Check if skill exists
+    if (!skill) {
+      toast.error(`This avatar doesn't have that skill!`);
+      return;
+    }
+    
+    // Check if player has enough energy
+    if (!state.hasEnoughEnergy(skill.energyCost, player)) {
+      toast.error(`Not enough energy to use this skill!`);
+      return;
+    }
+    
+    // Target opponent's avatar
+    const targetAvatar = player === 'player' ? 
+      state.opponent.activeAvatar : 
+      state.player.activeAvatar;
+    
+    // Check if there's a target
+    if (!targetAvatar) {
+      toast.error(`No target available for skill!`);
+      return;
+    }
+    
+    // Use energy for the skill
+    state.useEnergy(skill.energyCost, player);
+    
+    // Calculate damage
+    let damageAmount = skill.damage || 0;
+    
+    // Apply special effects
+    if (skill.effect) {
+      // Example effect: "If you have 1 card or less card in hand, this attack get +1"
+      if (skill.effect.includes("1 card or less") && playerState.hand.length <= 1) {
+        damageAmount += 1;
+        toast.info(`Skill bonus: +1 damage due to having 1 or fewer cards!`);
+      }
+      
+      // Example effect: "This attack does 2 more damage if opponent Active Avatar were Air type."
+      if (skill.effect.includes("if opponent Active Avatar were Air type") && 
+          targetAvatar.element === 'air') {
+        damageAmount += 2;
+        toast.info(`Type bonus: +2 damage against Air type!`);
+      }
+    }
+    
+    // Apply damage to target
+    set(state => {
+      const opponent = player === 'player' ? 'opponent' : 'player';
+      const opponentState = state[opponent];
+      const opponentAvatar = opponentState.activeAvatar!;
+      const currentDamage = opponentAvatar.counters?.damage || 0;
+      const newDamage = currentDamage + damageAmount;
+      
+      // Mark avatar as tapped
+      const updatePlayerState = {
+        ...state[player],
+        activeAvatar: {
+          ...state[player].activeAvatar!,
+          isTapped: true
+        }
+      };
+      
+      // Update target with damage
+      const updateOpponentState = {
+        ...opponentState,
+        activeAvatar: {
+          ...opponentAvatar,
+          counters: {
+            ...opponentAvatar.counters || { damage: 0, bleed: 0, shield: 0 },
+            damage: newDamage
+          }
+        }
+      };
+      
+      return {
+        [player]: updatePlayerState,
+        [opponent]: updateOpponentState
+      };
+    });
+    
+    // Show effects
+    toast.success(`${avatar.name} used ${skill.name} for ${damageAmount} damage!`);
+    get().addLog(`${player === 'player' ? 'You' : 'Opponent'} used ${skill.name} for ${damageAmount} damage!`);
+    
+    // Check for defeated avatars
+    setTimeout(() => get().checkDefeatedAvatars(), 500);
   },
   
   // Add a card to energy
@@ -855,8 +994,10 @@ export const useGameStore = create<GameState>((set, get) => ({
           
           // Update the correct player
           if (currentPlayer === 'player') {
+            toast.success("Your used energy cards have been refreshed!");
             return { player: { ...state.player, ...updatedState } };
           } else {
+            toast.info("Opponent's used energy cards have been refreshed.");
             return { opponent: { ...state.opponent, ...updatedState } };
           }
         });
