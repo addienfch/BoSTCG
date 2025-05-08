@@ -1695,11 +1695,15 @@ export const useGameStore = create<GameState>((set, get) => ({
               const lifeCards = [...state.player.lifeCards];
               const lostLifeCard = lifeCards.shift();
               
+              // Update life cards list
               updatedState.player.lifeCards = lifeCards;
               
               if (lostLifeCard) {
-                get().addLog(`You lost a life card: ${lostLifeCard.name}!`);
-                toast.error(`You lost a life card: ${lostLifeCard.name}!`, { duration: 5000 });
+                // Add the life card to player's hand
+                updatedState.player.hand = [...state.player.hand, lostLifeCard];
+                
+                get().addLog(`You lost a life card: ${lostLifeCard.name}! It has been added to your hand.`);
+                toast.error(`You lost a life card: ${lostLifeCard.name}! It has been added to your hand.`, { duration: 5000 });
               }
             }
           }
@@ -1744,10 +1748,14 @@ export const useGameStore = create<GameState>((set, get) => ({
               const lifeCards = [...state.opponent.lifeCards];
               const lostLifeCard = lifeCards.shift();
               
+              // Update life cards list
               updatedState.opponent.lifeCards = lifeCards;
               
               if (lostLifeCard) {
-                get().addLog(`Opponent lost a life card: ${lostLifeCard.name}!`);
+                // Add the life card to opponent's hand
+                updatedState.opponent.hand = [...state.opponent.hand, lostLifeCard];
+                
+                get().addLog(`Opponent lost a life card: ${lostLifeCard.name}! It has been added to their hand.`);
                 toast.success(`Opponent lost a life card: ${lostLifeCard.name}!`, { duration: 5000 });
               }
             }
