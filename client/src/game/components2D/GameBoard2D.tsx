@@ -281,6 +281,8 @@ const GameBoard2D: React.FC<GameBoard2DProps> = ({ onAction }) => {
       currentTurn: game.turn
     });
     
+    // Note: We removed the turnPlayed check here - avatars can use skills regardless of when they were played
+    
     // Check if the skill exists
     if (skillNumber === 2 && !game.player.activeAvatar.skill2) {
       toast.error("This avatar doesn't have a second skill!");

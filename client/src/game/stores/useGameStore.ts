@@ -1284,10 +1284,10 @@ export const useGameStore = create<GameState>((set, get) => ({
       };
     });
     
-    // Dispatch an event for the UI to detect refresh phase
-    console.log("Dispatching gamePhaseChanged event from endTurn function");
-    const phaseChangeEvent = new Event('gamePhaseChanged');
-    document.dispatchEvent(phaseChangeEvent);
+    // Dispatch events for the UI to detect refresh phase
+    console.log("Dispatching gamePhaseChanged and avatarReset events from endTurn function");
+    document.dispatchEvent(new Event('gamePhaseChanged'));
+    document.dispatchEvent(new Event('avatarReset'));
     
     const newCurrentPlayer = get().currentPlayer;
     

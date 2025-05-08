@@ -190,12 +190,27 @@ const Card2D: React.FC<Card2DProps> = ({
         setVisualRefreshCounter(prev => prev + 1);
       };
       
-      // Set up a listener for phase changes
-      // This ensures card appearance resets when the phase changes to refresh
+      // Handler for specific avatar reset event
+      const handleAvatarReset = () => {
+        console.log("Card2D received avatarReset event for:", card.name);
+        
+        // Apply untapped state immediately through the ref
+        if (cardRef.current) {
+          cardRef.current.style.transform = 'rotate(0deg)';
+          console.log("Applied direct reset to card element for", card.name);
+        }
+        
+        // Also update the counter for a full re-render
+        setVisualRefreshCounter(prev => prev + 1);
+      };
+      
+      // Set up listeners for both events
       document.addEventListener('gamePhaseChanged', checkPhase);
+      document.addEventListener('avatarReset', handleAvatarReset);
       
       return () => {
         document.removeEventListener('gamePhaseChanged', checkPhase);
+        document.removeEventListener('avatarReset', handleAvatarReset);
       };
     }
   }, [card]);
