@@ -247,7 +247,7 @@ const DeckBuilderPage: React.FC = () => {
                               card.element === 'fire' ? 'bg-red-500' : 
                               card.element === 'water' ? 'bg-blue-500' : 
                               card.element === 'air' ? 'bg-cyan-300' : 
-                              card.element === 'ground' ? 'bg-amber-700' : 'bg-gray-400'
+                              card.element === 'earth' ? 'bg-amber-700' : 'bg-gray-400'
                             }`}
                           />
                           <span className="truncate max-w-[140px]">{card.name}</span>
@@ -309,7 +309,7 @@ const DeckBuilderPage: React.FC = () => {
                   <option value="fire">Fire</option>
                   <option value="water">Water</option>
                   <option value="air">Air</option>
-                  <option value="ground">Ground</option>
+                  <option value="earth">Ground</option>
                 </select>
               </div>
               
@@ -350,7 +350,7 @@ const DeckBuilderPage: React.FC = () => {
                           card.element === 'fire' ? 'bg-red-900' : 
                           card.element === 'water' ? 'bg-blue-900' : 
                           card.element === 'air' ? 'bg-cyan-900' : 
-                          card.element === 'ground' ? 'bg-amber-900' : 'bg-gray-800'
+                          card.element === 'earth' ? 'bg-amber-900' : 'bg-gray-800'
                         }`}
                       >
                         <div className="text-center p-2">
@@ -381,7 +381,7 @@ const DeckBuilderPage: React.FC = () => {
                                 energy === 'fire' ? 'bg-red-500' : 
                                 energy === 'water' ? 'bg-blue-500' : 
                                 energy === 'air' ? 'bg-cyan-300' : 
-                                energy === 'ground' ? 'bg-amber-700' : 
+                                energy === 'earth' ? 'bg-amber-700' : 
                                 energy === 'neutral' ? 'bg-gray-400' : 'bg-gray-400'
                               }`}
                             />

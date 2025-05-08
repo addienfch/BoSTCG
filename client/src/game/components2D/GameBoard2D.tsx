@@ -655,7 +655,7 @@ const GameBoard2D: React.FC<GameBoard2DProps> = ({ onAction }) => {
           {/* Game mode indicator */}
           <span className="ml-2 px-2 py-0.5 rounded text-xs" 
                 style={{
-                  backgroundColor: 
+                  backearthColor: 
                     String(gameMode.mode) === "vs-ai" ? '#8B0000' : 
                     String(gameMode.mode) === "practice" ? '#006400' : 
                     String(gameMode.mode) === "online" ? '#4169E1' : '#555'
@@ -748,7 +748,7 @@ const GameBoard2D: React.FC<GameBoard2DProps> = ({ onAction }) => {
                           className={`w-2 h-2 rounded-full ${
                             element === 'fire' ? 'bg-red-500' : 
                             element === 'water' ? 'bg-blue-500' : 
-                            element === 'ground' ? 'bg-amber-800' : 
+                            element === 'earth' ? 'bg-amber-800' : 
                             element === 'air' ? 'bg-cyan-300' : 
                             'bg-gray-400'
                           }`}
@@ -774,7 +774,7 @@ const GameBoard2D: React.FC<GameBoard2DProps> = ({ onAction }) => {
                           className={`w-3 h-3 rounded-full flex-shrink-0 ${
                             card.element === 'fire' ? 'bg-red-500' : 
                             card.element === 'water' ? 'bg-blue-500' : 
-                            card.element === 'ground' ? 'bg-amber-800' : 
+                            card.element === 'earth' ? 'bg-amber-800' : 
                             card.element === 'air' ? 'bg-cyan-300' : 
                             'bg-gray-400'
                           }`}
@@ -875,7 +875,7 @@ const GameBoard2D: React.FC<GameBoard2DProps> = ({ onAction }) => {
                           className={`w-3 h-3 rounded-full ${
                             card.element === 'fire' ? 'bg-red-500' : 
                             card.element === 'water' ? 'bg-blue-500' : 
-                            card.element === 'ground' ? 'bg-amber-800' : 
+                            card.element === 'earth' ? 'bg-amber-800' : 
                             card.element === 'air' ? 'bg-cyan-300' : 
                             'bg-gray-400'
                           }`}
@@ -902,7 +902,7 @@ const GameBoard2D: React.FC<GameBoard2DProps> = ({ onAction }) => {
                           className={`w-3 h-3 rounded-full flex-shrink-0 ${
                             card.element === 'fire' ? 'bg-red-500' : 
                             card.element === 'water' ? 'bg-blue-500' : 
-                            card.element === 'ground' ? 'bg-amber-800' : 
+                            card.element === 'earth' ? 'bg-amber-800' : 
                             card.element === 'air' ? 'bg-cyan-300' : 
                             'bg-gray-400'
                           }`}
@@ -935,7 +935,7 @@ const GameBoard2D: React.FC<GameBoard2DProps> = ({ onAction }) => {
                           className={`w-2 h-2 rounded-full ${
                             card.element === 'fire' ? 'bg-red-500' : 
                             card.element === 'water' ? 'bg-blue-500' : 
-                            card.element === 'ground' ? 'bg-amber-800' : 
+                            card.element === 'earth' ? 'bg-amber-800' : 
                             card.element === 'air' ? 'bg-cyan-300' : 
                             'bg-gray-400'
                           }`}
@@ -958,7 +958,7 @@ const GameBoard2D: React.FC<GameBoard2DProps> = ({ onAction }) => {
                               className={`w-3 h-3 rounded-full flex-shrink-0 ${
                                 card.element === 'fire' ? 'bg-red-500' : 
                                 card.element === 'water' ? 'bg-blue-500' : 
-                                card.element === 'ground' ? 'bg-amber-800' : 
+                                card.element === 'earth' ? 'bg-amber-800' : 
                                 card.element === 'air' ? 'bg-cyan-300' : 
                                 'bg-gray-400'
                               }`}
