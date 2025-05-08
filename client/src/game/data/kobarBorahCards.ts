@@ -73,7 +73,7 @@ export const kobarTraineeC: AvatarCard = {
 
 export const borahTrainee: AvatarCard = {
   id: 'borah-001',
-  name: 'Borah Trainee',
+  name: 'Borah Trainee C',
   type: 'avatar',
   element: 'fire',
   level: 1,
@@ -85,6 +85,40 @@ export const borahTrainee: AvatarCard = {
     energyCost: createEnergyCost(2),
     damage: 2,
     effect: 'If the defending avatar has Bleed counter, this attack gets +1 damage.'
+  }
+};
+
+export const borahTraineeA: AvatarCard = {
+  id: 'borah-002',
+  name: 'Borah Trainee A',
+  type: 'avatar',
+  element: 'fire',
+  level: 1,
+  subType: 'borah',
+  health: 6,
+  art: '/textures/cards/borah-trainee-a.png',
+  skill1: {
+    name: 'Punch',
+    energyCost: createEnergyCost(1),
+    damage: 1,
+    effect: 'Basic attack damage.'
+  }
+};
+
+export const borahTraineeB: AvatarCard = {
+  id: 'borah-003',
+  name: 'Borah Trainee B',
+  type: 'avatar',
+  element: 'fire',
+  level: 1,
+  subType: 'borah',
+  health: 5,
+  art: '/textures/cards/borah-trainee-b.png',
+  skill1: {
+    name: 'Slash',
+    energyCost: createEnergyCost(1, 1),
+    damage: 2,
+    effect: ''
   }
 };
 
@@ -204,6 +238,8 @@ export const kobarBorahAvatarCards: AvatarCard[] = [
   kobarTraineeB,
   kobarTraineeC,
   borahTrainee,
+  borahTraineeA,
+  borahTraineeB,
   radja,
   daisy
 ];
