@@ -26,6 +26,7 @@ interface PlayerState {
   graveyard: Card[];
   avatarToEnergyCount: number; // Track how many avatars were moved to energy this turn
   isAI?: boolean; // Flag to identify AI-controlled player
+  needsToSelectReserveAvatar?: boolean; // Flag to indicate player needs to select a reserve avatar to become active
 }
 
 interface GameState {
@@ -1662,19 +1663,44 @@ export const useGameStore = create<GameState>((set, get) => ({
           
           get().addLog(`Your ${avatar.name} was defeated!`);
           
-          // Check if player has lost all life cards
-          if (state.player.lifeCards.length === 0) {
-            updatedState.winner = 'opponent';
-            get().addLog('You have lost! Your opponent is victorious.');
+          // Check if player has reserve avatars
+          if (state.player.reserveAvatars.length > 0) {
+            // If playing as player, prompt to choose a reserve avatar
+            if (state.currentPlayer === 'player') {
+              toast.warning('You need to select a reserve avatar to become your new active avatar!', {
+                duration: 5000
+              });
+              
+              // Set a flag in the state to indicate the player needs to select a reserve
+              updatedState.player.needsToSelectReserveAvatar = true;
+            } else {
+              // For AI opponent, automatically select the first reserve avatar
+              const reserveAvatars = [...state.player.reserveAvatars];
+              const newActiveAvatar = reserveAvatars.shift();
+              
+              if (newActiveAvatar) {
+                updatedState.player.activeAvatar = newActiveAvatar;
+                updatedState.player.reserveAvatars = reserveAvatars;
+              }
+              
+              get().addLog(`Your ${newActiveAvatar?.name} has moved to the active position.`);
+            }
           } else {
-            // Remove a life card
-            const lifeCards = [...state.player.lifeCards];
-            const lostLifeCard = lifeCards.shift();
-            
-            updatedState.player.lifeCards = lifeCards;
-            
-            if (lostLifeCard) {
-              get().addLog(`You lost a life card: ${lostLifeCard.name}!`);
+            // No reserve avatars - lose a life card if available
+            if (state.player.lifeCards.length === 0) {
+              updatedState.winner = 'opponent';
+              get().addLog('You have lost! Your opponent is victorious.');
+            } else {
+              // Remove a life card
+              const lifeCards = [...state.player.lifeCards];
+              const lostLifeCard = lifeCards.shift();
+              
+              updatedState.player.lifeCards = lifeCards;
+              
+              if (lostLifeCard) {
+                get().addLog(`You lost a life card: ${lostLifeCard.name}!`);
+                toast.error(`You lost a life card: ${lostLifeCard.name}!`, { duration: 5000 });
+              }
             }
           }
         }
@@ -1695,19 +1721,35 @@ export const useGameStore = create<GameState>((set, get) => ({
           
           get().addLog(`Opponent's ${avatar.name} was defeated!`);
           
-          // Check if opponent has lost all life cards
-          if (state.opponent.lifeCards.length === 0) {
-            updatedState.winner = 'player';
-            get().addLog('You are victorious! Your opponent has been defeated.');
+          // Check if opponent has reserve avatars
+          if (state.opponent.reserveAvatars.length > 0) {
+            // For AI opponent, automatically select the first reserve avatar
+            const reserveAvatars = [...state.opponent.reserveAvatars];
+            const newActiveAvatar = reserveAvatars.shift();
+            
+            if (newActiveAvatar) {
+              updatedState.opponent.activeAvatar = newActiveAvatar;
+              updatedState.opponent.reserveAvatars = reserveAvatars;
+            }
+            
+            get().addLog(`Opponent's ${newActiveAvatar?.name} has moved to the active position.`);
+            toast.info(`Opponent moved ${newActiveAvatar?.name} to the active position.`);
           } else {
-            // Remove a life card
-            const lifeCards = [...state.opponent.lifeCards];
-            const lostLifeCard = lifeCards.shift();
-            
-            updatedState.opponent.lifeCards = lifeCards;
-            
-            if (lostLifeCard) {
-              get().addLog(`Opponent lost a life card: ${lostLifeCard.name}!`);
+            // No reserve avatars - lose a life card if available
+            if (state.opponent.lifeCards.length === 0) {
+              updatedState.winner = 'player';
+              get().addLog('You are victorious! Your opponent has been defeated.');
+            } else {
+              // Remove a life card
+              const lifeCards = [...state.opponent.lifeCards];
+              const lostLifeCard = lifeCards.shift();
+              
+              updatedState.opponent.lifeCards = lifeCards;
+              
+              if (lostLifeCard) {
+                get().addLog(`Opponent lost a life card: ${lostLifeCard.name}!`);
+                toast.success(`Opponent lost a life card: ${lostLifeCard.name}!`, { duration: 5000 });
+              }
             }
           }
         }
