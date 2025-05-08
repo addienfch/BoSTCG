@@ -194,8 +194,10 @@ const Card2D: React.FC<Card2DProps> = ({
       const handleAvatarReset = () => {
         console.log("Card2D received avatarReset event for:", card.name);
         
-        // Apply untapped state immediately through the ref
+        // During refresh phase, avatars should be explicitly untapped regardless of their current state
+        // This ensures all avatars are properly reset for the next turn
         if (cardRef.current) {
+          // Always untap the card during refresh phase
           cardRef.current.style.transform = 'rotate(0deg)';
           console.log("Applied direct reset to card element for", card.name);
         }
