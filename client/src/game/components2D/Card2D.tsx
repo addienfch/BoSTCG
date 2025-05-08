@@ -367,7 +367,7 @@ const Card2D: React.FC<Card2DProps> = ({
         style={{ 
           width: `${width}px`, 
           height: `${height}px`,
-          transform: isTapped ? 'rotate(90deg)' : 'none',
+          transform: isTapped ? 'rotate(90deg)' : 'rotate(0deg)', // Explicit rotation for resetting
           transformOrigin: 'center center',
           transition: 'transform 0.3s ease-in-out',
           position: 'relative',
@@ -447,9 +447,8 @@ const Card2D: React.FC<Card2DProps> = ({
         <div 
           className="fixed bg-black bg-opacity-95 rounded-lg p-3 border-2 border-yellow-400 shadow-xl"
           style={{
-            top: `50px`, // Fixed position at top of screen
-            left: `50%`, // Center horizontally
-            transform: 'translateX(-50%)', // Center adjustment
+            top: `${menuPosition.top}px`, // Position beside the card
+            left: `${menuPosition.left + 10}px`, // 10px to the right of the card
             width: `${width + 40}px`,
             zIndex: 9999999, // Ultra high z-index
           }}
