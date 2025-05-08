@@ -655,7 +655,7 @@ const GameBoard2D: React.FC<GameBoard2DProps> = ({ onAction }) => {
           {/* Game mode indicator */}
           <span className="ml-2 px-2 py-0.5 rounded text-xs" 
                 style={{
-                  backearthColor: 
+                  backgroundColor: 
                     String(gameMode.mode) === "vs-ai" ? '#8B0000' : 
                     String(gameMode.mode) === "practice" ? '#006400' : 
                     String(gameMode.mode) === "online" ? '#4169E1' : '#555'

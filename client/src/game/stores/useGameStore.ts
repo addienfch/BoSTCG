@@ -1024,8 +1024,11 @@ export const useGameStore = create<GameState>((set, get) => ({
   canPlayCard: (card) => {
     const { gamePhase, currentPlayer, player } = get();
     
+    // Main phases for regular play
+    const isMainPhase = gamePhase === 'main1' || gamePhase === 'main2';
+    
     // Can only play cards in main phases on your turn
-    if (currentPlayer !== 'player' || (gamePhase !== 'main1' && gamePhase !== 'main2')) {
+    if (currentPlayer !== 'player' || !isMainPhase) {
       return false;
     }
     
@@ -1052,10 +1055,21 @@ export const useGameStore = create<GameState>((set, get) => ({
       }
     }
     
-    // For spells and quick spells, need an active avatar
-    if (card.type === 'spell' || card.type === 'quickSpell') {
+    // For spells, need an active avatar
+    if (card.type === 'spell') {
       if (!player.activeAvatar) {
         return false; // Need an active avatar to play spells
+      }
+      
+      // Check if we have enough energy
+      const energyCost = card.energyCost || [];
+      return get().hasEnoughEnergy(energyCost, 'player');
+    }
+    
+    // For quick spells, need an active avatar
+    if (card.type === 'quickSpell') {
+      if (!player.activeAvatar) {
+        return false; // Need an active avatar to play quick spells
       }
       
       // Check if we have enough energy
@@ -1342,6 +1356,7 @@ export const useGameStore = create<GameState>((set, get) => ({
     }
     
     console.log('AI performing actions in', gamePhase, 'phase');
+    toast.info(`AI thinking in ${gamePhase} phase...`);
     
     switch (gamePhase) {
       case 'setup':
