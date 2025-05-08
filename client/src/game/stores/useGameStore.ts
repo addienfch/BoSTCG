@@ -67,6 +67,9 @@ interface GameState {
   
   // Log helpers
   addLog: (message: string) => void;
+  
+  // AI actions
+  performAIActions: () => void;
 }
 
 // Helper function to initialize a default deck
