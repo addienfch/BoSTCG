@@ -73,41 +73,51 @@ export class SimpleGameAI {
       return;
     }
     
+    console.log(`AI is thinking... (Phase: ${gamePhase})`);
+    
     // Take different actions based on the game phase
     switch (gamePhase) {
       case 'refresh':
         // Automatically move to draw phase
-        setTimeout(() => this.gameState.nextPhase(), 1000);
+        console.log('AI: Moving to Draw Phase');
+        // Immediate action instead of setTimeout to avoid timing issues
+        this.gameState.nextPhase();
         break;
         
       case 'draw':
         // Automatically move to main1 phase
-        setTimeout(() => this.gameState.nextPhase(), 1000);
+        console.log('AI: Moving to Main Phase 1');
+        this.gameState.nextPhase();
         break;
         
       case 'main1':
         // This is where the AI makes most of its decisions
-        setTimeout(() => this.decideMainPhaseAction(), 1500);
+        console.log('AI: Taking action in Main Phase 1');
+        this.decideMainPhaseAction();
         break;
         
       case 'battle':
         // Decide whether to attack with active avatar
-        setTimeout(() => this.decideBattleAction(), 1500);
+        console.log('AI: Taking action in Battle Phase');
+        this.decideBattleAction();
         break;
         
       case 'damage':
         // Automatically move to main2 phase
-        setTimeout(() => this.gameState.nextPhase(), 1000);
+        console.log('AI: Moving to Main Phase 2');
+        this.gameState.nextPhase();
         break;
         
       case 'main2':
         // Maybe play some more cards if available
-        setTimeout(() => this.decideMainPhaseAction(), 1500);
+        console.log('AI: Taking action in Main Phase 2');
+        this.decideMainPhaseAction();
         break;
         
       case 'end':
         // Automatically end turn
-        setTimeout(() => this.gameState.nextPhase(), 1000);
+        console.log('AI: Ending turn');
+        this.gameState.nextPhase();
         break;
     }
   }

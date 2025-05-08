@@ -1,7 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useGameMode } from '../game/stores/useGameMode';
+import { useDeckStore } from '../game/stores/useDeckStore';
 import SolanaWalletConnect from '../components/SolanaWalletConnect';
 import { toast } from 'sonner';
+import { Link } from 'react-router-dom';
 
 interface GameModePageProps {
   onStartGame: () => void;
@@ -10,8 +12,29 @@ interface GameModePageProps {
 // Component for selecting game modes
 const GameModePage: React.FC<GameModePageProps> = ({ onStartGame }) => {
   const gameMode = useGameMode();
+  const { decks, activeDeckId, setActiveDeck } = useDeckStore();
+  
   const [roomCode, setRoomCode] = useState('');
   const [playerName, setPlayerName] = useState(gameMode.playerName);
+  const [selectedDeckId, setSelectedDeckId] = useState<string | null>(activeDeckId);
+  
+  // If no deck is selected, select the first one by default
+  useEffect(() => {
+    if (!selectedDeckId && decks.length > 0) {
+      setSelectedDeckId(decks[0].id);
+    }
+  }, [decks, selectedDeckId]);
+  
+  // Set the selected deck as active
+  const updateActiveDeck = () => {
+    if (!selectedDeckId) {
+      toast.error("Please select a deck first.");
+      return false;
+    }
+    
+    setActiveDeck(selectedDeckId);
+    return true;
+  };
   
   // Handle form submission for joining a room
   const handleJoinRoom = (e: React.FormEvent) => {
@@ -21,6 +44,8 @@ const GameModePage: React.FC<GameModePageProps> = ({ onStartGame }) => {
       return;
     }
     
+    if (!updateActiveDeck()) return;
+    
     gameMode.setPlayerName(playerName);
     gameMode.joinRoom(roomCode);
     toast.success(`Joining room ${roomCode}...`);
@@ -29,6 +54,8 @@ const GameModePage: React.FC<GameModePageProps> = ({ onStartGame }) => {
   
   // Handle creating a new room
   const handleCreateRoom = () => {
+    if (!updateActiveDeck()) return;
+    
     gameMode.setPlayerName(playerName);
     gameMode.createRoom();
     toast.success('Creating a new room...');
@@ -39,14 +66,18 @@ const GameModePage: React.FC<GameModePageProps> = ({ onStartGame }) => {
   
   // Handle starting single player game
   const handleStartSinglePlayer = () => {
+    if (!updateActiveDeck()) return;
+    
     gameMode.setPlayerName(playerName);
     gameMode.startSinglePlayer();
-    toast.success('Starting single player game...');
+    toast.success('Starting practice game...');
     onStartGame(); // Call the parent component callback to navigate to the game
   };
   
   // Handle starting AI opponent game
   const handleStartAIGame = () => {
+    if (!updateActiveDeck()) return;
+    
     gameMode.setPlayerName(playerName);
     gameMode.startAIGame();
     toast.success('Starting game against AI...');
@@ -56,7 +87,7 @@ const GameModePage: React.FC<GameModePageProps> = ({ onStartGame }) => {
   return (
     <div className="min-h-screen bg-gray-900 text-white flex flex-col items-center justify-center p-4">
       <div className="max-w-md w-full">
-        <h1 className="text-3xl font-bold text-center mb-8">Elemental Card Game</h1>
+        <h1 className="text-3xl font-bold text-center mb-8">Book of Spektrum</h1>
         
         <div className="bg-gray-800 rounded-lg p-6 shadow-lg mb-6">
           <h2 className="text-xl font-bold mb-4">Player Setup</h2>
@@ -75,6 +106,55 @@ const GameModePage: React.FC<GameModePageProps> = ({ onStartGame }) => {
             />
           </div>
           
+          {/* Deck Selection */}
+          <div className="mb-6">
+            <div className="flex justify-between items-center mb-2">
+              <label className="block text-sm font-medium">
+                Select Deck
+              </label>
+              <Link 
+                to="/deck-builder"
+                className="text-blue-400 hover:text-blue-300 text-xs"
+              >
+                Manage Decks
+              </Link>
+            </div>
+            
+            <div className="grid grid-cols-1 gap-3 mb-2">
+              {decks.map(deck => (
+                <button
+                  key={deck.id}
+                  onClick={() => setSelectedDeckId(deck.id)}
+                  className={`p-3 rounded-lg flex items-center transition-colors ${
+                    selectedDeckId === deck.id
+                      ? 'bg-amber-800 border-2 border-amber-600'
+                      : 'bg-gray-700 hover:bg-gray-600'
+                  }`}
+                >
+                  <div className="w-12 h-16 bg-gray-600 rounded-md mr-3 flex items-center justify-center">
+                    <span className="text-xs text-center">Deck</span>
+                  </div>
+                  <div className="text-left">
+                    <span className="font-bold">{deck.name}</span>
+                    <div className="text-xs text-gray-300 mt-1">{deck.cards.length} cards</div>
+                  </div>
+                </button>
+              ))}
+              
+              {decks.length === 0 && (
+                <div className="bg-gray-700 p-4 rounded-lg text-center">
+                  <p className="text-gray-400 mb-2">No decks available</p>
+                  <Link
+                    to="/deck-builder"
+                    className="text-blue-400 hover:text-blue-300 underline"
+                  >
+                    Create a Deck
+                  </Link>
+                </div>
+              )}
+            </div>
+          </div>
+          
           <div className="space-y-4">
             <h3 className="text-lg font-semibold">Game Modes</h3>
             
@@ -82,6 +162,7 @@ const GameModePage: React.FC<GameModePageProps> = ({ onStartGame }) => {
               <button
                 onClick={handleStartSinglePlayer}
                 className="bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded-md transition-colors"
+                disabled={decks.length === 0 || !selectedDeckId}
               >
                 Practice Mode
               </button>
@@ -89,6 +170,7 @@ const GameModePage: React.FC<GameModePageProps> = ({ onStartGame }) => {
               <button
                 onClick={handleStartAIGame}
                 className="bg-red-600 hover:bg-red-700 text-white py-2 px-4 rounded-md transition-colors"
+                disabled={decks.length === 0 || !selectedDeckId}
               >
                 Play Against AI
               </button>
@@ -110,6 +192,7 @@ const GameModePage: React.FC<GameModePageProps> = ({ onStartGame }) => {
                   <button
                     type="submit"
                     className="bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-md transition-colors"
+                    disabled={decks.length === 0 || !selectedDeckId}
                   >
                     Join Room
                   </button>
@@ -119,6 +202,7 @@ const GameModePage: React.FC<GameModePageProps> = ({ onStartGame }) => {
               <button
                 onClick={handleCreateRoom}
                 className="w-full bg-purple-600 hover:bg-purple-700 text-white py-2 px-4 rounded-md transition-colors"
+                disabled={decks.length === 0 || !selectedDeckId}
               >
                 Create New Room
               </button>

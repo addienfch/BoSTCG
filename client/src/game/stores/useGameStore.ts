@@ -69,8 +69,8 @@ interface GameState {
   addLog: (message: string) => void;
 }
 
-// Helper function to initialize a deck
-const initializeDeck = (isPlayer: boolean): Card[] => {
+// Helper function to initialize a default deck
+const initializeDefaultDeck = (isPlayer: boolean): Card[] => {
   // For now, just use the fire cards
   const avatars = fireAvatarCards.filter(card => card.level === 1);
   const actions = fireActionCards;
@@ -117,6 +117,22 @@ const initializeDeck = (isPlayer: boolean): Card[] => {
   
   console.log(`Initialized deck with ${deck.length} cards (minimum 40 required)`);
   return deck;
+};
+
+// Function to initialize a deck from a deck configuration
+const initializeDeck = (isPlayer: boolean, deckConfig?: { name: string, cards: Card[] }): Card[] => {
+  // If no deck config is provided, use default deck
+  if (!deckConfig) {
+    return initializeDefaultDeck(isPlayer);
+  }
+  
+  // Use the provided deck configuration
+  if (deckConfig.cards.length >= 40) {
+    return [...deckConfig.cards]; // Return a copy to avoid mutations
+  } else {
+    console.warn(`Deck ${deckConfig.name} has less than 40 cards. Using default deck instead.`);
+    return initializeDefaultDeck(isPlayer);
+  }
 };
 
 // Function to shuffle an array (Fisher-Yates algorithm)
