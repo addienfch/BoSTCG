@@ -1035,7 +1035,25 @@ export const useGameStore = create<GameState>((set, get) => ({
         // ALWAYS reset avatar tap status and position for BOTH players (not just current player)
         // This ensures that ALL avatars on the board are reset properly
         
-        console.log("REFRESH PHASE: Resetting all avatars");
+        console.log("REFRESH PHASE: Resetting all avatars - START");
+        
+        // First, check the current state of avatars
+        const currentState = get();
+        console.log("AVATAR RESET - Current Player Active Avatar:", 
+          currentState.player.activeAvatar ? 
+          { 
+            name: currentState.player.activeAvatar.name,
+            isTapped: currentState.player.activeAvatar.isTapped,
+            turnPlayed: currentState.player.activeAvatar.turnPlayed 
+          } : "None");
+          
+        console.log("AVATAR RESET - Current Opponent Active Avatar:", 
+          currentState.opponent.activeAvatar ? 
+          { 
+            name: currentState.opponent.activeAvatar.name,
+            isTapped: currentState.opponent.activeAvatar.isTapped,
+            turnPlayed: currentState.opponent.activeAvatar.turnPlayed 
+          } : "None");
         
         // Force a proper reset of ALL avatars in a single update to ensure consistency
         set(state => {
@@ -1044,46 +1062,68 @@ export const useGameStore = create<GameState>((set, get) => ({
           
           // Reset player's active avatar if it exists
           if (updatedState.player.activeAvatar) {
-            updatedState.player.activeAvatar = {
+            const resetAvatar = {
               ...updatedState.player.activeAvatar,
               isTapped: false
-              // AvatarCard type doesn't have position properties,
-              // those are handled by the Card2D component's transform style
             };
+            console.log("AVATAR RESET - Player avatar reset from:", 
+              updatedState.player.activeAvatar.isTapped, "to:", resetAvatar.isTapped);
+            updatedState.player.activeAvatar = resetAvatar;
           }
           
           // Reset player's reserve avatars if any exist
           if (updatedState.player.reserveAvatars.length > 0) {
-            updatedState.player.reserveAvatars = updatedState.player.reserveAvatars.map(avatar => ({
-              ...avatar,
-              isTapped: false
-              // AvatarCard type doesn't have position properties,
-              // those are handled by the Card2D component's transform style
-            }));
+            updatedState.player.reserveAvatars = updatedState.player.reserveAvatars.map(avatar => {
+              const resetAvatar = {
+                ...avatar,
+                isTapped: false
+              };
+              console.log("AVATAR RESET - Player reserve avatar reset:", avatar.name);
+              return resetAvatar;
+            });
           }
           
           // Reset opponent's active avatar if it exists
           if (updatedState.opponent.activeAvatar) {
-            updatedState.opponent.activeAvatar = {
+            const resetAvatar = {
               ...updatedState.opponent.activeAvatar,
               isTapped: false
-              // AvatarCard type doesn't have position properties,
-              // those are handled by the Card2D component's transform style
             };
+            console.log("AVATAR RESET - Opponent avatar reset from:", 
+              updatedState.opponent.activeAvatar.isTapped, "to:", resetAvatar.isTapped);
+            updatedState.opponent.activeAvatar = resetAvatar;
           }
           
           // Reset opponent's reserve avatars if any exist
           if (updatedState.opponent.reserveAvatars.length > 0) {
-            updatedState.opponent.reserveAvatars = updatedState.opponent.reserveAvatars.map(avatar => ({
-              ...avatar,
-              isTapped: false
-              // AvatarCard type doesn't have position properties,
-              // those are handled by the Card2D component's transform style
-            }));
+            updatedState.opponent.reserveAvatars = updatedState.opponent.reserveAvatars.map(avatar => {
+              const resetAvatar = {
+                ...avatar,
+                isTapped: false
+              };
+              console.log("AVATAR RESET - Opponent reserve avatar reset:", avatar.name);
+              return resetAvatar;
+            });
           }
           
           return updatedState;
         });
+        
+        // Verify the avatars were reset correctly
+        const afterState = get();
+        console.log("AVATAR RESET VERIFICATION - Player Active Avatar:", 
+          afterState.player.activeAvatar ? 
+          { 
+            name: afterState.player.activeAvatar.name,
+            isTapped: afterState.player.activeAvatar.isTapped
+          } : "None");
+          
+        console.log("AVATAR RESET VERIFICATION - Opponent Active Avatar:", 
+          afterState.opponent.activeAvatar ? 
+          { 
+            name: afterState.opponent.activeAvatar.name,
+            isTapped: afterState.opponent.activeAvatar.isTapped
+          } : "None");
         
         // Show toast based on whose turn it is
         if (currPlayer === 'player') {
@@ -1094,7 +1134,7 @@ export const useGameStore = create<GameState>((set, get) => ({
         
         // Log the reset for clarity in the game log
         get().addLog(`All avatars have been reset and are ready for battle.`);
-        console.log("Avatar reset complete - all should be untapped now");
+        console.log("AVATAR RESET - Complete - all should be untapped now");
         
         break;
         

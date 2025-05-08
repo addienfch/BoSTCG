@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { AvatarCard, ActionCard, Card as CardType, ElementType } from '../data/cardTypes';
 import { useAudio } from '../../lib/stores/useAudio';
 import { toast } from 'sonner';
@@ -33,6 +34,8 @@ const Card2D: React.FC<Card2DProps> = ({
   const [showActions, setShowActions] = useState(false);
   const playHitSound = useAudio(state => state.playHit);
   const playCard = useAudio(state => state.playCard);
+  const cardRef = useRef<HTMLDivElement>(null);
+  const [menuPosition, setMenuPosition] = useState({ top: 0, left: 0 });
   
   // Card dimensions - smaller for mobile view
   const width = 120;
@@ -158,6 +161,19 @@ const Card2D: React.FC<Card2DProps> = ({
   // Highlight color based on playability
   const borderColor = isPlayable ? '#f5d76a' : '#666666';
   
+  // Update menu position when showActions changes
+  useEffect(() => {
+    if (showActions && cardRef.current) {
+      const rect = cardRef.current.getBoundingClientRect();
+      
+      // Position the menu at the center-right of the card
+      setMenuPosition({
+        top: rect.top + window.scrollY,
+        left: rect.right + 10 + window.scrollX // 10px offset from card
+      });
+    }
+  }, [showActions]);
+
   const handleClick = () => {
     if (isPlayable && isInHand) {
       // During setup phase, automatically place level 1 avatars as active
@@ -311,92 +327,97 @@ const Card2D: React.FC<Card2DProps> = ({
   };
   
   return (
-    <div 
-      className="relative" 
-      style={{ 
-        width: `${width}px`, 
-        height: `${height}px`,
-        transform: isTapped ? 'rotate(90deg)' : 'none',
-        transformOrigin: 'center center',
-        transition: 'transform 0.3s ease-in-out',
-        position: 'relative',
-        zIndex: 1
-      }}
-    >
-      {/* Card base */}
+    <>
       <div 
-        className={`absolute inset-0 rounded-lg shadow-lg cursor-pointer ${isDragging ? 'scale-105' : 'hover:scale-105'} transition-transform`}
+        ref={cardRef}
+        className="relative" 
         style={{ 
-          backgroundColor: cardColor,
-          border: `3px solid ${borderColor}`,
-          opacity: isPlayable ? 1 : 0.7
+          width: `${width}px`, 
+          height: `${height}px`,
+          transform: isTapped ? 'rotate(90deg)' : 'none',
+          transformOrigin: 'center center',
+          transition: 'transform 0.3s ease-in-out',
+          position: 'relative',
+          zIndex: 1
         }}
-        onClick={handleClick}
       >
-        {/* Card name */}
+        {/* Card base */}
         <div 
-          className="absolute top-2 left-0 right-0 text-center font-bold text-white text-xs px-2 flex items-center justify-center gap-1"
-        >
-          {getElementIcon()}
-          <span>{card.name}</span>
-        </div>
-        
-        {/* Card art */}
-        <div 
-          className="absolute top-9 left-2 right-2 h-20 bg-black bg-opacity-30 rounded overflow-hidden"
-        >
-          {card.art ? (
-            <img src={card.art} alt={card.name} className="h-full w-full object-cover" />
-          ) : (
-            <div className="h-full w-full flex items-center justify-center text-white text-opacity-70 text-xs">
-              [Card Art]
-            </div>
-          )}
-        </div>
-        
-        {/* Card type */}
-        <div className="absolute top-[116px] left-2 right-2 text-center bg-black bg-opacity-70 py-0.5 px-1 rounded text-white text-[9px]">
-          {card.type === 'avatar' 
-            ? `Avatar - ${(card as AvatarCard).subType ? 
-              ((card as AvatarCard).subType.charAt(0).toUpperCase() + (card as AvatarCard).subType.slice(1)) 
-              : 'Unknown'}`
-            : card.type.charAt(0).toUpperCase() + card.type.slice(1)}
-        </div>
-        
-        {/* Card description/skills */}
-        <div 
-          className="absolute top-[132px] left-2 right-2 text-white text-[8px] bg-black bg-opacity-50 p-1 rounded h-[28px] overflow-hidden"
-        >
-          {card.type === 'avatar' ? (
-            <>
-              {(card as AvatarCard).skill1?.name || ''} {(card as AvatarCard).skill1?.damage || ''} 
-              {(card as AvatarCard).skill1?.damage ? 'dmg' : ''}
-              {(card as AvatarCard).skill1?.effect && (
-                <> | {((card as AvatarCard).skill1.effect?.length || 0) > 35 
-                  ? (card as AvatarCard).skill1.effect?.substring(0, 35) + '...' 
-                  : (card as AvatarCard).skill1.effect}</>
-              )}
-            </>
-          ) : (
-            <>
-              {card.description && card.description.length > 40
-                ? card.description.substring(0, 40) + '...' 
-                : card.description}
-            </>
-          )}
-        </div>
-        
-        {/* Render card type specific content */}
-        {card.type === 'avatar' ? renderAvatarContent() : renderActionContent()}
-      </div>
-      
-      {/* Action menu for all cards */}
-      {showActions && isPlayable && isInHand && (
-        <div 
-          className="absolute left-full top-0 bg-black bg-opacity-90 rounded-lg p-2 border-2 border-yellow-400 shadow-xl ml-2"
+          className={`absolute inset-0 rounded-lg shadow-lg cursor-pointer ${isDragging ? 'scale-105' : 'hover:scale-105'} transition-transform`}
           style={{ 
+            backgroundColor: cardColor,
+            border: `3px solid ${borderColor}`,
+            opacity: isPlayable ? 1 : 0.7
+          }}
+          onClick={handleClick}
+        >
+          {/* Card name */}
+          <div 
+            className="absolute top-2 left-0 right-0 text-center font-bold text-white text-xs px-2 flex items-center justify-center gap-1"
+          >
+            {getElementIcon()}
+            <span>{card.name}</span>
+          </div>
+          
+          {/* Card art */}
+          <div 
+            className="absolute top-9 left-2 right-2 h-20 bg-black bg-opacity-30 rounded overflow-hidden"
+          >
+            {card.art ? (
+              <img src={card.art} alt={card.name} className="h-full w-full object-cover" />
+            ) : (
+              <div className="h-full w-full flex items-center justify-center text-white text-opacity-70 text-xs">
+                [Card Art]
+              </div>
+            )}
+          </div>
+          
+          {/* Card type */}
+          <div className="absolute top-[116px] left-2 right-2 text-center bg-black bg-opacity-70 py-0.5 px-1 rounded text-white text-[9px]">
+            {card.type === 'avatar' 
+              ? `Avatar - ${(card as AvatarCard).subType ? 
+                ((card as AvatarCard).subType.charAt(0).toUpperCase() + (card as AvatarCard).subType.slice(1)) 
+                : 'Unknown'}`
+              : card.type.charAt(0).toUpperCase() + card.type.slice(1)}
+          </div>
+          
+          {/* Card description/skills */}
+          <div 
+            className="absolute top-[132px] left-2 right-2 text-white text-[8px] bg-black bg-opacity-50 p-1 rounded h-[28px] overflow-hidden"
+          >
+            {card.type === 'avatar' ? (
+              <>
+                {(card as AvatarCard).skill1?.name || ''} {(card as AvatarCard).skill1?.damage || ''} 
+                {(card as AvatarCard).skill1?.damage ? 'dmg' : ''}
+                {(card as AvatarCard).skill1?.effect && (
+                  <> | {((card as AvatarCard).skill1.effect?.length || 0) > 35 
+                    ? (card as AvatarCard).skill1.effect?.substring(0, 35) + '...' 
+                    : (card as AvatarCard).skill1.effect}</>
+                )}
+              </>
+            ) : (
+              <>
+                {card.description && card.description.length > 40
+                  ? card.description.substring(0, 40) + '...' 
+                  : card.description}
+              </>
+            )}
+          </div>
+          
+          {/* Render card type specific content */}
+          {card.type === 'avatar' ? renderAvatarContent() : renderActionContent()}
+        </div>
+      </div>
+
+      {/* Action menu in portal (always on top) */}
+      {showActions && isPlayable && isInHand && document.body && createPortal(
+        <div 
+          className="fixed bg-black bg-opacity-90 rounded-lg p-2 border-2 border-yellow-400 shadow-xl"
+          style={{
+            top: `${menuPosition.top}px`,
+            left: `${menuPosition.left}px`,
             width: `${width + 20}px`,
-            zIndex: 9999 // Extremely high z-index to be above everything
+            zIndex: 99999, // Ultra high z-index
           }}
         >
           <div className="flex flex-col gap-2">
@@ -436,9 +457,10 @@ const Card2D: React.FC<Card2DProps> = ({
               Use as Energy
             </button>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
-    </div>
+    </>
   );
 };
 
