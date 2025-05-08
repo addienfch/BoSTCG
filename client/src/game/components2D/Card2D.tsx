@@ -80,9 +80,9 @@ const Card2D: React.FC<Card2DProps> = ({
             {energyCount.water}
           </div>
         )}
-        {energyCount.ground > 0 && (
+        {energyCount.earth > 0 && (
           <div className="w-4 h-4 bg-amber-800 rounded-full flex items-center justify-center text-white text-[8px]">
-            {energyCount.ground}
+            {energyCount.earth}
           </div>
         )}
         {energyCount.air > 0 && (
@@ -113,7 +113,7 @@ const Card2D: React.FC<Card2DProps> = ({
         cardColor = '#2671c9';
         cardColorHover = '#3285e8';
         break;
-      case 'ground':
+      case 'earth':
         cardColor = '#8c5e2a';
         cardColorHover = '#a6722f';
         break;
@@ -218,7 +218,7 @@ const Card2D: React.FC<Card2DProps> = ({
             <span className="text-white text-xs">💧</span>
           </div>
         );
-      case 'ground':
+      case 'earth':
         return (
           <div className="w-5 h-5 bg-amber-800 rounded-full flex items-center justify-center">
             <span className="text-white text-xs">🌋</span>

@@ -365,6 +365,7 @@ export const useGameStore = create<GameState>((set, get) => ({
         const drawnCard = updatedDeck.shift();
         if (drawnCard) {
           updatedHand.push(drawnCard);
+          get().addLog(`${player === 'player' ? 'You draw' : 'Opponent draws'} ${drawnCard.name}.`);
         }
       }
       
@@ -374,8 +375,6 @@ export const useGameStore = create<GameState>((set, get) => ({
         return { opponent: { ...targetState, deck: updatedDeck, hand: updatedHand } };
       }
     });
-    
-    get().addLog(`${player === 'player' ? 'You' : 'Opponent'} drew ${count} card(s).`);
   },
   
   // Play a card from hand
@@ -676,7 +675,7 @@ export const useGameStore = create<GameState>((set, get) => ({
     }
     
     // Check if the level 1 has been in play for at least 1 turn
-    if (targetAvatarCard.turnPlayed >= get().turn) {
+    if (targetAvatarCard.turnPlayed && targetAvatarCard.turnPlayed >= get().turn) {
       toast.error("You can only evolve an avatar that has been in play for at least 1 turn!");
       return;
     }
@@ -777,6 +776,7 @@ export const useGameStore = create<GameState>((set, get) => ({
                 level: 1,
                 subType: 'kobar',
                 health: 8,
+                art: '/textures/cards/fire-spirit.png',
                 counters: {
                   damage: 0,
                   bleed: 0,
@@ -820,453 +820,201 @@ export const useGameStore = create<GameState>((set, get) => ({
               set({ gamePhase: 'draw' });
               get().addLog(`Your Draw Phase`);
               
-              // Draw a card automatically
-              get().drawCard('player');
+              // Draw one card during draw phase (automatically)
+              get().drawCard('player', 1);
+              
+              // Move to main1 phase after a short delay for draw
+              setTimeout(() => {
+                set({ gamePhase: 'main1' });
+                get().addLog(`Your Main Phase 1`);
+              }, 1000);
             }, 3000);
           }, 3000);
           
-          // Return early to prevent automatic phase transition
-          return;
+          return; // Early return for this special case
         } else {
-          // Player must place an active avatar first
-          toast.warning('You must place a Level 1 avatar as your active avatar first!');
-          return; // Don't proceed to next phase
+          toast.error("You need to place a Level 1 Avatar before proceeding!");
+          return;
         }
-        break;
         
       case 'refresh':
         nextPhase = 'draw';
         
-        // Handle refresh phase actions
+        // Move energy from used pile back to energy pile
         set(state => {
+          const currentPlayer = state.currentPlayer;
           const playerState = currentPlayer === 'player' ? state.player : state.opponent;
-          const updatedState = { ...state };
           
-          // 1. Move used energy back to energy pile
+          // Reset avatar to energy count for new turn
+          const updatedState = {
+            avatarToEnergyCount: 0,
+            // Combine energy piles
+            energyPile: [...playerState.energyPile, ...playerState.usedEnergyPile],
+            usedEnergyPile: []
+          };
+          
+          // Update the correct player
           if (currentPlayer === 'player') {
-            updatedState.player = {
-              ...playerState,
-              energyPile: [...playerState.energyPile, ...playerState.usedEnergyPile],
-              usedEnergyPile: []
-            };
+            return { player: { ...state.player, ...updatedState } };
           } else {
-            updatedState.opponent = {
-              ...playerState,
-              energyPile: [...playerState.energyPile, ...playerState.usedEnergyPile],
-              usedEnergyPile: []
-            };
+            return { opponent: { ...state.opponent, ...updatedState } };
           }
-          
-          return updatedState;
         });
         
-        // Add visibile feedback for the refresh phase
-        get().addLog(`${currentPlayer === 'player' ? 'Your' : 'Opponent\'s'} Refresh Phase: Energy refreshed.`);
-        toast.info(`${currentPlayer === 'player' ? 'Your' : 'Opponent\'s'} Refresh Phase - Resetting energy...`, { duration: 3000 });
-        
-        // Wait 3 seconds before transitioning to the draw phase
-        setTimeout(() => {
-          // Move to draw phase after delay
-          set({ gamePhase: nextPhase });
-          get().addLog(`${currentPlayer === 'player' ? 'Your' : 'Opponent\'s'} Draw Phase`);
-          
-          // After another short delay, draw a card for visual clarity
-          setTimeout(() => {
-            if (currentPlayer === 'player') {
-              get().drawCard('player');
-            } else {
-              get().drawCard('opponent');
-              
-              // If it's AI's turn, continue with AI decision-making after another delay
-              if (get().opponent.isAI) {
-                setTimeout(() => {
-                  get().performAIActions();
-                }, 1000);
-              }
-            }
-          }, 500);
-        }, 3000);
-        
-        // Return early to prevent automatic phase transition
-        return;
+        // Log the energy refresh
+        get().addLog(`${currentPlayer === 'player' ? 'Your' : 'Opponent\'s'} used energy has been refreshed.`);
         break;
         
       case 'draw':
         nextPhase = 'main1';
         
-        // No need to draw a card here since we already draw a card at the end of the refresh phase
-        // This prevents drawing multiple cards
-        
-        get().addLog(`${currentPlayer === 'player' ? 'Your' : 'Opponent\'s'} Draw Phase complete.`);
+        // Draw 1 card for the active player
+        // This is now handled in the refresh => draw transition
         break;
         
       case 'main1':
         nextPhase = 'battle';
-        get().addLog(`${currentPlayer === 'player' ? 'Your' : 'Opponent\'s'} Main Phase 1 complete.`);
         break;
         
       case 'battle':
-        nextPhase = 'damage';
-        get().addLog(`${currentPlayer === 'player' ? 'Your' : 'Opponent\'s'} Battle Phase complete.`);
-        break;
-        
-      case 'damage':
         nextPhase = 'main2';
-        get().addLog(`${currentPlayer === 'player' ? 'Your' : 'Opponent\'s'} Damage Phase complete.`);
+        
+        // Check for defeated avatars after battle
+        get().checkDefeatedAvatars();
         break;
         
       case 'main2':
         nextPhase = 'end';
-        get().addLog(`${currentPlayer === 'player' ? 'Your' : 'Opponent\'s'} Main Phase 2 complete.`);
         break;
         
       case 'end':
-        // When ending the turn, we go back to the refresh phase but switch players
         nextPhase = 'refresh';
         
-        // Handle end of turn
+        // Check for maximum hand size (8)
+        const activePlayer = currentPlayer === 'player' ? player : opponent;
+        if (activePlayer.hand.length > 8) {
+          const excessCards = activePlayer.hand.length - 8;
+          // For AI, automatically discard excess cards
+          if (currentPlayer === 'opponent') {
+            for (let i = 0; i < excessCards; i++) {
+              // Discard the last card
+              get().discardCard(activePlayer.hand.length - 1, 'opponent');
+            }
+          } else {
+            // For player, prompt that they need to discard
+            toast.error(`You have ${activePlayer.hand.length} cards! You need to discard ${excessCards} to get to 8.`);
+            return; // Don't progress until discarded
+          }
+        }
+        
+        // End turn (switch players)
         get().endTurn();
-        return; // exit early since endTurn will update the phase
+        return; // Skip the phase change below since endTurn handles this
     }
     
-    // Update the phase
+    // Update the game phase
     set({ gamePhase: nextPhase });
-  },
-  
-  // End the current turn and switch players
-  endTurn: () => {
-    const { currentPlayer, turn } = get();
     
-    // Check for hand size limit (8) and discard excess cards
-    set(state => {
-      const playerState = currentPlayer === 'player' ? state.player : state.opponent;
-      
-      if (playerState.hand.length > 8) {
-        // Need to discard down to 8 cards
-        const cardsToDiscard = playerState.hand.length - 8;
-        const updatedHand = [...playerState.hand];
-        const discardedCards = updatedHand.splice(-cardsToDiscard); // Discard from the end
-        
-        if (currentPlayer === 'player') {
-          get().addLog(`You discarded ${cardsToDiscard} cards at end of turn.`);
-          
-          return {
-            player: {
-              ...playerState,
-              hand: updatedHand,
-              graveyard: [...playerState.graveyard, ...discardedCards]
-            }
-          };
-        } else {
-          get().addLog(`Opponent discarded ${cardsToDiscard} cards at end of turn.`);
-          
-          return {
-            opponent: {
-              ...playerState,
-              hand: updatedHand,
-              graveyard: [...playerState.graveyard, ...discardedCards]
-            }
-          };
-        }
-      }
-      
-      return {};
-    });
+    // Log the phase change
+    get().addLog(`${currentPlayer === 'player' ? 'Your' : 'Opponent\'s'} ${get().getPhaseText()}`);
     
-    // Reset the avatar to energy counter for the current player
-    set(state => {
-      if (currentPlayer === 'player') {
-        return {
-          player: {
-            ...state.player,
-            avatarToEnergyCount: 0 // Reset for next turn
-          }
-        };
-      } else {
-        return {
-          opponent: {
-            ...state.opponent,
-            avatarToEnergyCount: 0 // Reset for next turn
-          }
-        };
-      }
-    });
-    
-    // Switch players
-    const nextPlayer = currentPlayer === 'player' ? 'opponent' : 'player';
-    const newTurn = nextPlayer === 'player' ? turn + 1 : turn;
-    
-    set({
-      currentPlayer: nextPlayer,
-      turn: newTurn,
-      gamePhase: 'refresh'
-    });
-    
-    get().addLog(`End of turn ${turn}. It's now ${nextPlayer === 'player' ? 'your' : 'opponent\'s'} turn.`);
-    
-    // Check if any avatars were defeated
-    get().checkDefeatedAvatars();
-    
-    // If next player is the AI, automate their turn
-    if (nextPlayer === 'opponent') {
-      // Small delay before AI actions to make it more natural
+    // If it's the opponent's turn, have the AI perform actions after a delay
+    if (currentPlayer === 'opponent') {
       setTimeout(() => {
-        // Make sure game state hasn't changed
-        if (get().currentPlayer === 'opponent') {
-          // Simulate AI going through each phase
-          get().performAIActions();
-        }
+        get().performAIActions();
       }, 1000);
     }
   },
   
-  // Perform AI actions for the opponent's turn
-  performAIActions: () => {
-    const { gamePhase, opponent } = get();
+  // End the current turn and switch players
+  endTurn: () => {
+    set(state => {
+      // Switch current player
+      const newCurrentPlayer = state.currentPlayer === 'player' ? 'opponent' : 'player';
+      
+      // If wrapping around to player, increment turn counter
+      const newTurn = newCurrentPlayer === 'player' ? state.turn + 1 : state.turn;
+      
+      return {
+        currentPlayer: newCurrentPlayer,
+        turn: newTurn,
+        gamePhase: 'refresh' // Always start a turn with refresh phase
+      };
+    });
     
-    // Different strategies based on the current phase
-    switch (gamePhase) {
-      case 'main1':
-        // In main phase 1, AI tries to play cards
+    const newCurrentPlayer = get().currentPlayer;
+    
+    // Log the turn change
+    if (newCurrentPlayer === 'player') {
+      get().addLog(`Turn ${get().turn} - Your turn begins!`);
+    } else {
+      get().addLog(`Opponent's turn begins!`);
+    }
+    
+    // Show toast for the turn change
+    toast.info(`${newCurrentPlayer === 'player' ? 'Your' : 'Opponent\'s'} turn`, { duration: 3000 });
+    
+    // If it's now the opponent's turn, run the AI after a delay
+    if (newCurrentPlayer === 'opponent') {
+      toast.info(`Refresh Phase - Resetting opponent's energy...`, { duration: 3000 });
+      
+      // Move to draw phase after a brief delay
+      setTimeout(() => {
+        set({ gamePhase: 'draw' });
+        get().addLog(`Opponent's Draw Phase`);
         
-        // First, prioritize playing an avatar if we don't have one
-        if (!opponent.activeAvatar) {
-          // Look for a level 1 avatar
-          const avatarIndex = opponent.hand.findIndex(
-            card => card.type === 'avatar' && (card as AvatarCard).level === 1
-          );
-          
-          if (avatarIndex !== -1) {
-            // Place as active avatar
-            set(state => {
-              const updatedHand = [...state.opponent.hand];
-              const avatarCard = updatedHand.splice(avatarIndex, 1)[0] as AvatarCard;
-              avatarCard.turnPlayed = state.turn;
-              
-              return {
-                opponent: {
-                  ...state.opponent,
-                  hand: updatedHand,
-                  activeAvatar: avatarCard
-                }
-              };
-            });
-            
-            get().addLog(`Opponent played ${opponent.hand[avatarIndex].name} as their active avatar.`);
-            
-            // Continue the turn after a delay
-            setTimeout(() => {
-              get().performAIActions();
-            }, 1000);
-            return;
-          }
-        }
+        // Auto-draw for opponent
+        get().drawCard('opponent', 1);
         
-        // Place reserve avatars if we have space
-        if (opponent.reserveAvatars.length < 2) {
-          // Look for a level 1 avatar
-          const avatarIndex = opponent.hand.findIndex(
-            card => card.type === 'avatar' && (card as AvatarCard).level === 1
-          );
-          
-          if (avatarIndex !== -1) {
-            // Place as reserve avatar
-            set(state => {
-              const updatedHand = [...state.opponent.hand];
-              const avatarCard = updatedHand.splice(avatarIndex, 1)[0] as AvatarCard;
-              avatarCard.turnPlayed = state.turn;
-              
-              return {
-                opponent: {
-                  ...state.opponent,
-                  hand: updatedHand,
-                  reserveAvatars: [...state.opponent.reserveAvatars, avatarCard]
-                }
-              };
-            });
-            
-            get().addLog(`Opponent played ${opponent.hand[avatarIndex].name} as a reserve avatar.`);
-            
-            // Continue the turn after a delay
-            setTimeout(() => {
-              get().performAIActions();
-            }, 1000);
-            return;
-          }
-        }
-        
-        // Try to play a spell card if we have an active avatar
-        if (opponent.activeAvatar) {
-          // Look for a spell card
-          const spellIndex = opponent.hand.findIndex(
-            card => card.type === 'spell' || card.type === 'quickSpell'
-          );
-          
-          if (spellIndex !== -1) {
-            const spellCard = opponent.hand[spellIndex];
-            const energyCost = spellCard.energyCost || [];
-            
-            // Check if we have enough energy
-            if (get().hasEnoughEnergy(energyCost, 'opponent')) {
-              // Play the spell card
-              set(state => {
-                const updatedHand = [...state.opponent.hand];
-                updatedHand.splice(spellIndex, 1);
-                
-                return {
-                  opponent: {
-                    ...state.opponent,
-                    hand: updatedHand,
-                    graveyard: [...state.opponent.graveyard, spellCard]
-                  }
-                };
-              });
-              
-              // Use the energy
-              get().useEnergy(energyCost, 'opponent');
-              
-              // Log the action
-              get().addLog(`Opponent played ${spellCard.name}.`);
-              
-              // Continue the turn after a delay
-              setTimeout(() => {
-                get().performAIActions();
-              }, 1000);
-              return;
-            }
-          }
-        }
-        
-        // As a last resort, put a card into the energy pile
-        if (opponent.hand.length > 0) {
-          // Don't use our only avatar for energy
-          if (opponent.avatarToEnergyCount < 1) {
-            // Find a non-avatar card if possible
-            let energyCardIndex = opponent.hand.findIndex(card => card.type !== 'avatar');
-            
-            // If no non-avatar cards, use an avatar but only once per turn
-            if (energyCardIndex === -1) {
-              energyCardIndex = 0; // Use the first card
-              set(state => ({
-                opponent: {
-                  ...state.opponent,
-                  avatarToEnergyCount: state.opponent.avatarToEnergyCount + 1
-                }
-              }));
-            }
-            
-            const card = opponent.hand[energyCardIndex];
-            
-            // Add the card to energy pile
-            set(state => {
-              const updatedHand = [...state.opponent.hand];
-              updatedHand.splice(energyCardIndex, 1);
-              
-              return {
-                opponent: {
-                  ...state.opponent,
-                  hand: updatedHand,
-                  energyPile: [...state.opponent.energyPile, card]
-                }
-              };
-            });
-            
-            get().addLog(`Opponent added ${card.name} to their energy pile.`);
-            
-            // Continue to the next phase
-            setTimeout(() => {
-              get().nextPhase();
-            }, 1000);
-            return;
-          }
-        }
-        
-        // If no actions were taken, move to the next phase
+        // Move to main1 phase after a short delay for draw
         setTimeout(() => {
-          get().nextPhase();
+          set({ gamePhase: 'main1' });
+          get().addLog(`Opponent's Main Phase 1`);
+          
+          // Start the AI decision-making process
+          get().performAIActions();
         }, 1000);
-        break;
+      }, 3000);
+    } else {
+      // It's the player's turn, show refresh phase
+      toast.info(`Refresh Phase - Resetting your energy...`, { duration: 3000 });
+      
+      // Move to draw phase after a delay
+      setTimeout(() => {
+        set({ gamePhase: 'draw' });
+        get().addLog(`Your Draw Phase`);
         
-      case 'main2':
-        // In main phase 2, do similar actions as main1 but prioritize differently
+        // Auto-draw for player
+        get().drawCard('player', 1);
         
-        // If we haven't added a card to energy yet, do that
-        if (opponent.avatarToEnergyCount < 1 && opponent.hand.length > 0) {
-          // Find a non-avatar card if possible
-          let energyCardIndex = opponent.hand.findIndex(card => card.type !== 'avatar');
-          
-          // If no non-avatar cards, use an avatar but only once per turn
-          if (energyCardIndex === -1) {
-            energyCardIndex = 0; // Use the first card
-            set(state => ({
-              opponent: {
-                ...state.opponent,
-                avatarToEnergyCount: state.opponent.avatarToEnergyCount + 1
-              }
-            }));
-          }
-          
-          const card = opponent.hand[energyCardIndex];
-          
-          // Add the card to energy pile
-          set(state => {
-            const updatedHand = [...state.opponent.hand];
-            updatedHand.splice(energyCardIndex, 1);
-            
-            return {
-              opponent: {
-                ...state.opponent,
-                hand: updatedHand,
-                energyPile: [...state.opponent.energyPile, card]
-              }
-            };
-          });
-          
-          get().addLog(`Opponent added ${card.name} to their energy pile.`);
-          
-          // Continue to the next phase
-          setTimeout(() => {
-            get().nextPhase();
-          }, 1000);
-          return;
-        }
-        
-        // If no actions were taken, move to the next phase
+        // Move to main1 phase after a short delay for draw
         setTimeout(() => {
-          get().nextPhase();
+          set({ gamePhase: 'main1' });
+          get().addLog(`Your Main Phase 1`);
         }, 1000);
-        break;
-        
-      default:
-        // For other phases, just move to the next phase
-        setTimeout(() => {
-          get().nextPhase();
-        }, 1000);
-        break;
+      }, 3000);
     }
   },
   
-  // Helper to format the current phase for display
+  // Get a human-readable version of the current phase
   getPhaseText: () => {
-    const { gamePhase, currentPlayer } = get();
+    const { gamePhase } = get();
     
     switch (gamePhase) {
       case 'setup':
         return 'Setup Phase';
       case 'refresh':
-        return `${currentPlayer === 'player' ? 'Your' : 'Opponent\'s'} Refresh Phase`;
+        return 'Refresh Phase';
       case 'draw':
-        return `${currentPlayer === 'player' ? 'Your' : 'Opponent\'s'} Draw Phase`;
+        return 'Draw Phase';
       case 'main1':
-        return `${currentPlayer === 'player' ? 'Your' : 'Opponent\'s'} Main Phase 1`;
+        return 'Main Phase 1';
       case 'battle':
-        return `${currentPlayer === 'player' ? 'Your' : 'Opponent\'s'} Battle Phase`;
-      case 'damage':
-        return `${currentPlayer === 'player' ? 'Your' : 'Opponent\'s'} Damage Phase`;
+        return 'Battle Phase';
       case 'main2':
-        return `${currentPlayer === 'player' ? 'Your' : 'Opponent\'s'} Main Phase 2`;
+        return 'Main Phase 2';
       case 'end':
-        return `${currentPlayer === 'player' ? 'Your' : 'Opponent\'s'} End Phase`;
+        return 'End Phase';
       default:
         return 'Unknown Phase';
     }
@@ -1584,7 +1332,7 @@ export const useGameStore = create<GameState>((set, get) => ({
     }));
   },
   
-  // AI actions 
+  // AI actions
   performAIActions: () => {
     const { currentPlayer, gamePhase, opponent } = get();
     
