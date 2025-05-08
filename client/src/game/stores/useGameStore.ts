@@ -980,30 +980,96 @@ export const useGameStore = create<GameState>((set, get) => ({
         nextPhase = 'draw';
         
         // Move energy from used pile back to energy pile
-        set(state => {
-          const currentPlayer = state.currentPlayer;
-          const playerState = currentPlayer === 'player' ? state.player : state.opponent;
-          
-          // Reset avatar to energy count for new turn
-          const updatedState = {
-            avatarToEnergyCount: 0,
-            // Combine energy piles
-            energyPile: [...playerState.energyPile, ...playerState.usedEnergyPile],
-            usedEnergyPile: []
-          };
+        const currState = get(); // Get the current state
+        const currPlayer = currState.currentPlayer;
+        const playerState = currPlayer === 'player' ? currState.player : currState.opponent;
+        
+        if (playerState.usedEnergyPile.length > 0) {
+          const combinedEnergy = [...playerState.energyPile, ...playerState.usedEnergyPile];
           
           // Update the correct player
-          if (currentPlayer === 'player') {
-            toast.success("Your used energy cards have been refreshed!");
-            return { player: { ...state.player, ...updatedState } };
+          if (currPlayer === 'player') {
+            set(state => ({
+              player: {
+                ...state.player,
+                avatarToEnergyCount: 0, // Reset avatar to energy count for new turn
+                energyPile: combinedEnergy,
+                usedEnergyPile: []
+              }
+            }));
+            toast.success(`${playerState.usedEnergyPile.length} used energy cards have been refreshed!`);
           } else {
-            toast.info("Opponent's used energy cards have been refreshed.");
-            return { opponent: { ...state.opponent, ...updatedState } };
+            set(state => ({
+              opponent: {
+                ...state.opponent,
+                avatarToEnergyCount: 0, // Reset avatar to energy count for new turn
+                energyPile: combinedEnergy,
+                usedEnergyPile: []
+              }
+            }));
+            toast.info(`Opponent's ${playerState.usedEnergyPile.length} used energy cards have been refreshed.`);
           }
-        });
+          
+          // Log the energy refresh
+          get().addLog(`${currPlayer === 'player' ? 'Your' : 'Opponent\'s'} used energy has been refreshed.`);
+        }
         
-        // Log the energy refresh
-        get().addLog(`${currentPlayer === 'player' ? 'Your' : 'Opponent\'s'} used energy has been refreshed.`);
+        // ALWAYS reset avatar tap status for current player during refresh phase
+        if (currPlayer === 'player') {
+          // Reset player's active avatar tap status
+          if (currState.player.activeAvatar) {
+            set(state => ({
+              player: {
+                ...state.player,
+                activeAvatar: {
+                  ...state.player.activeAvatar!,
+                  isTapped: false
+                }
+              }
+            }));
+            toast.info("Your active avatar is ready for battle again!");
+          }
+          
+          // Also reset reserve avatars
+          if (currState.player.reserveAvatars.length > 0) {
+            set(state => ({
+              player: {
+                ...state.player,
+                reserveAvatars: state.player.reserveAvatars.map(avatar => ({
+                  ...avatar,
+                  isTapped: false
+                }))
+              }
+            }));
+          }
+        } else if (currPlayer === 'opponent') {
+          // Reset opponent's active avatar tap status
+          if (currState.opponent.activeAvatar) {
+            set(state => ({
+              opponent: {
+                ...state.opponent,
+                activeAvatar: {
+                  ...state.opponent.activeAvatar!,
+                  isTapped: false
+                }
+              }
+            }));
+          }
+          
+          // Also reset reserve avatars
+          if (currState.opponent.reserveAvatars.length > 0) {
+            set(state => ({
+              opponent: {
+                ...state.opponent,
+                reserveAvatars: state.opponent.reserveAvatars.map(avatar => ({
+                  ...avatar,
+                  isTapped: false
+                }))
+              }
+            }));
+          }
+        }
+        
         break;
         
       case 'draw':
@@ -1069,6 +1135,9 @@ export const useGameStore = create<GameState>((set, get) => ({
   
   // End the current turn and switch players
   endTurn: () => {
+    // Get current player before switching
+    const oldCurrentPlayer = get().currentPlayer;
+    
     set(state => {
       // Switch current player
       const newCurrentPlayer = state.currentPlayer === 'player' ? 'opponent' : 'player';
@@ -1076,10 +1145,25 @@ export const useGameStore = create<GameState>((set, get) => ({
       // If wrapping around to player, increment turn counter
       const newTurn = newCurrentPlayer === 'player' ? state.turn + 1 : state.turn;
       
+      // Always reset avatar to energy count at turn end
+      const playerUpdate = newCurrentPlayer === 'player' ? 
+        { avatarToEnergyCount: 0 } : {};
+        
+      const opponentUpdate = newCurrentPlayer === 'opponent' ? 
+        { avatarToEnergyCount: 0 } : {};
+      
       return {
         currentPlayer: newCurrentPlayer,
         turn: newTurn,
-        gamePhase: 'refresh' // Always start a turn with refresh phase
+        gamePhase: 'refresh', // Always start a turn with refresh phase
+        player: {
+          ...state.player,
+          ...playerUpdate,
+        },
+        opponent: {
+          ...state.opponent,
+          ...opponentUpdate
+        }
       };
     });
     
