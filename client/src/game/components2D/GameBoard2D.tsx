@@ -295,7 +295,22 @@ const GameBoard2D: React.FC<GameBoard2DProps> = ({ onAction }) => {
   // Function to handle phase progression
   const handleNextPhase = () => {
     if (game.currentPlayer === 'player') {
+      // Before changing the phase, get the current phase
+      const currentPhase = game.gamePhase;
+      
+      // Change the phase
       game.nextPhase();
+      
+      // After changing the phase, dispatch an event to notify components
+      const newPhase = game.gamePhase;
+      console.log(`Phase changed from ${currentPhase} to ${newPhase}`);
+      
+      // Only dispatch the event when entering refresh phase
+      if (newPhase === 'refresh') {
+        console.log('Dispatching gamePhaseChanged event for reset');
+        const phaseChangeEvent = new Event('gamePhaseChanged');
+        document.dispatchEvent(phaseChangeEvent);
+      }
     }
   };
   

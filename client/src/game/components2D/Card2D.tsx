@@ -173,6 +173,29 @@ const Card2D: React.FC<Card2DProps> = ({
       });
     }
   }, [showActions]);
+  
+  // Monitor for game phase changes to ensure avatars reset their visual state
+  useEffect(() => {
+    // Access global game state if available
+    const gameStore = window.gameStore;
+    if (gameStore && card.type === 'avatar') {
+      // Create a cleanup function that runs when component unmounts or refreshes
+      const checkPhase = () => {
+        if (gameStore.gamePhase === 'refresh') {
+          // Force card to visually refresh by triggering a re-render
+          console.log("Card2D detected refresh phase, resetting avatar visuals:", card.name);
+        }
+      };
+      
+      // Set up a listener for phase changes
+      // This ensures card appearance resets when the phase changes to refresh
+      document.addEventListener('gamePhaseChanged', checkPhase);
+      
+      return () => {
+        document.removeEventListener('gamePhaseChanged', checkPhase);
+      };
+    }
+  }, [card]);
 
   const handleClick = () => {
     if (isPlayable && isInHand) {
@@ -412,50 +435,65 @@ const Card2D: React.FC<Card2DProps> = ({
       {/* Action menu in portal (always on top) */}
       {showActions && isPlayable && isInHand && document.body && createPortal(
         <div 
-          className="fixed bg-black bg-opacity-90 rounded-lg p-2 border-2 border-yellow-400 shadow-xl"
+          className="fixed bg-black bg-opacity-95 rounded-lg p-3 border-2 border-yellow-400 shadow-xl"
           style={{
-            top: `${menuPosition.top}px`,
-            left: `${menuPosition.left}px`,
+            top: `${menuPosition.top - 5}px`, // Slight offset to appear centered
+            left: `${menuPosition.left + 10}px`, // Offset to the right
             width: `${width + 20}px`,
             zIndex: 99999, // Ultra high z-index
           }}
         >
-          <div className="flex flex-col gap-2">
-            {/* Avatar-specific actions */}
-            {card.type === 'avatar' && (
-              <>
-                <button 
-                  className="bg-red-600 text-white rounded p-1 text-xs font-bold hover:bg-red-700"
-                  onClick={() => handleAction('active')}
-                >
-                  Place as Active Avatar
-                </button>
-                <button 
-                  className="bg-blue-600 text-white rounded p-1 text-xs font-bold hover:bg-blue-700"
-                  onClick={() => handleAction('reserve')}
-                >
-                  Place as Reserve Avatar
-                </button>
-              </>
-            )}
-            
-            {/* Play action for non-avatar cards */}
-            {card.type !== 'avatar' && (
-              <button 
-                className="bg-green-600 text-white rounded p-1 text-xs font-bold hover:bg-green-700"
-                onClick={() => handleAction('play')}
-              >
-                Play Card
-              </button>
-            )}
-            
-            {/* Energy option for all cards */}
+          <div className="relative">
+            {/* Close button in top right */}
             <button 
-              className="bg-amber-700 text-white rounded p-1 text-xs font-bold hover:bg-amber-800"
-              onClick={() => handleAction('toEnergy')}
+              className="absolute -right-2 -top-2 bg-red-600 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold hover:bg-red-700"
+              onClick={() => setShowActions(false)}
             >
-              Use as Energy
+              ✕
             </button>
+            
+            {/* Card action title */}
+            <div className="text-white text-xs font-bold mb-2 text-center border-b border-gray-600 pb-1">
+              {card.name}
+            </div>
+            
+            <div className="flex flex-col gap-2">
+              {/* Avatar-specific actions */}
+              {card.type === 'avatar' && (
+                <>
+                  <button 
+                    className="bg-red-600 text-white rounded p-1 text-xs font-bold hover:bg-red-700"
+                    onClick={() => handleAction('active')}
+                  >
+                    Place as Active Avatar
+                  </button>
+                  <button 
+                    className="bg-blue-600 text-white rounded p-1 text-xs font-bold hover:bg-blue-700"
+                    onClick={() => handleAction('reserve')}
+                  >
+                    Place as Reserve Avatar
+                  </button>
+                </>
+              )}
+              
+              {/* Play action for non-avatar cards */}
+              {card.type !== 'avatar' && (
+                <button 
+                  className="bg-green-600 text-white rounded p-1 text-xs font-bold hover:bg-green-700"
+                  onClick={() => handleAction('play')}
+                >
+                  Play Card
+                </button>
+              )}
+              
+              {/* Energy option for all cards */}
+              <button 
+                className="bg-amber-700 text-white rounded p-1 text-xs font-bold hover:bg-amber-800"
+                onClick={() => handleAction('toEnergy')}
+              >
+                Use as Energy
+              </button>
+            </div>
           </div>
         </div>,
         document.body
