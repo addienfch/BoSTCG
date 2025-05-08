@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { Card } from '../data/cardTypes';
+import { Card, AvatarCard, ActionCard } from '../data/cardTypes';
 import { fireAvatarCards, fireActionCards } from '../data/fireCards';
 import { 
   kobarBorahAvatarCards, 
@@ -196,14 +196,138 @@ const createDefaultDeck = (name: string): Deck => {
   };
 };
 
+// Create specialized Kobar tribal deck
+const createKobarDeck = (): Deck => {
+  // Get only Kobar avatars
+  const avatars = kobarBorahAvatarCards.filter(card => 
+    card.level === 1 && card.subType === 'kobar'
+  );
+  const level2Avatars = kobarBorahAvatarCards.filter(card => 
+    card.level === 2 && card.subType === 'kobar'
+  );
+  // Use all action cards as they're non-tribal specific
+  const actions = kobarBorahActionCards;
+  
+  const cards: Card[] = [];
+  
+  // Add copies of level 1 avatars (3 of each)
+  avatars.forEach(avatar => {
+    for (let i = 1; i <= 3; i++) {
+      cards.push({...avatar, id: `${avatar.id}-${i}`});
+    }
+  });
+  
+  // Add 4 copies of each action card
+  actions.forEach(action => {
+    for (let i = 0; i < 4; i++) {
+      cards.push({...action, id: `${action.id}-${i+1}`});
+    }
+  });
+  
+  // Also add 1 copy of each level 2 avatar for evolution possibilities
+  level2Avatars.forEach(avatar => {
+    cards.push({...avatar, id: `${avatar.id}-1`});
+  });
+  
+  // If deck size is less than 40, add more action cards until we reach minimum size
+  if (cards.length < 40) {
+    const cardsNeeded = 40 - cards.length;
+    let index = 0;
+    
+    for (let i = 0; i < cardsNeeded; i++) {
+      const action = actions[index % actions.length]; // Cycle through action cards
+      const copyId = Math.floor(i / actions.length) + 5; // Start from copy #5
+      cards.push({...action, id: `${action.id}-extra-${copyId}`});
+      index++;
+    }
+  }
+  
+  const now = Date.now();
+  return {
+    id: `deck-kobar-${now}`,
+    name: "Kobar Specialized Deck",
+    cards,
+    coverCardId: cards.find(card => card.name === "Radja")?.id || cards[0].id,
+    createdAt: now,
+    updatedAt: now,
+    tribe: "kobar"
+  };
+};
+
+// Create specialized Kujana-Kuhaka tribal deck
+const createKujanaKuhakaPureDeck = (): Deck => {
+  // Get only Kujana and Kuhaka avatars from all cards
+  const avatars = allFireCards.filter(card => 
+    card.type === 'avatar' && 
+    (card as AvatarCard).level === 1 && 
+    ((card as AvatarCard).subType === 'kujana' || (card as AvatarCard).subType === 'kuhaka')
+  ) as AvatarCard[];
+  
+  const level2Avatars = allFireCards.filter(card => 
+    card.type === 'avatar' && 
+    (card as AvatarCard).level === 2 && 
+    ((card as AvatarCard).subType === 'kujana' || (card as AvatarCard).subType === 'kuhaka')
+  ) as AvatarCard[];
+  
+  // Use all action cards as they're non-tribal specific
+  const actions = kobarBorahActionCards;
+  
+  const cards: Card[] = [];
+  
+  // Add copies of level 1 avatars (3 of each)
+  avatars.forEach(avatar => {
+    for (let i = 1; i <= 3; i++) {
+      cards.push({...avatar, id: `${avatar.id}-${i}`});
+    }
+  });
+  
+  // Add 4 copies of each action card
+  actions.forEach(action => {
+    for (let i = 0; i < 4; i++) {
+      cards.push({...action, id: `${action.id}-${i+1}`});
+    }
+  });
+  
+  // Also add 1 copy of each level 2 avatar for evolution possibilities
+  level2Avatars.forEach(avatar => {
+    cards.push({...avatar, id: `${avatar.id}-1`});
+  });
+  
+  // If deck size is less than 40, add more action cards until we reach minimum size
+  if (cards.length < 40) {
+    const cardsNeeded = 40 - cards.length;
+    let index = 0;
+    
+    for (let i = 0; i < cardsNeeded; i++) {
+      const action = actions[index % actions.length]; // Cycle through action cards
+      const copyId = Math.floor(i / actions.length) + 5; // Start from copy #5
+      cards.push({...action, id: `${action.id}-extra-${copyId}`});
+      index++;
+    }
+  }
+  
+  const now = Date.now();
+  return {
+    id: `deck-kk-pure-${now}`,
+    name: "Kujana-Kuhaka Pure Tribal Deck",
+    cards,
+    coverCardId: cards.find(card => (card as AvatarCard).subType === 'kujana')?.id || cards[0].id,
+    createdAt: now,
+    updatedAt: now,
+    tribe: "kujana-kuhaka"
+  };
+};
+
 // Create the deck store
 export const useDeckStore = create<DeckStore>()(
   persist(
     (set, get) => ({
-      // Initialize with both tribal decks
+      // Initialize with all our decks
       decks: [
         createKobarBorahDeck(),
-        createKujanaKuhakaDeck()
+        createKujanaKuhakaDeck(),
+        createKobarDeck(),
+        createKujanaKuhakaPureDeck()
       ],
       activeDeckId: null,
       
@@ -284,13 +408,21 @@ export const useDeckStore = create<DeckStore>()(
         } else if (tribe === 'kujana-kuhaka') {
           return [...kujanaKuhakaAvatarCards, ...kujanaKuhakaActionCards];
         } else if (tribe === 'kujana') {
-          return allFireCards.filter(card => card.subType === 'kujana');
+          return allFireCards.filter(card => 
+            card.type === 'avatar' && (card as AvatarCard).subType === 'kujana'
+          );
         } else if (tribe === 'kuhaka') {
-          return allFireCards.filter(card => card.subType === 'kuhaka');
+          return allFireCards.filter(card => 
+            card.type === 'avatar' && (card as AvatarCard).subType === 'kuhaka'
+          );
         } else if (tribe === 'kobar') {
-          return allFireCards.filter(card => card.subType === 'kobar');
+          return allFireCards.filter(card => 
+            card.type === 'avatar' && (card as AvatarCard).subType === 'kobar'
+          );
         } else if (tribe === 'borah') {
-          return allFireCards.filter(card => card.subType === 'borah');
+          return allFireCards.filter(card => 
+            card.type === 'avatar' && (card as AvatarCard).subType === 'borah'
+          );
         }
         
         // Default to all cards if tribe not recognized

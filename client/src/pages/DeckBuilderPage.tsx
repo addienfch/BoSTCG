@@ -47,8 +47,19 @@ const DeckBuilderPage: React.FC = () => {
     const baseId = card.id.split('-')[0] + '-' + card.id.split('-')[1];
     const count = cardCounts[baseId] || 0;
     
-    // Allow 3 copies of any card
-    return count >= 3;
+    // Different limits based on card type
+    if (card.type === 'avatar') {
+      if ((card as AvatarCard).level === 2) {
+        // Only 1 copy of level 2 avatars
+        return count >= 1;
+      } else {
+        // 3 copies of level 1 avatars
+        return count >= 3;
+      }
+    } else {
+      // 4 copies of spells and other cards
+      return count >= 4;
+    }
   };
   
   // Load a deck into the editor
