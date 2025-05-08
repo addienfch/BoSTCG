@@ -1059,53 +1059,47 @@ export const useGameStore = create<GameState>((set, get) => ({
           } : "None");
         
         // Force a proper reset of ALL avatars in a single update to ensure consistency
+        // This is now implemented in a more direct way to ensure the isTapped property is properly reset
+        console.log("===== STARTING AVATAR REFRESH OPERATION =====");
+        
+        // First, let's log the current state of avatars
+        console.log("Current player avatar tap state:", get().player.activeAvatar?.isTapped);
+        console.log("Current opponent avatar tap state:", get().opponent.activeAvatar?.isTapped);
+        
+        // Now update the state directly for ALL avatars
         set(state => {
-          // Create a new state with all avatars reset for both players
-          const updatedState = { ...state };
+          // Deep clone existing state
+          const updatedState = JSON.parse(JSON.stringify(state));
           
           // Reset player's active avatar if it exists
           if (updatedState.player.activeAvatar) {
-            const resetAvatar = {
-              ...updatedState.player.activeAvatar,
-              isTapped: false // Reset tap status at refresh phase
-            };
-            console.log("AVATAR RESET - Player avatar reset from:", 
-              updatedState.player.activeAvatar.isTapped, "to:", resetAvatar.isTapped);
-            updatedState.player.activeAvatar = resetAvatar;
+            // Explicitly set isTapped to false
+            updatedState.player.activeAvatar.isTapped = false;
+            console.log("AVATAR RESET - Player avatar explicitly untapped");
           }
           
           // Reset player's reserve avatars if any exist
           if (updatedState.player.reserveAvatars.length > 0) {
-            updatedState.player.reserveAvatars = updatedState.player.reserveAvatars.map(avatar => {
-              const resetAvatar = {
-                ...avatar,
-                isTapped: false
-              };
-              console.log("AVATAR RESET - Player reserve avatar reset:", avatar.name);
-              return resetAvatar;
+            // Directly update the isTapped property for each avatar
+            updatedState.player.reserveAvatars.forEach(avatar => {
+              avatar.isTapped = false;
+              console.log("AVATAR RESET - Player reserve avatar explicitly untapped:", avatar.name);
             });
           }
           
           // Reset opponent's active avatar if it exists
           if (updatedState.opponent.activeAvatar) {
-            const resetAvatar = {
-              ...updatedState.opponent.activeAvatar,
-              isTapped: false
-            };
-            console.log("AVATAR RESET - Opponent avatar reset from:", 
-              updatedState.opponent.activeAvatar.isTapped, "to:", resetAvatar.isTapped);
-            updatedState.opponent.activeAvatar = resetAvatar;
+            // Explicitly set isTapped to false - using the same direct approach
+            updatedState.opponent.activeAvatar.isTapped = false;
+            console.log("AVATAR RESET - Opponent avatar explicitly untapped");
           }
           
           // Reset opponent's reserve avatars if any exist
           if (updatedState.opponent.reserveAvatars.length > 0) {
-            updatedState.opponent.reserveAvatars = updatedState.opponent.reserveAvatars.map(avatar => {
-              const resetAvatar = {
-                ...avatar,
-                isTapped: false
-              };
-              console.log("AVATAR RESET - Opponent reserve avatar reset:", avatar.name);
-              return resetAvatar;
+            // Directly update the isTapped property for each avatar
+            updatedState.opponent.reserveAvatars.forEach(avatar => {
+              avatar.isTapped = false;
+              console.log("AVATAR RESET - Opponent reserve avatar explicitly untapped:", avatar.name);
             });
           }
           
