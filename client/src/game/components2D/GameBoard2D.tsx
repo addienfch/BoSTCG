@@ -203,13 +203,14 @@ const GameBoard2D: React.FC<GameBoard2DProps> = ({ onAction }) => {
           {/* Game mode indicator */}
           <span className="ml-2 px-2 py-0.5 rounded text-xs" 
                 style={{
-                  backgroundColor: gameMode.mode === 'vs-ai' ? '#8B0000' : 
-                                  gameMode.mode === 'practice' ? '#006400' : 
-                                  gameMode.mode === 'online' ? '#4169E1' : '#555'
+                  backgroundColor: 
+                    gameMode.mode === "vs-ai" ? '#8B0000' : 
+                    gameMode.mode === "practice" ? '#006400' : 
+                    gameMode.mode === "online" ? '#4169E1' : '#555'
                 }}>
-            {gameMode.mode === 'vs-ai' ? 'VS AI' : 
-             gameMode.mode === 'practice' ? 'Practice' : 
-             gameMode.mode === 'online' ? 'Online' : 'Unknown Mode'}
+            {String(gameMode.mode) === "vs-ai" ? 'VS AI' : 
+             String(gameMode.mode) === "practice" ? 'Practice' : 
+             String(gameMode.mode) === "online" ? 'Online' : 'Unknown Mode'}
           </span>
           
           {/* Player name */}

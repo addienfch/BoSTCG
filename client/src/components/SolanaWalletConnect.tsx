@@ -10,6 +10,7 @@ const SolanaWalletConnect: React.FC = () => {
   });
   
   const [isLoading, setIsLoading] = useState(false);
+  const [showCollection, setShowCollection] = useState(false);
   
   // Initialize and check wallet connection on component mount
   useEffect(() => {
@@ -50,12 +51,29 @@ const SolanaWalletConnect: React.FC = () => {
         address: null,
         balance: 0
       });
+      setShowCollection(false);
       toast.success('Wallet disconnected');
     } catch (error) {
       console.error('Error disconnecting wallet:', error);
       toast.error('Failed to disconnect wallet');
     } finally {
       setIsLoading(false);
+    }
+  };
+  
+  // Handle showing NFT collection
+  const handleViewCollection = async () => {
+    setShowCollection(!showCollection);
+    if (!showCollection) {
+      try {
+        const cards = await cardNftService.getOwnedCards();
+        if (cards.length === 0) {
+          toast.info('No NFT cards found in this wallet');
+        }
+      } catch (error) {
+        console.error('Error fetching NFT cards:', error);
+        toast.error('Failed to load NFT collection');
+      }
     }
   };
   
@@ -66,9 +84,10 @@ const SolanaWalletConnect: React.FC = () => {
   };
   
   return (
-    <div className="bg-gray-800 p-4 rounded-lg shadow-lg w-full max-w-sm">
+    <div className="bg-gray-800 p-4 rounded-lg shadow-lg w-full">
       <div className="mb-4">
         <h2 className="text-lg font-bold text-white mb-2">Solana Wallet</h2>
+        <p className="text-gray-400 text-xs mb-3">Connect your Solana wallet to use your NFT cards in the game</p>
         
         {walletStatus.connected ? (
           <div className="flex flex-col gap-2">
@@ -82,13 +101,22 @@ const SolanaWalletConnect: React.FC = () => {
               <span>{walletStatus.balance.toFixed(4)} SOL</span>
             </div>
             
-            <button
-              onClick={handleDisconnect}
-              disabled={isLoading}
-              className="bg-red-600 hover:bg-red-700 text-white py-2 px-4 rounded mt-2 disabled:opacity-50"
-            >
-              {isLoading ? 'Disconnecting...' : 'Disconnect Wallet'}
-            </button>
+            <div className="flex gap-2 mt-2">
+              <button
+                onClick={handleViewCollection}
+                className={`${showCollection ? 'bg-purple-700' : 'bg-purple-600 hover:bg-purple-700'} text-white py-2 px-4 rounded flex-1`}
+              >
+                {showCollection ? 'Hide Collection' : 'View Collection'}
+              </button>
+              
+              <button
+                onClick={handleDisconnect}
+                disabled={isLoading}
+                className="bg-red-600 hover:bg-red-700 text-white py-2 px-4 rounded disabled:opacity-50"
+              >
+                {isLoading ? 'Disconnecting...' : 'Disconnect'}
+              </button>
+            </div>
           </div>
         ) : (
           <button
@@ -101,17 +129,21 @@ const SolanaWalletConnect: React.FC = () => {
         )}
       </div>
       
-      {walletStatus.connected && (
-        <div className="mt-4">
+      {/* NFT Collection Section */}
+      {walletStatus.connected && showCollection && (
+        <div className="mt-4 border-t border-gray-700 pt-4">
           <h3 className="text-md font-semibold text-white mb-2">NFT Card Collection</h3>
-          <button
-            className="bg-purple-600 hover:bg-purple-700 text-white py-1 px-3 rounded text-sm"
-            onClick={() => toast.info('NFT Collection will be displayed here')}
-          >
-            View Collection
-          </button>
+          <div className="bg-gray-900 bg-opacity-50 rounded p-3 text-center">
+            <p className="text-gray-300 text-sm mb-2">This is where your NFT cards will appear</p>
+            <p className="text-gray-400 text-xs">You can use these cards in the game once connected</p>
+          </div>
         </div>
       )}
+      
+      {/* Informational section */}
+      <div className="mt-4 text-xs text-gray-400">
+        <p>cNFTs on Solana allow you to own unique cards that you can use across different games and platforms.</p>
+      </div>
     </div>
   );
 };
