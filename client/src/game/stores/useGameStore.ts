@@ -1260,14 +1260,42 @@ export const useGameStore = create<GameState>((set, get) => ({
     if (nextPlayer === 'player') {
       // Refresh player's energy
       const playerEnergy = [...gameState.player.energyPile, ...gameState.player.usedEnergyPile];
-      set(state => ({
-        player: {
+      set(state => {
+        // Create updated player state with untapped avatars
+        const updatedPlayerState = {
           ...state.player,
           avatarToEnergyCount: 0,
           energyPile: playerEnergy,
           usedEnergyPile: []
+        };
+        
+        // Ensure the active avatar is untapped for the next turn
+        if (updatedPlayerState.activeAvatar) {
+          updatedPlayerState.activeAvatar = {
+            ...updatedPlayerState.activeAvatar,
+            isTapped: false
+          };
         }
-      }));
+        
+        // Ensure all reserve avatars are untapped too
+        if (updatedPlayerState.reserveAvatars.length > 0) {
+          updatedPlayerState.reserveAvatars = updatedPlayerState.reserveAvatars.map(avatar => ({
+            ...avatar,
+            isTapped: false
+          }));
+        }
+        
+        return { player: updatedPlayerState };
+      });
+      
+      // Also directly make isTapped false in any existing avatar objects
+      console.log("TURN CHANGE - Directly untapping player avatars");
+      if (get().player.activeAvatar) {
+        get().player.activeAvatar.isTapped = false;
+      }
+      get().player.reserveAvatars.forEach(avatar => {
+        avatar.isTapped = false;
+      });
       
       // Log this action
       if (gameState.player.usedEnergyPile.length > 0) {
@@ -1277,14 +1305,42 @@ export const useGameStore = create<GameState>((set, get) => ({
     } else {
       // Refresh opponent's energy
       const opponentEnergy = [...gameState.opponent.energyPile, ...gameState.opponent.usedEnergyPile];
-      set(state => ({
-        opponent: {
+      set(state => {
+        // Create updated opponent state with untapped avatars
+        const updatedOpponentState = {
           ...state.opponent,
           avatarToEnergyCount: 0,
           energyPile: opponentEnergy,
           usedEnergyPile: []
+        };
+        
+        // Ensure the active avatar is untapped for the next turn
+        if (updatedOpponentState.activeAvatar) {
+          updatedOpponentState.activeAvatar = {
+            ...updatedOpponentState.activeAvatar,
+            isTapped: false
+          };
         }
-      }));
+        
+        // Ensure all reserve avatars are untapped too
+        if (updatedOpponentState.reserveAvatars.length > 0) {
+          updatedOpponentState.reserveAvatars = updatedOpponentState.reserveAvatars.map(avatar => ({
+            ...avatar,
+            isTapped: false
+          }));
+        }
+        
+        return { opponent: updatedOpponentState };
+      });
+      
+      // Also directly make isTapped false in any existing avatar objects
+      console.log("TURN CHANGE - Directly untapping opponent avatars");
+      if (get().opponent.activeAvatar) {
+        get().opponent.activeAvatar.isTapped = false;
+      }
+      get().opponent.reserveAvatars.forEach(avatar => {
+        avatar.isTapped = false;
+      });
       
       // Log this action
       if (gameState.opponent.usedEnergyPile.length > 0) {
