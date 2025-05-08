@@ -28,6 +28,12 @@ const GameBoard2D: React.FC<GameBoard2DProps> = ({ onAction }) => {
       return card.type === 'avatar' && (card as AvatarCard).level === 1 && player.activeAvatar === null;
     }
     
+    // Special case: Quick spells can be played during opponent's turn
+    if (card.type === 'quickSpell' && player.activeAvatar) {
+      // Quick spells only need energy check, regardless of turn or phase
+      return game.hasEnoughEnergy(card.energyCost || [], 'player');
+    }
+    
     // For regular phases
     if (currentPlayer !== 'player' || (gamePhase !== 'main1' && gamePhase !== 'main2')) {
       return false;
@@ -337,6 +343,32 @@ const GameBoard2D: React.FC<GameBoard2DProps> = ({ onAction }) => {
     // Check for any defeated avatars (just in case)
     game.checkDefeatedAvatars();
   };
+  
+  // Set up a timer for auto-advancing at end phase
+  useEffect(() => {
+    let timeoutId: NodeJS.Timeout;
+    
+    // If it's player's turn and we're in the end phase, set up a timeout to auto-advance
+    if (game.currentPlayer === 'player' && game.gamePhase === 'end') {
+      timeoutId = setTimeout(() => {
+        // Check if we're still in the end phase (user might have advanced manually)
+        if (game.currentPlayer === 'player' && game.gamePhase === 'end') {
+          toast.info("Auto-advancing to next phase...");
+          game.nextPhase();
+        }
+      }, 3000); // 3 seconds timeout
+      
+      // Display a toast to notify the player
+      toast.info("End phase - auto-advancing in 3 seconds...", { duration: 3000 });
+    }
+    
+    // Clean up the timeout when the component unmounts or phase changes
+    return () => {
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
+    };
+  }, [game.currentPlayer, game.gamePhase]);
   
   // Function to handle phase progression
   const handleNextPhase = () => {
