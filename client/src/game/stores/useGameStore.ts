@@ -1136,6 +1136,11 @@ export const useGameStore = create<GameState>((set, get) => ({
         get().addLog(`All avatars have been reset and are ready for battle.`);
         console.log("AVATAR RESET - Complete - all should be untapped now");
         
+        // Dispatch an event to notify UI components about avatar reset
+        console.log("Dispatching gamePhaseChanged event from refresh phase");
+        const phaseChangeEvent = new Event('gamePhaseChanged');
+        document.dispatchEvent(phaseChangeEvent);
+        
         break;
         
       case 'draw':

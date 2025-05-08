@@ -174,6 +174,9 @@ const Card2D: React.FC<Card2DProps> = ({
     }
   }, [showActions]);
   
+  // State to force visual refresh of avatar cards
+  const [visualRefreshCounter, setVisualRefreshCounter] = useState(0);
+  
   // Monitor for game phase changes to ensure avatars reset their visual state
   useEffect(() => {
     // Access global game state if available
@@ -181,10 +184,10 @@ const Card2D: React.FC<Card2DProps> = ({
     if (gameStore && card.type === 'avatar') {
       // Create a cleanup function that runs when component unmounts or refreshes
       const checkPhase = () => {
-        if (gameStore.gamePhase === 'refresh') {
-          // Force card to visually refresh by triggering a re-render
-          console.log("Card2D detected refresh phase, resetting avatar visuals:", card.name);
-        }
+        console.log("Card2D detected phase change event for:", card.name);
+        
+        // Force component to re-render by updating the counter state
+        setVisualRefreshCounter(prev => prev + 1);
       };
       
       // Set up a listener for phase changes
@@ -196,6 +199,13 @@ const Card2D: React.FC<Card2DProps> = ({
       };
     }
   }, [card]);
+  
+  // Reset the card transform when isTapped changes or forced refresh occurs
+  useEffect(() => {
+    if (card.type === 'avatar') {
+      console.log(`Avatar ${card.name} visual state refresh. isTapped:`, isTapped, "refresh count:", visualRefreshCounter);
+    }
+  }, [isTapped, visualRefreshCounter, card.name, card.type]);
 
   const handleClick = () => {
     if (isPlayable && isInHand) {
@@ -437,10 +447,11 @@ const Card2D: React.FC<Card2DProps> = ({
         <div 
           className="fixed bg-black bg-opacity-95 rounded-lg p-3 border-2 border-yellow-400 shadow-xl"
           style={{
-            top: `${menuPosition.top - 5}px`, // Slight offset to appear centered
-            left: `${menuPosition.left + 10}px`, // Offset to the right
-            width: `${width + 20}px`,
-            zIndex: 99999, // Ultra high z-index
+            top: `50px`, // Fixed position at top of screen
+            left: `50%`, // Center horizontally
+            transform: 'translateX(-50%)', // Center adjustment
+            width: `${width + 40}px`,
+            zIndex: 9999999, // Ultra high z-index
           }}
         >
           <div className="relative">
