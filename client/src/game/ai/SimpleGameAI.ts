@@ -12,6 +12,10 @@ export interface AIGameState {
     energyPile: Card[];
     hand: Card[];
     fieldCards: ActionCard[];
+    health?: number;
+    lifeCards?: Card[];
+    graveyard?: Card[];
+    usedEnergyPile?: Card[];
   };
   
   opponent: {
@@ -21,6 +25,10 @@ export interface AIGameState {
     hand: Card[];
     fieldCards: ActionCard[];
     avatarToEnergyCount: number; // Track how many avatars were moved to energy this turn
+    health?: number;
+    lifeCards?: Card[];
+    graveyard?: Card[];
+    usedEnergyPile?: Card[];
   };
   
   // Function to move a card from opponent's hand to their energy pile

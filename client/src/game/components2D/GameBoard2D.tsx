@@ -264,7 +264,7 @@ const GameBoard2D: React.FC<GameBoard2DProps> = ({ onAction }) => {
     game.addLog('Hand limit is 8 cards. If you have more, you must discard at the end of your turn.');
     
     // If in AI mode, create the AI instance
-    if (gameMode.mode === 'vs-ai') {
+    if (String(gameMode.mode) === 'vs-ai') {
       // Create adapter for game state to AI interface
       const aiGameState: AIGameState = {
         currentPlayer: game.currentPlayer,
@@ -277,6 +277,10 @@ const GameBoard2D: React.FC<GameBoard2DProps> = ({ onAction }) => {
           energyPile: game.player.energyPile,
           hand: game.player.hand,
           fieldCards: game.player.fieldCards,
+          health: game.player.health,
+          lifeCards: game.player.lifeCards,
+          graveyard: game.player.graveyard,
+          usedEnergyPile: game.player.usedEnergyPile,
         },
         
         opponent: {
@@ -286,6 +290,10 @@ const GameBoard2D: React.FC<GameBoard2DProps> = ({ onAction }) => {
           hand: game.opponent.hand,
           fieldCards: game.opponent.fieldCards,
           avatarToEnergyCount: game.opponent.avatarToEnergyCount,
+          health: game.opponent.health,
+          lifeCards: game.opponent.lifeCards,
+          graveyard: game.opponent.graveyard,
+          usedEnergyPile: game.opponent.usedEnergyPile,
         },
         
         // Functions to pass to AI
@@ -543,6 +551,10 @@ const GameBoard2D: React.FC<GameBoard2DProps> = ({ onAction }) => {
           energyPile: game.player.energyPile,
           hand: game.player.hand,
           fieldCards: game.player.fieldCards,
+          health: game.player.health,
+          lifeCards: game.player.lifeCards,
+          graveyard: game.player.graveyard,
+          usedEnergyPile: game.player.usedEnergyPile,
         },
         
         opponent: {
@@ -552,6 +564,10 @@ const GameBoard2D: React.FC<GameBoard2DProps> = ({ onAction }) => {
           hand: game.opponent.hand,
           fieldCards: game.opponent.fieldCards,
           avatarToEnergyCount: game.opponent.avatarToEnergyCount,
+          health: game.opponent.health,
+          lifeCards: game.opponent.lifeCards,
+          graveyard: game.opponent.graveyard,
+          usedEnergyPile: game.opponent.usedEnergyPile,
         },
         
         // Use the same functions defined earlier
@@ -587,9 +603,9 @@ const GameBoard2D: React.FC<GameBoard2DProps> = ({ onAction }) => {
           <span className="ml-2 px-2 py-0.5 rounded text-xs" 
                 style={{
                   backgroundColor: 
-                    gameMode.mode === "vs-ai" ? '#8B0000' : 
-                    gameMode.mode === "practice" ? '#006400' : 
-                    gameMode.mode === "online" ? '#4169E1' : '#555'
+                    String(gameMode.mode) === "vs-ai" ? '#8B0000' : 
+                    String(gameMode.mode) === "practice" ? '#006400' : 
+                    String(gameMode.mode) === "online" ? '#4169E1' : '#555'
                 }}>
             {String(gameMode.mode) === "vs-ai" ? 'VS AI' : 
              String(gameMode.mode) === "practice" ? 'Practice' : 
