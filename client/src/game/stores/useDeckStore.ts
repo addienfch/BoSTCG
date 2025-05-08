@@ -257,29 +257,42 @@ export const useDeckStore = create<DeckStore>()(
       },
       
       getAvailableCards: () => {
-        // Return all available cards for deck building
+        // Return all available cards for deck building - ensure all cards are available
+        // Make a deep copy to avoid any reference issues
         const kobarBorahAvatars = [...kobarBorahAvatarCards];
         const kobarBorahActions = [...kobarBorahActionCards];
         const kujanaKuhakaAvatars = [...kujanaKuhakaAvatarCards];
         const kujanaKuhakaActions = [...kujanaKuhakaActionCards];
         
+        // Get legacy cards for backward compatibility if they exist
+        const fireAvatars = fireAvatarCards || [];
+        const fireActions = fireActionCards || [];
+        
+        // Return the combined collection of all available cards
         return [
           ...kobarBorahAvatars, 
           ...kobarBorahActions,
           ...kujanaKuhakaAvatars,
-          ...kujanaKuhakaActions
+          ...kujanaKuhakaActions,
+          ...fireAvatars,
+          ...fireActions
         ];
       },
       
       findCard: (id) => {
         // Find the base card by id (without copy number)
         const baseId = id.split('-')[0] + '-' + id.split('-')[1];
+        
+        // Include all cards from all collections
         const allCards = [
           ...kobarBorahAvatarCards, 
           ...kobarBorahActionCards,
           ...kujanaKuhakaAvatarCards,
-          ...kujanaKuhakaActionCards
+          ...kujanaKuhakaActionCards,
+          ...(fireAvatarCards || []), 
+          ...(fireActionCards || [])
         ];
+        
         return allCards.find(card => card.id.startsWith(baseId));
       },
       

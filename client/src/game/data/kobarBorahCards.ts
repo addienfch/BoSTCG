@@ -235,7 +235,7 @@ export const crackingSword: ActionCard = {
 // All Kobar-Borah Cards Arrays
 export const kobarBorahAvatarCards: AvatarCard[] = [
   kobarTraineeA,
-  kobarTraineeB,
+  kobarTraineeB, 
   kobarTraineeC,
   borahTrainee,
   borahTraineeA,

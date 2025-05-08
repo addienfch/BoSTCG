@@ -239,14 +239,20 @@ const DeckBuilderPage: React.FC = () => {
                         className="flex items-center justify-between bg-gray-800 rounded p-2 text-sm"
                       >
                         <div className="flex items-center">
-                          <div 
-                            className={`w-3 h-3 rounded-full mr-2 ${
-                              card.element === 'fire' ? 'bg-red-500' : 
-                              card.element === 'water' ? 'bg-blue-500' : 
-                              card.element === 'air' ? 'bg-cyan-300' : 
-                              card.element === 'earth' ? 'bg-amber-700' : 'bg-gray-400'
-                            }`}
-                          />
+                          {card.art ? (
+                            <div className="w-8 h-8 mr-2 rounded overflow-hidden">
+                              <img src={card.art} alt={card.name} className="w-full h-full object-cover" />
+                            </div>
+                          ) : (
+                            <div 
+                              className={`w-3 h-3 rounded-full mr-2 ${
+                                card.element === 'fire' ? 'bg-red-500' : 
+                                card.element === 'water' ? 'bg-blue-500' : 
+                                card.element === 'air' ? 'bg-cyan-300' : 
+                                card.element === 'earth' ? 'bg-amber-700' : 'bg-gray-400'
+                              }`}
+                            />
+                          )}
                           <span className="truncate max-w-[140px]">{card.name}</span>
                         </div>
                         <div className="flex items-center">
@@ -343,20 +349,41 @@ const DeckBuilderPage: React.FC = () => {
                   >
                     <div className="relative">
                       <div 
-                        className={`h-36 flex items-center justify-center ${
+                        className={`h-36 flex items-center justify-center relative ${
                           card.element === 'fire' ? 'bg-red-900' : 
                           card.element === 'water' ? 'bg-blue-900' : 
-                          card.element === 'air' ? 'bg-cyan-900' : 
+                          card.element === 'air' ? 'bg-cyan-900' :
                           card.element === 'earth' ? 'bg-amber-900' : 'bg-gray-800'
                         }`}
                       >
-                        <div className="text-center p-2">
-                          <div className="font-bold">{card.name}</div>
-                          <div className="text-xs">{card.type}</div>
-                          {card.type === 'avatar' && (
-                            <div className="text-xs mt-1">Level: {(card as AvatarCard).level}</div>
-                          )}
-                        </div>
+                        {card.art ? (
+                          <>
+                            <img src={card.art} alt={card.name} className="h-full w-full object-cover opacity-80" />
+                            <div className="absolute inset-0 flex flex-col justify-between p-1">
+                              <div className="flex justify-between">
+                                <div className="bg-black bg-opacity-60 text-white text-xs px-2 py-0.5 rounded font-bold">
+                                  {card.name}
+                                </div>
+                                {card.type === 'avatar' && (
+                                  <div className="bg-gray-800 bg-opacity-70 text-white text-xs px-1 py-0.5 rounded">
+                                    Lv{(card as AvatarCard).level}
+                                  </div>
+                                )}
+                              </div>
+                              <div className="bg-black bg-opacity-50 text-white text-xs px-1 py-0.5 rounded self-start">
+                                {card.type}
+                              </div>
+                            </div>
+                          </>
+                        ) : (
+                          <div className="text-center p-2">
+                            <div className="font-bold">{card.name}</div>
+                            <div className="text-xs">{card.type}</div>
+                            {card.type === 'avatar' && (
+                              <div className="text-xs mt-1">Level: {(card as AvatarCard).level}</div>
+                            )}
+                          </div>
+                        )}
                       </div>
                       
                       {/* Count badge */}
