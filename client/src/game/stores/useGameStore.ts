@@ -404,10 +404,23 @@ export const useGameStore = create<GameState>((set, get) => ({
   playCard: (handIndex, target) => {
     const { player, currentPlayer, gamePhase } = get();
     
-    // Can only play cards during your turn and in the main phases
-    if (currentPlayer !== 'player' || (gamePhase !== 'main1' && gamePhase !== 'main2')) {
-      toast.error("You can only play cards during your Main Phases!");
+    // Main phases for regular play, setup phase for avatar placement
+    const isMainPhase = gamePhase === 'main1' || gamePhase === 'main2';
+    const isSetupPhase = gamePhase === 'setup';
+    
+    // Can only play cards during your turn and in the right phases
+    if (currentPlayer !== 'player' || (!isMainPhase && !isSetupPhase)) {
+      toast.error("You can only play cards during your Main Phases or the Setup Phase!");
       return;
+    }
+    
+    // During setup phase, only allow playing avatar cards
+    if (isSetupPhase) {
+      const card = player.hand[handIndex];
+      if (card.type !== 'avatar' || (card as AvatarCard).level !== 1) {
+        toast.error("You can only play a Level 1 Avatar during the Setup Phase!");
+        return;
+      }
     }
     
     if (handIndex < 0 || handIndex >= player.hand.length) {
@@ -908,12 +921,137 @@ export const useGameStore = create<GameState>((set, get) => ({
   
   // Move to the next game phase
   nextPhase: () => {
-    const { gamePhase, currentPlayer } = get();
+    const { gamePhase, currentPlayer, player, opponent } = get();
     
     // Determine the next phase based on current phase
     let nextPhase: GamePhase = 'refresh';
     
     switch (gamePhase) {
+      case 'setup':
+        // Can only transition from setup to refresh if player has placed an active avatar
+        if (player.activeAvatar) {
+          nextPhase = 'refresh';
+          get().addLog('Setup complete. Game starting with Refresh Phase.');
+          
+          // AI opponent also needs to place their starting avatar
+          if (opponent.hand.length > 0 && !opponent.activeAvatar) {
+            // Find a level 1 avatar in AI's hand
+            const avatarIndex = opponent.hand.findIndex(
+              card => card.type === 'avatar' && (card as AvatarCard).level === 1
+            );
+            
+            if (avatarIndex !== -1) {
+              const avatarCard = opponent.hand[avatarIndex] as AvatarCard;
+              // Place as active avatar
+              set(state => {
+                const updatedHand = [...state.opponent.hand];
+                updatedHand.splice(avatarIndex, 1);
+                
+                avatarCard.turnPlayed = state.turn;
+                
+                return {
+                  opponent: {
+                    ...state.opponent,
+                    hand: updatedHand,
+                    activeAvatar: avatarCard
+                  }
+                };
+              });
+              
+              get().addLog(`Opponent placed ${avatarCard.name} as their active avatar.`);
+            } else {
+              // If AI doesn't have a level 1 avatar, draw until it finds one
+              let foundAvatar = false;
+              let drawAttempts = 0;
+              
+              while (!foundAvatar && drawAttempts < 10) {
+                // Draw a card for AI
+                set(state => {
+                  if (state.opponent.deck.length === 0) return state;
+                  
+                  const newCard = state.opponent.deck[0];
+                  const updatedDeck = [...state.opponent.deck.slice(1)];
+                  const updatedHand = [...state.opponent.hand, newCard];
+                  
+                  return {
+                    opponent: {
+                      ...state.opponent,
+                      deck: updatedDeck,
+                      hand: updatedHand
+                    }
+                  };
+                });
+                
+                // Check if we drew a level 1 avatar
+                const aiHand = get().opponent.hand;
+                const newAvatarIndex = aiHand.findIndex(
+                  card => card.type === 'avatar' && (card as AvatarCard).level === 1
+                );
+                
+                if (newAvatarIndex !== -1) {
+                  foundAvatar = true;
+                  const avatarCard = aiHand[newAvatarIndex] as AvatarCard;
+                  
+                  // Place as active avatar
+                  set(state => {
+                    const updatedHand = [...state.opponent.hand];
+                    updatedHand.splice(newAvatarIndex, 1);
+                    
+                    avatarCard.turnPlayed = state.turn;
+                    
+                    return {
+                      opponent: {
+                        ...state.opponent,
+                        hand: updatedHand,
+                        activeAvatar: avatarCard
+                      }
+                    };
+                  });
+                  
+                  get().addLog(`Opponent drew and placed ${avatarCard.name} as their active avatar.`);
+                }
+                
+                drawAttempts++;
+              }
+              
+              if (!foundAvatar) {
+                // If still no avatar found, create one for the AI
+                const defaultAvatar: AvatarCard = {
+                  id: 'default-ai-avatar',
+                  name: 'Fire Spirit',
+                  type: 'avatar',
+                  element: 'fire',
+                  level: 1,
+                  subType: 'kobar',
+                  health: 8,
+                  art: '/textures/cards/kobar-trainee.png',
+                  skill1: {
+                    name: 'Flame Strike',
+                    energyCost: ['fire'],
+                    damage: 2,
+                    effect: 'Basic attack'
+                  },
+                  turnPlayed: get().turn
+                };
+                
+                set(state => ({
+                  opponent: {
+                    ...state.opponent,
+                    activeAvatar: defaultAvatar
+                  }
+                }));
+                
+                get().addLog(`Opponent placed Fire Spirit as their active avatar.`);
+              }
+            }
+          }
+        } else {
+          // Player must place an active avatar first
+          toast.warning('You must place a Level 1 avatar as your active avatar first!');
+          return; // Don't proceed to next phase
+        }
+        break;
+        
       case 'refresh':
         nextPhase = 'draw';
         
@@ -1120,6 +1258,266 @@ export const useGameStore = create<GameState>((set, get) => ({
     });
     
     get().addLog(`End of turn ${turn}. It's now ${nextPlayer === 'player' ? 'your' : 'opponent\'s'} turn.`);
+    
+    // Check if any avatars were defeated
+    get().checkDefeatedAvatars();
+    
+    // If next player is the AI, automate their turn
+    if (nextPlayer === 'opponent') {
+      // Small delay before AI actions to make it more natural
+      setTimeout(() => {
+        // Make sure game state hasn't changed
+        if (get().currentPlayer === 'opponent') {
+          // Simulate AI going through each phase
+          get().performAIActions();
+        }
+      }, 1000);
+    }
+  },
+  
+  // Perform AI actions for the opponent's turn
+  performAIActions: () => {
+    // Get the current state
+    const { opponent, gamePhase } = get();
+    
+    if (gamePhase === 'refresh') {
+      // Advance to draw phase
+      get().nextPhase();
+      
+      // Short delay before next action
+      setTimeout(() => {
+        if (get().gamePhase === 'draw') {
+          // Draw phase will automatically draw a card
+          // Next go to main phase 1
+          get().nextPhase();
+        }
+      }, 1000);
+      
+      // Short delay before next action
+      setTimeout(() => {
+        if (get().gamePhase === 'main1') {
+          // In main phase 1, AI will:
+          // 1. Place an avatar if needed
+          // 2. Play action cards
+          // 3. Move a card to energy if energy is low
+          
+          // Place avatar if needed
+          if (!opponent.activeAvatar) {
+            // Find a level 1 avatar to play
+            const avatarIndex = opponent.hand.findIndex(
+              card => card.type === 'avatar' && (card as AvatarCard).level === 1
+            );
+            
+            if (avatarIndex !== -1) {
+              const avatarCard = opponent.hand[avatarIndex];
+              
+              // Place as active avatar
+              set(state => {
+                const updatedHand = [...state.opponent.hand];
+                updatedHand.splice(avatarIndex, 1);
+                
+                return {
+                  opponent: {
+                    ...state.opponent,
+                    hand: updatedHand,
+                    activeAvatar: avatarCard as AvatarCard
+                  }
+                };
+              });
+              
+              get().addLog(`Opponent played ${avatarCard.name} as their active avatar.`);
+            }
+          } else if (opponent.reserveAvatars.length < 2) {
+            // Try to place a reserve avatar if we have room
+            const avatarIndex = opponent.hand.findIndex(
+              card => card.type === 'avatar' && (card as AvatarCard).level === 1
+            );
+            
+            if (avatarIndex !== -1) {
+              const avatarCard = opponent.hand[avatarIndex];
+              
+              // Place in reserve
+              set(state => {
+                const updatedHand = [...state.opponent.hand];
+                updatedHand.splice(avatarIndex, 1);
+                
+                return {
+                  opponent: {
+                    ...state.opponent,
+                    hand: updatedHand,
+                    reserveAvatars: [...state.opponent.reserveAvatars, avatarCard as AvatarCard]
+                  }
+                };
+              });
+              
+              get().addLog(`Opponent placed ${avatarCard.name} in their reserve.`);
+            }
+          }
+          
+          // Check for evolving level 1 avatars
+          const level2AvatarIndex = opponent.hand.findIndex(
+            card => card.type === 'avatar' && (card as AvatarCard).level === 2
+          );
+          
+          if (level2AvatarIndex !== -1) {
+            const level2Avatar = opponent.hand[level2AvatarIndex] as AvatarCard;
+            
+            // Try evolving the active avatar if it matches
+            if (opponent.activeAvatar && 
+                opponent.activeAvatar.level === 1 && 
+                (level2Avatar.baseType === opponent.activeAvatar.subType || level2Avatar.element === opponent.activeAvatar.element)) {
+              
+              // Only evolve if avatar has been in play for at least 1 turn
+              const avatarTurnPlayed = opponent.activeAvatar.turnPlayed || 0;
+              if (get().turn > avatarTurnPlayed + 1) {
+                // Evolve active avatar
+                set(state => {
+                  const updatedHand = [...state.opponent.hand];
+                  updatedHand.splice(level2AvatarIndex, 1);
+                  
+                  // Keep damage counters
+                  const currentCounters = state.opponent.activeAvatar?.counters || { damage: 0, bleed: 0, shield: 0 };
+                  
+                  return {
+                    opponent: {
+                      ...state.opponent,
+                      hand: updatedHand,
+                      activeAvatar: {
+                        ...level2Avatar,
+                        counters: currentCounters
+                      }
+                    }
+                  };
+                });
+                
+                get().addLog(`Opponent evolved their active avatar into ${level2Avatar.name}!`);
+              }
+            }
+          }
+          
+          // Add a card to energy if energy is low and we haven't already added an avatar this turn
+          if (opponent.energyPile.length < 3 && opponent.avatarToEnergyCount === 0) {
+            // First try to add a non-avatar card to energy
+            const nonAvatarIndex = opponent.hand.findIndex(card => card.type !== 'avatar');
+            
+            if (nonAvatarIndex !== -1) {
+              const cardToEnergy = opponent.hand[nonAvatarIndex];
+              
+              // Move to energy pile
+              set(state => {
+                const updatedHand = [...state.opponent.hand];
+                updatedHand.splice(nonAvatarIndex, 1);
+                
+                return {
+                  opponent: {
+                    ...state.opponent,
+                    hand: updatedHand,
+                    energyPile: [...state.opponent.energyPile, cardToEnergy]
+                  }
+                };
+              });
+              
+              get().addLog(`Opponent added a card to their energy pile.`);
+            } else if (opponent.hand.length > 2) {
+              // If no non-avatar card but we have extras, add an avatar to energy
+              const avatarToEnergy = opponent.hand[0]; // Just take the first card
+              
+              // Move to energy pile
+              set(state => {
+                const updatedHand = [...state.opponent.hand];
+                updatedHand.splice(0, 1);
+                
+                return {
+                  opponent: {
+                    ...state.opponent,
+                    hand: updatedHand,
+                    energyPile: [...state.opponent.energyPile, avatarToEnergy],
+                    avatarToEnergyCount: state.opponent.avatarToEnergyCount + 1
+                  }
+                };
+              });
+              
+              get().addLog(`Opponent added an avatar to their energy pile.`);
+            }
+          }
+          
+          // Try to play a spell card if we have energy
+          if (opponent.energyPile.length > 0) {
+            const spellIndex = opponent.hand.findIndex(
+              card => (card.type === 'spell' || card.type === 'quickSpell') && 
+                     get().hasEnoughEnergy(card.energyCost || [], 'opponent')
+            );
+            
+            if (spellIndex !== -1) {
+              const spellCard = opponent.hand[spellIndex];
+              
+              // Use energy for the spell
+              if (get().useEnergy(spellCard.energyCost || [], 'opponent')) {
+                // Cast the spell
+                set(state => {
+                  const updatedHand = [...state.opponent.hand];
+                  updatedHand.splice(spellIndex, 1);
+                  
+                  return {
+                    opponent: {
+                      ...state.opponent,
+                      hand: updatedHand,
+                      graveyard: [...state.opponent.graveyard, spellCard]
+                    }
+                  };
+                });
+                
+                get().addLog(`Opponent cast ${spellCard.name}!`);
+                
+                // Apply spell effects
+                if (spellCard.name.includes('Burn') || spellCard.name.includes('Fire')) {
+                  // Deal damage to player's avatar
+                  if (get().player.activeAvatar) {
+                    set(state => {
+                      const playerAvatar = { ...state.player.activeAvatar } as AvatarCard;
+                      const damage = 2; // Default damage for spells
+                      const currentDamage = playerAvatar.counters?.damage || 0;
+                      
+                      playerAvatar.counters = {
+                        ...playerAvatar.counters || { damage: 0, bleed: 0, shield: 0 },
+                        damage: currentDamage + damage
+                      };
+                      
+                      return {
+                        player: {
+                          ...state.player,
+                          activeAvatar: playerAvatar
+                        }
+                      };
+                    });
+                    
+                    get().addLog(`${spellCard.name} dealt 2 damage to your ${get().player.activeAvatar?.name}!`);
+                  }
+                }
+              }
+            }
+          }
+          
+          // Skip battle phase for now (would be implemented with avatar skill usage)
+          // Go directly to end phase
+          setTimeout(() => {
+            get().nextPhase(); // Main1 -> Battle
+            setTimeout(() => {
+              get().nextPhase(); // Battle -> Damage
+              setTimeout(() => {
+                get().nextPhase(); // Damage -> Main2
+                setTimeout(() => {
+                  get().nextPhase(); // Main2 -> End
+                  setTimeout(() => {
+                    get().nextPhase(); // End -> Refresh (Player's turn)
+                  }, 500);
+                }, 500);
+              }, 500);
+            }, 500);
+          }, 1500);
+        }
+      }, 1500);
+    }
   },
   
   // Helper function to get text description of current phase
@@ -1128,6 +1526,7 @@ export const useGameStore = create<GameState>((set, get) => ({
     const playerText = currentPlayer === 'player' ? 'Your' : 'Opponent\'s';
     
     switch (gamePhase) {
+      case 'setup': return 'Setup Phase - Place a Level 1 Avatar';
       case 'refresh': return `${playerText} Refresh Phase`;
       case 'draw': return `${playerText} Draw Phase`;
       case 'main1': return `${playerText} Main Phase 1`;
