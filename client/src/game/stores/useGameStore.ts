@@ -192,14 +192,14 @@ export const useGameStore = create<GameState>((set, get) => ({
     // Reset game state
     set(state => ({
       currentPlayer: 'player',
-      gamePhase: 'refresh',
+      gamePhase: 'setup', // Start with the setup phase
       turn: 1,
       winner: null,
       player: initPlayerState(true),
       opponent: initPlayerState(false),
       selectedCard: null,
       selectedTarget: null,
-      logs: ['Game started! Draw your cards and select your active avatar.']
+      logs: ['Game started! Place your Level 1 avatar as your active avatar to begin.']
     }));
     
     // Set up life cards first so we don't remove them from the deck
