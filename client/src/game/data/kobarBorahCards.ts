@@ -205,7 +205,7 @@ export const scarlet: AvatarCard = {
   subType: 'borah',
   baseType: 'borah',
   health: 13,
-  art: '/attached_assets/Red Elemental Avatar_Ava - Crimson-04.png',
+  art: '/attached_assets/Red Elemental Avatar_Ava - Scarlet.png',
   skill1: {
     name: 'Flame Arrow',
     energyCost: createEnergyCost(2),
