@@ -294,6 +294,35 @@ const GameBoard2D: React.FC<GameBoard2DProps> = ({ onAction }) => {
     game.useAvatarSkill('player', skillNumber, undefined);
   };
   
+  // Function to handle selecting a reserve avatar when active avatar dies
+  const handleSelectReserveAvatar = (reserveIndex: number) => {
+    // Make sure the index is valid and player needs to select a reserve avatar
+    if (!game.player.needsToSelectReserveAvatar || 
+        reserveIndex < 0 || 
+        reserveIndex >= game.player.reserveAvatars.length) {
+      return;
+    }
+    
+    // Get the selected reserve avatar
+    const reserveAvatars = [...game.player.reserveAvatars];
+    const selectedAvatar = reserveAvatars[reserveIndex];
+    
+    // Remove it from reserves
+    reserveAvatars.splice(reserveIndex, 1);
+    
+    // Update the game state with the selected avatar as active
+    game.player.activeAvatar = selectedAvatar;
+    game.player.reserveAvatars = reserveAvatars;
+    game.player.needsToSelectReserveAvatar = false;
+    
+    // Log the action
+    game.addLog(`${selectedAvatar.name} has moved to the active position.`);
+    toast.success(`${selectedAvatar.name} is now your active avatar!`, { duration: 3000 });
+    
+    // Check for any defeated avatars (just in case)
+    game.checkDefeatedAvatars();
+  };
+  
   // Function to handle phase progression
   const handleNextPhase = () => {
     if (game.currentPlayer === 'player') {
