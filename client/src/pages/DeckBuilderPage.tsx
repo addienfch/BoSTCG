@@ -2,9 +2,11 @@ import React, { useState } from 'react';
 import { useDeckStore, Deck } from '../game/stores/useDeckStore';
 import { Card, ElementType, AvatarCard } from '../game/data/cardTypes';
 import { toast } from 'sonner';
+import { useNavigate } from 'react-router-dom';
 
 const DeckBuilderPage: React.FC = () => {
   const { decks, activeDeckId, getAvailableCards, addDeck, updateDeck, deleteDeck, setActiveDeck } = useDeckStore();
+  const navigate = useNavigate();
   
   // Local state for the deck builder
   const [selectedDeck, setSelectedDeck] = useState<Deck | null>(null);
@@ -131,7 +133,15 @@ const DeckBuilderPage: React.FC = () => {
   
   return (
     <div className="w-full h-full bg-gray-900 text-white p-4">
-      <h1 className="text-2xl font-bold mb-4">Book of Spektrum - Deck Builder</h1>
+      <div className="flex justify-between items-center mb-4">
+        <h1 className="text-2xl font-bold">Book of Spektrum - Deck Builder</h1>
+        <button 
+          onClick={() => navigate('/')}
+          className="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-md flex items-center"
+        >
+          <span className="mr-1">← Back</span>
+        </button>
+      </div>
       
       {/* Deck selection and management */}
       <div className="mb-6 bg-gray-800 p-4 rounded-lg">
