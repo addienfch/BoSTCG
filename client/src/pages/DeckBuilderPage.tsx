@@ -57,8 +57,8 @@ const DeckBuilderPage: React.FC = () => {
         return count >= 3;
       }
     } else {
-      // 4 copies of spells and other cards
-      return count >= 4;
+      // 3 copies of spells and other cards as requested
+      return count >= 3;
     }
   };
   

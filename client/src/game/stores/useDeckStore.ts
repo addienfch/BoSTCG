@@ -54,9 +54,9 @@ const createKobarBorahDeck = (): Deck => {
     }
   });
   
-  // Add 4 copies of each action card
+  // Add 3 copies of each action card
   actions.forEach(action => {
-    for (let i = 0; i < 4; i++) {
+    for (let i = 0; i < 3; i++) {
       cards.push({...action, id: `${action.id}-${i+1}`});
     }
   });
@@ -106,9 +106,9 @@ const createKujanaKuhakaDeck = (): Deck => {
     }
   });
   
-  // Add 4 copies of each action card
+  // Add 3 copies of each action card
   actions.forEach(action => {
-    for (let i = 0; i < 4; i++) {
+    for (let i = 0; i < 3; i++) {
       cards.push({...action, id: `${action.id}-${i+1}`});
     }
   });
