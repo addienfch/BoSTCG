@@ -124,13 +124,40 @@ export const useGameStore = create<GameState>((set, get) => ({
   
   // Initialize game
   initGame: () => {
+    // Import useDeckStore
+    const { useDeckStore } = require('./useDeckStore');
+    
+    // Get the active deck
+    const deckStore = useDeckStore.getState();
+    const { decks, activeDeckId } = deckStore;
+    
+    // Find the active deck
+    let activeDeck = decks.find(deck => deck.id === activeDeckId);
+    
+    // If no active deck is set, use the first deck
+    if (!activeDeck && decks.length > 0) {
+      activeDeck = decks[0];
+      console.log('No active deck set, using first deck:', activeDeck.name);
+    } else if (activeDeck) {
+      console.log('Using active deck:', activeDeck.name);
+    } else {
+      console.error('No decks found in deck store!');
+    }
+    
+    // Get deck cards or use empty array if no deck is available
+    const deckCards = activeDeck ? [...activeDeck.cards] : [];
+    
+    // Create player state with the deck
+    const playerState = initPlayerState(true);
+    playerState.deck = deckCards;
+    
     // Reset game state with default values first
     set(state => ({
       currentPlayer: 'player',
       gamePhase: 'setup', // Start with the setup phase
       turn: 1,
       winner: null,
-      player: initPlayerState(true),
+      player: playerState,
       opponent: initPlayerState(false),
       selectedCard: null,
       selectedTarget: null,
