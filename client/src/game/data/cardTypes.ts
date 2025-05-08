@@ -1,6 +1,6 @@
 // Define the types for the card game
 
-export type ElementType = 'fire' | 'water' | 'ground' | 'air' | 'neutral';
+export type ElementType = 'fire' | 'water' | 'earth' | 'air' | 'light' | 'dark' | 'neutral';
 export type SubType = 'kobar' | 'borah' | 'kuhaka' | 'kujana';
 export type CardCategory = 'avatar' | 'spell' | 'quickSpell' | 'ritualArmor' | 'field' | 'equipment' | 'item';
 

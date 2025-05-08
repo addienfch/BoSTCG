@@ -1,7 +1,6 @@
 import { create } from 'zustand';
 import { toast } from 'sonner';
-import { ActionCard, AvatarCard, Card, ElementType } from '../data/cardTypes';
-import { Player, GamePhase } from '../data/gameTypes';
+import { ActionCard, AvatarCard, Card, ElementType, GamePhase, Player } from '../data/cardTypes';
 import { useDeckStore } from './useDeckStore';
 
 // Helper function to shuffle an array (Fisher-Yates algorithm)
@@ -842,12 +841,8 @@ export const useGameStore = create<GameState>((set, get) => ({
       case 'draw':
         nextPhase = 'main1';
         
-        // Draw a card in the draw phase
-        if (currentPlayer === 'player') {
-          get().drawCard('player');
-        } else {
-          get().drawCard('opponent');
-        }
+        // No need to draw a card here since we already draw a card at the end of the refresh phase
+        // This prevents drawing multiple cards
         
         get().addLog(`${currentPlayer === 'player' ? 'Your' : 'Opponent\'s'} Draw Phase complete.`);
         break;
@@ -974,11 +969,228 @@ export const useGameStore = create<GameState>((set, get) => ({
   
   // Perform AI actions for the opponent's turn
   performAIActions: () => {
-    // AI will automatically play through its turn
-    // Move on to the next phase after a short delay
-    setTimeout(() => {
-      get().nextPhase();
-    }, 1000);
+    const { gamePhase, opponent } = get();
+    
+    // Different strategies based on the current phase
+    switch (gamePhase) {
+      case 'main1':
+        // In main phase 1, AI tries to play cards
+        
+        // First, prioritize playing an avatar if we don't have one
+        if (!opponent.activeAvatar) {
+          // Look for a level 1 avatar
+          const avatarIndex = opponent.hand.findIndex(
+            card => card.type === 'avatar' && (card as AvatarCard).level === 1
+          );
+          
+          if (avatarIndex !== -1) {
+            // Place as active avatar
+            set(state => {
+              const updatedHand = [...state.opponent.hand];
+              const avatarCard = updatedHand.splice(avatarIndex, 1)[0] as AvatarCard;
+              avatarCard.turnPlayed = state.turn;
+              
+              return {
+                opponent: {
+                  ...state.opponent,
+                  hand: updatedHand,
+                  activeAvatar: avatarCard
+                }
+              };
+            });
+            
+            get().addLog(`Opponent played ${opponent.hand[avatarIndex].name} as their active avatar.`);
+            
+            // Continue the turn after a delay
+            setTimeout(() => {
+              get().performAIActions();
+            }, 1000);
+            return;
+          }
+        }
+        
+        // Place reserve avatars if we have space
+        if (opponent.reserveAvatars.length < 2) {
+          // Look for a level 1 avatar
+          const avatarIndex = opponent.hand.findIndex(
+            card => card.type === 'avatar' && (card as AvatarCard).level === 1
+          );
+          
+          if (avatarIndex !== -1) {
+            // Place as reserve avatar
+            set(state => {
+              const updatedHand = [...state.opponent.hand];
+              const avatarCard = updatedHand.splice(avatarIndex, 1)[0] as AvatarCard;
+              avatarCard.turnPlayed = state.turn;
+              
+              return {
+                opponent: {
+                  ...state.opponent,
+                  hand: updatedHand,
+                  reserveAvatars: [...state.opponent.reserveAvatars, avatarCard]
+                }
+              };
+            });
+            
+            get().addLog(`Opponent played ${opponent.hand[avatarIndex].name} as a reserve avatar.`);
+            
+            // Continue the turn after a delay
+            setTimeout(() => {
+              get().performAIActions();
+            }, 1000);
+            return;
+          }
+        }
+        
+        // Try to play a spell card if we have an active avatar
+        if (opponent.activeAvatar) {
+          // Look for a spell card
+          const spellIndex = opponent.hand.findIndex(
+            card => card.type === 'spell' || card.type === 'quickSpell'
+          );
+          
+          if (spellIndex !== -1) {
+            const spellCard = opponent.hand[spellIndex];
+            const energyCost = spellCard.energyCost || [];
+            
+            // Check if we have enough energy
+            if (get().hasEnoughEnergy(energyCost, 'opponent')) {
+              // Play the spell card
+              set(state => {
+                const updatedHand = [...state.opponent.hand];
+                updatedHand.splice(spellIndex, 1);
+                
+                return {
+                  opponent: {
+                    ...state.opponent,
+                    hand: updatedHand,
+                    graveyard: [...state.opponent.graveyard, spellCard]
+                  }
+                };
+              });
+              
+              // Use the energy
+              get().useEnergy(energyCost, 'opponent');
+              
+              // Log the action
+              get().addLog(`Opponent played ${spellCard.name}.`);
+              
+              // Continue the turn after a delay
+              setTimeout(() => {
+                get().performAIActions();
+              }, 1000);
+              return;
+            }
+          }
+        }
+        
+        // As a last resort, put a card into the energy pile
+        if (opponent.hand.length > 0) {
+          // Don't use our only avatar for energy
+          if (opponent.avatarToEnergyCount < 1) {
+            // Find a non-avatar card if possible
+            let energyCardIndex = opponent.hand.findIndex(card => card.type !== 'avatar');
+            
+            // If no non-avatar cards, use an avatar but only once per turn
+            if (energyCardIndex === -1) {
+              energyCardIndex = 0; // Use the first card
+              set(state => ({
+                opponent: {
+                  ...state.opponent,
+                  avatarToEnergyCount: state.opponent.avatarToEnergyCount + 1
+                }
+              }));
+            }
+            
+            const card = opponent.hand[energyCardIndex];
+            
+            // Add the card to energy pile
+            set(state => {
+              const updatedHand = [...state.opponent.hand];
+              updatedHand.splice(energyCardIndex, 1);
+              
+              return {
+                opponent: {
+                  ...state.opponent,
+                  hand: updatedHand,
+                  energyPile: [...state.opponent.energyPile, card]
+                }
+              };
+            });
+            
+            get().addLog(`Opponent added ${card.name} to their energy pile.`);
+            
+            // Continue to the next phase
+            setTimeout(() => {
+              get().nextPhase();
+            }, 1000);
+            return;
+          }
+        }
+        
+        // If no actions were taken, move to the next phase
+        setTimeout(() => {
+          get().nextPhase();
+        }, 1000);
+        break;
+        
+      case 'main2':
+        // In main phase 2, do similar actions as main1 but prioritize differently
+        
+        // If we haven't added a card to energy yet, do that
+        if (opponent.avatarToEnergyCount < 1 && opponent.hand.length > 0) {
+          // Find a non-avatar card if possible
+          let energyCardIndex = opponent.hand.findIndex(card => card.type !== 'avatar');
+          
+          // If no non-avatar cards, use an avatar but only once per turn
+          if (energyCardIndex === -1) {
+            energyCardIndex = 0; // Use the first card
+            set(state => ({
+              opponent: {
+                ...state.opponent,
+                avatarToEnergyCount: state.opponent.avatarToEnergyCount + 1
+              }
+            }));
+          }
+          
+          const card = opponent.hand[energyCardIndex];
+          
+          // Add the card to energy pile
+          set(state => {
+            const updatedHand = [...state.opponent.hand];
+            updatedHand.splice(energyCardIndex, 1);
+            
+            return {
+              opponent: {
+                ...state.opponent,
+                hand: updatedHand,
+                energyPile: [...state.opponent.energyPile, card]
+              }
+            };
+          });
+          
+          get().addLog(`Opponent added ${card.name} to their energy pile.`);
+          
+          // Continue to the next phase
+          setTimeout(() => {
+            get().nextPhase();
+          }, 1000);
+          return;
+        }
+        
+        // If no actions were taken, move to the next phase
+        setTimeout(() => {
+          get().nextPhase();
+        }, 1000);
+        break;
+        
+      default:
+        // For other phases, just move to the next phase
+        setTimeout(() => {
+          get().nextPhase();
+        }, 1000);
+        break;
+    }
   },
   
   // Helper to format the current phase for display
@@ -1022,13 +1234,136 @@ export const useGameStore = create<GameState>((set, get) => ({
   
   // Check if player has enough energy to play a card
   hasEnoughEnergy: (energyCost: ElementType[], player: Player) => {
-    // For now, always return true
+    if (energyCost.length === 0) {
+      return true; // No energy cost
+    }
+    
+    const playerState = player === 'player' ? get().player : get().opponent;
+    const energyPile = playerState.energyPile;
+    
+    // Count available energy by element
+    const energyCount: Record<ElementType, number> = {
+      fire: 0,
+      water: 0,
+      earth: 0,
+      air: 0,
+      light: 0,
+      dark: 0,
+      neutral: 0
+    };
+    
+    // Count how many of each element we have in the energy pile
+    energyPile.forEach(card => {
+      if (card.element) {
+        energyCount[card.element as ElementType]++;
+      }
+      
+      // All cards can be used as neutral energy
+      energyCount.neutral++;
+    });
+    
+    // Check if we have enough of each required element
+    const requiredEnergy: Record<ElementType, number> = {
+      fire: 0,
+      water: 0,
+      earth: 0,
+      air: 0,
+      light: 0,
+      dark: 0,
+      neutral: 0
+    };
+    
+    // Count required energy by type
+    energyCost.forEach(element => {
+      requiredEnergy[element]++;
+    });
+    
+    // Check each element
+    for (const element of Object.keys(requiredEnergy) as ElementType[]) {
+      if (element === 'neutral') {
+        // Neutral can be paid with any energy
+        const totalAvailable = Object.values(energyCount).reduce((sum, count) => sum + count, 0);
+        if (totalAvailable < requiredEnergy.neutral) {
+          return false;
+        }
+      } else {
+        // For specific elements, check if we have enough
+        if (energyCount[element] < requiredEnergy[element]) {
+          return false;
+        }
+      }
+    }
+    
     return true;
   },
   
   // Use energy to play a card
   useEnergy: (energyCost: ElementType[], player: Player) => {
-    // For now, we'll just pretend to use energy
+    if (energyCost.length === 0) {
+      return true; // No energy cost, nothing to do
+    }
+    
+    set(state => {
+      const playerState = player === 'player' ? state.player : state.opponent;
+      const energyPile = [...playerState.energyPile];
+      const usedEnergyPile = [...playerState.usedEnergyPile];
+      
+      // Track which energy cards we've used
+      const usedIndices: number[] = [];
+      
+      // Process each energy cost
+      for (const element of energyCost) {
+        // Find an energy card of the right element
+        let foundIndex = -1;
+        
+        if (element === 'neutral') {
+          // Can use any card for neutral
+          foundIndex = 0; // Just use the first available card
+        } else {
+          // Find a card of the specified element
+          foundIndex = energyPile.findIndex(card => card.element === element);
+          
+          // If we can't find the exact element, use any card as neutral
+          if (foundIndex === -1) {
+            foundIndex = 0; // Just use the first available card
+          }
+        }
+        
+        // If we found a card to use, mark it
+        if (foundIndex !== -1 && !usedIndices.includes(foundIndex)) {
+          usedIndices.push(foundIndex);
+        }
+      }
+      
+      // Move the used cards to the used energy pile
+      usedIndices.sort((a, b) => b - a); // Sort in descending order to remove from end first
+      for (const index of usedIndices) {
+        const energyCard = energyPile.splice(index, 1)[0];
+        usedEnergyPile.push(energyCard);
+      }
+      
+      // Update the player state
+      if (player === 'player') {
+        return {
+          player: {
+            ...playerState,
+            energyPile,
+            usedEnergyPile
+          }
+        };
+      } else {
+        return {
+          opponent: {
+            ...playerState,
+            energyPile,
+            usedEnergyPile
+          }
+        };
+      }
+    });
+    
+    // Log the energy usage
+    get().addLog(`${player === 'player' ? 'You' : 'Opponent'} used ${energyCost.length} energy to play a card.`);
     return true;
   },
   
