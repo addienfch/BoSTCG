@@ -61,8 +61,9 @@ const DeckBuilderPage: React.FC = () => {
   // Create a new deck
   const handleNewDeck = () => {
     setSelectedDeck(null);
-    setDeckName('New Deck');
+    setDeckName('New Custom Deck');
     setSelectedCards([]);
+    toast.success("Start adding cards to your new deck");
   };
   
   // Save the current deck
@@ -226,11 +227,13 @@ const DeckBuilderPage: React.FC = () => {
       </div>
       
       {/* Deck editor */}
-      {(selectedDeck || selectedCards.length > 0) && (
+      {(selectedDeck || selectedCards.length > 0 || deckName === 'New Custom Deck') && (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {/* Current deck */}
           <div className="md:col-span-1 bg-gray-800 rounded-lg p-4">
-            <h2 className="text-xl font-semibold mb-2">Deck Editor</h2>
+            <h2 className="text-xl font-semibold mb-2">
+              {selectedDeck ? "Edit Deck" : "Create New Deck"}
+            </h2>
             <div className="mb-4">
               <label className="block text-sm font-medium text-gray-300 mb-1">
                 Deck Name
@@ -303,11 +306,11 @@ const DeckBuilderPage: React.FC = () => {
             
             <div className="flex justify-between">
               <button 
-                className="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded"
+                className={`${selectedDeck ? 'bg-blue-600 hover:bg-blue-700' : 'bg-green-600 hover:bg-green-700 text-white font-bold'} px-4 py-2 rounded disabled:bg-gray-600 disabled:text-gray-400 transition-colors`}
                 onClick={handleSaveDeck}
                 disabled={selectedCards.length < 40 || !deckName.trim()}
               >
-                {selectedDeck ? 'Update Deck' : 'Create Deck'}
+                {selectedDeck ? 'Update Deck' : 'Create New Deck'}
               </button>
               
               {selectedDeck && (

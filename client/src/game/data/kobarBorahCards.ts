@@ -79,7 +79,7 @@ export const borahTrainee: AvatarCard = {
   level: 1,
   subType: 'borah',
   health: 6,
-  art: '/textures/cards/borah-trainee.png',
+  art: '/attached_assets/Red Elemental Avatar_Ava - Borah Trainee C.png',
   skill1: {
     name: 'Explosion',
     energyCost: createEnergyCost(2),
@@ -178,7 +178,7 @@ export const afterBurn: ActionCard = {
   type: 'quickSpell',
   element: 'fire',
   energyCost: createEnergyCost(2),
-  art: '/textures/cards/after-burn.png',
+  art: '/attached_assets/Red Elemental Spell_2 - After Burn.png',
   description: 'Add 2 damage to an Avatar that took damage this turn.'
 };
 
@@ -188,7 +188,7 @@ export const burnBall: ActionCard = {
   type: 'quickSpell',
   element: 'fire',
   energyCost: createEnergyCost(1, 1),
-  art: '/textures/cards/burn-ball.png',
+  art: '/attached_assets/Red Elemental Spell_2 - Burn Ball.png',
   description: 'Direct 2 damage to opponent\'s active Avatar'
 };
 
@@ -198,7 +198,7 @@ export const fallingFireball: ActionCard = {
   type: 'spell',
   element: 'fire',
   energyCost: createEnergyCost(3, 1),
-  art: '/textures/cards/falling-fireball.png',
+  art: '/attached_assets/Red Elemental Spell_4 - Falling Fireballs.png',
   description: 'Deals 2 damage to all opponent Active and Reserve Avatars.'
 };
 
@@ -208,7 +208,7 @@ export const doubleBomb: ActionCard = {
   type: 'spell',
   element: 'fire',
   energyCost: createEnergyCost(3),
-  art: '/textures/cards/double-bomb.png',
+  art: '/attached_assets/Red Elemental Spell_4 - Double Bomb.png',
   description: 'Deals 4 damage to opponent\'s active Avatar.'
 };
 
@@ -218,7 +218,7 @@ export const burningArmor: ActionCard = {
   type: 'ritualArmor',
   element: 'fire',
   energyCost: createEnergyCost(2, 1),
-  art: '/textures/cards/burning-armor.png',
+  art: '/attached_assets/Red Elemental Spell_4 - Burning Armor.png',
   description: 'Add 2 shield counters to your active avatar and deal 1 damage to opponent\'s active avatar.'
 };
 
@@ -228,7 +228,7 @@ export const crackingSword: ActionCard = {
   type: 'equipment',
   element: 'fire',
   energyCost: createEnergyCost(2),
-  art: '/textures/cards/cracking-sword.png',
+  art: '/attached_assets/Red Elemental Spell_1 - Cracking Sword.png',
   description: 'Equipped Kobar avatar deals +2 damage with attacks.'
 };
 
