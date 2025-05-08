@@ -57,7 +57,7 @@ const GameBoard2D: React.FC<GameBoard2DProps> = ({ onAction }) => {
     // Special handling for setup phase
     if (game.gamePhase === 'setup') {
       // During setup phase, only allow placing level 1 avatars as active
-      if (action !== 'active') {
+      if (action !== 'active' && action !== 'play') {
         toast.error("You can only place level 1 avatars as active during the Setup Phase!");
         return;
       }
