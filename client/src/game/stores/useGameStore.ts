@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { toast } from 'sonner';
 import { ActionCard, AvatarCard, Card, ElementType, GamePhase, Player } from '../data/cardTypes';
 import { useDeckStore } from './useDeckStore';
+import { useGameMode } from './useGameMode';
 
 // Helper function to shuffle an array (Fisher-Yates algorithm)
 const shuffleArray = <T extends any>(array: T[]): T[] => {
@@ -161,6 +162,11 @@ export const useGameStore = create<GameState>((set, get) => ({
     // Create player state with the shuffled deck
     const playerState = initPlayerState(true);
     playerState.deck = shuffledPlayerDeckCards;
+
+    // Create opponent state with the AI deck
+    const opponentState = initPlayerState(false);
+    opponentState.deck = shuffledAIDeckCards;
+    opponentState.isAI = gameMode.mode === 'playerVsAI';
     
     // Reset game state with default values first
     set(state => ({
@@ -169,27 +175,11 @@ export const useGameStore = create<GameState>((set, get) => ({
       turn: 1,
       winner: null,
       player: playerState,
-      opponent: initPlayerState(false),
+      opponent: opponentState,
       selectedCard: null,
       selectedTarget: null,
       logs: ['Game started! Place your Level 1 avatar as your active avatar to begin.']
     }));
-    
-    // After initial setup, copy the player's deck for the AI
-    set(state => {
-      // Deep clone player's deck for the opponent
-      const playerDeck = state.player.deck;
-      const opponentDeck = JSON.parse(JSON.stringify(playerDeck));
-      
-      // Set the opponent's isAI flag for AI behavior
-      return {
-        opponent: {
-          ...state.opponent,
-          deck: opponentDeck,
-          isAI: true
-        }
-      };
-    });
     
     // Set up life cards first so we don't remove them from the deck
     set(state => {
