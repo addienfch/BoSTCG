@@ -55,8 +55,10 @@ const Card2D: React.FC<Card2DProps> = ({
     const energyCount: Record<ElementType, number> = {
       fire: 0,
       water: 0,
-      ground: 0,
+      earth: 0,
       air: 0,
+      light: 0,
+      dark: 0,
       neutral: 0
     };
     
