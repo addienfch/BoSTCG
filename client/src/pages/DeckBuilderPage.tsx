@@ -429,7 +429,7 @@ const DeckBuilderPage: React.FC = () => {
                             </div>
                             
                             {/* Hover tooltip for card details */}
-                            <div className="absolute opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10 bg-gray-900 bg-opacity-90 border border-gray-600 rounded-md p-3 shadow-lg w-64 text-sm text-left right-0 mt-2" style={{ top: '100%' }}>
+                            <div className="absolute opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10 bg-gray-900 bg-opacity-90 border border-gray-600 rounded-md p-3 shadow-lg w-64 text-sm text-left left-0 mt-2 pointer-events-none" style={{ top: '100%' }}>
                               <h3 className="font-bold text-lg mb-1">{card.name}</h3>
                               <div className="flex justify-between mb-2">
                                 <div className="text-gray-300">

@@ -171,6 +171,103 @@ export const daisy: AvatarCard = {
   }
 };
 
+// New Level 2 Avatar cards from uploaded images
+export const crimson: AvatarCard = {
+  id: 'kobar-102',
+  name: 'Crimson',
+  type: 'avatar',
+  element: 'fire',
+  level: 2,
+  subType: 'kobar',
+  baseType: 'kobar',
+  health: 14,
+  art: '/attached_assets/Red Elemental Avatar_Ava - Crimson-02.png',
+  skill1: {
+    name: 'Ignite',
+    energyCost: createEnergyCost(2),
+    damage: 2,
+    effect: 'Target opponent Active Avatar get 2 Bleed Counters.'
+  },
+  skill2: {
+    name: 'Inferno Burn',
+    energyCost: createEnergyCost(4),
+    damage: 9,
+    effect: 'You may discard a energy card from energy pile. If you do this attack get +10 damage.'
+  }
+};
+
+export const scarlet: AvatarCard = {
+  id: 'borah-102',
+  name: 'Scarlet',
+  type: 'avatar',
+  element: 'fire',
+  level: 2,
+  subType: 'borah',
+  baseType: 'borah',
+  health: 13,
+  art: '/attached_assets/Red Elemental Avatar_Ava - Crimson-04.png',
+  skill1: {
+    name: 'Flame Arrow',
+    energyCost: createEnergyCost(2),
+    damage: 2,
+    effect: 'Flip a coin. If head, opponent get 2 Bleed Counter'
+  },
+  skill2: {
+    name: 'Inferno Burn',
+    energyCost: createEnergyCost(4),
+    damage: 9,
+    effect: 'You may discard an energy card from energy pile. If you do, this attack get +10 damage.'
+  }
+};
+
+export const banaspati: AvatarCard = {
+  id: 'kuhaka-101',
+  name: 'Banaspati',
+  type: 'avatar',
+  element: 'fire',
+  level: 2,
+  subType: 'kuhaka',
+  baseType: 'kuhaka',
+  health: 13,
+  art: '/attached_assets/Red Elemental Avatar_Ava - Banaspati.png',
+  skill1: {
+    name: 'Burning Dagger',
+    energyCost: createEnergyCost(1, 1),
+    damage: 1,
+    effect: 'Flip a coin, if head, opponent defending Avatar get 2 Bleed Counters.'
+  },
+  skill2: {
+    name: 'Blood Absorption',
+    energyCost: createEnergyCost(2, 2),
+    damage: 9,
+    effect: 'If opponent active Avatar had Bleed Counter, heal 2 damage to one of your reserve Avatar.'
+  }
+};
+
+export const banaspatiFem: AvatarCard = {
+  id: 'kujana-101',
+  name: 'Banaspati Fem',
+  type: 'avatar',
+  element: 'fire',
+  level: 2,
+  subType: 'kujana',
+  baseType: 'kujana',
+  health: 12,
+  art: '/attached_assets/Red Elemental Avatar_Ava - Banaspati Fem.png',
+  skill1: {
+    name: 'Pyro Punch',
+    energyCost: createEnergyCost(1, 1),
+    damage: 3,
+    effect: 'If opponent Active Avatar has Bleed Counter, this attack does +1 more damage.'
+  },
+  skill2: {
+    name: 'Burning Body',
+    energyCost: createEnergyCost(2, 2),
+    damage: 9,
+    effect: 'This attack does 2 more damage if opponent were Air type.'
+  }
+};
+
 // Spell Cards
 export const afterBurn: ActionCard = {
   id: 'spell-kb-001',
@@ -241,7 +338,15 @@ export const kobarBorahAvatarCards: AvatarCard[] = [
   borahTraineeA,
   borahTraineeB,
   radja,
-  daisy
+  daisy,
+  crimson,
+  scarlet
+];
+
+// Kujana-Kuhaka Avatar Cards (could be moved to a separate file later)
+export const kujanaKuhakaAvatarCards: AvatarCard[] = [
+  banaspati,
+  banaspatiFem
 ];
 
 export const kobarBorahActionCards: ActionCard[] = [
@@ -253,4 +358,7 @@ export const kobarBorahActionCards: ActionCard[] = [
   crackingSword
 ];
 
+// Combined card collections
 export const allKobarBorahCards = [...kobarBorahAvatarCards, ...kobarBorahActionCards];
+export const allKujanaKuhakaCards = [...kujanaKuhakaAvatarCards];
+export const allFireCards = [...kobarBorahAvatarCards, ...kujanaKuhakaAvatarCards, ...kobarBorahActionCards];

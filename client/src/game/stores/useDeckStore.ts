@@ -2,8 +2,13 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { Card } from '../data/cardTypes';
 import { fireAvatarCards, fireActionCards } from '../data/fireCards';
-import { kobarBorahAvatarCards, kobarBorahActionCards } from '../data/kobarBorahCards';
-import { kujanaKuhakaAvatarCards, kujanaKuhakaActionCards } from '../data/kujanaKuhakaCards';
+import { 
+  kobarBorahAvatarCards, 
+  kobarBorahActionCards, 
+  kujanaKuhakaAvatarCards, 
+  allFireCards 
+} from '../data/kobarBorahCards';
+import { kujanaKuhakaActionCards } from '../data/kujanaKuhakaCards';
 
 // Define the deck interface
 export interface Deck {
@@ -257,26 +262,8 @@ export const useDeckStore = create<DeckStore>()(
       },
       
       getAvailableCards: () => {
-        // Return all available cards for deck building - ensure all cards are available
-        // Make a deep copy to avoid any reference issues
-        const kobarBorahAvatars = [...kobarBorahAvatarCards];
-        const kobarBorahActions = [...kobarBorahActionCards];
-        const kujanaKuhakaAvatars = [...kujanaKuhakaAvatarCards];
-        const kujanaKuhakaActions = [...kujanaKuhakaActionCards];
-        
-        // Get legacy cards for backward compatibility if they exist
-        const fireAvatars = fireAvatarCards || [];
-        const fireActions = fireActionCards || [];
-        
-        // Return the combined collection of all available cards
-        return [
-          ...kobarBorahAvatars, 
-          ...kobarBorahActions,
-          ...kujanaKuhakaAvatars,
-          ...kujanaKuhakaActions,
-          ...fireAvatars,
-          ...fireActions
-        ];
+        // Simply use the combined array of all fire cards which includes the new ones
+        return allFireCards;
       },
       
       findCard: (id) => {
