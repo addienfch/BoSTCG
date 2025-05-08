@@ -372,8 +372,8 @@ const Card2D: React.FC<Card2DProps> = ({
       {/* Action menu for all cards */}
       {showActions && isPlayable && isInHand && (
         <div 
-          className="absolute -top-28 left-0 right-0 bg-black bg-opacity-90 rounded-lg p-2 z-50 border-2 border-yellow-400 shadow-xl"
-          style={{ width: `${width + 60}px`, left: '-30px' }}
+          className="absolute left-full top-0 bg-black bg-opacity-90 rounded-lg p-2 z-50 border-2 border-yellow-400 shadow-xl ml-2"
+          style={{ width: `${width + 20}px` }}
         >
           <div className="flex flex-col gap-2">
             {/* Avatar-specific actions */}
