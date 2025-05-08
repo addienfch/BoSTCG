@@ -1019,85 +1019,101 @@ export const useGameStore = create<GameState>((set, get) => ({
           get().addLog(`${currPlayer === 'player' ? 'Your' : 'Opponent\'s'} used energy has been refreshed.`);
         }
         
-        // ALWAYS reset avatar tap status AND position for current player during refresh phase
-        if (currPlayer === 'player') {
-          // Reset player's active avatar tap status and position
-          if (currState.player.activeAvatar) {
-            set(state => ({
-              player: {
-                ...state.player,
-                activeAvatar: {
-                  ...state.player.activeAvatar!,
-                  isTapped: false,
-                  // Reset any position-related properties
-                  position: undefined,
-                  rotation: undefined,
-                  transform: undefined,
-                  translateX: undefined,
-                  translateY: undefined
-                }
+        // ALWAYS reset avatar tap status and position for BOTH players (not just current player)
+        // This ensures that ALL avatars on the board are reset properly
+        
+        // First reset the player's avatars
+        if (currState.player.activeAvatar) {
+          set(state => ({
+            player: {
+              ...state.player,
+              activeAvatar: {
+                ...state.player.activeAvatar!,
+                isTapped: false,
+                // Reset any position-related properties
+                position: undefined,
+                rotation: undefined,
+                transform: undefined,
+                translateX: undefined,
+                translateY: undefined,
+                style: undefined
               }
-            }));
-            toast.info("Your active avatar is ready for battle again!");
-          }
+            }
+          }));
           
-          // Also reset reserve avatars
-          if (currState.player.reserveAvatars.length > 0) {
-            set(state => ({
-              player: {
-                ...state.player,
-                reserveAvatars: state.player.reserveAvatars.map(avatar => ({
-                  ...avatar,
-                  isTapped: false,
-                  // Reset any position-related properties
-                  position: undefined,
-                  rotation: undefined,
-                  transform: undefined,
-                  translateX: undefined,
-                  translateY: undefined
-                }))
-              }
-            }));
-          }
-        } else if (currPlayer === 'opponent') {
-          // Reset opponent's active avatar tap status and position
-          if (currState.opponent.activeAvatar) {
-            set(state => ({
-              opponent: {
-                ...state.opponent,
-                activeAvatar: {
-                  ...state.opponent.activeAvatar!,
-                  isTapped: false,
-                  // Reset any position-related properties
-                  position: undefined,
-                  rotation: undefined,
-                  transform: undefined,
-                  translateX: undefined,
-                  translateY: undefined
-                }
-              }
-            }));
-          }
-          
-          // Also reset reserve avatars
-          if (currState.opponent.reserveAvatars.length > 0) {
-            set(state => ({
-              opponent: {
-                ...state.opponent,
-                reserveAvatars: state.opponent.reserveAvatars.map(avatar => ({
-                  ...avatar,
-                  isTapped: false,
-                  // Reset any position-related properties
-                  position: undefined,
-                  rotation: undefined,
-                  transform: undefined,
-                  translateX: undefined,
-                  translateY: undefined
-                }))
-              }
-            }));
+          // Only show toast if it's the player's turn
+          if (currPlayer === 'player') {
+            toast.success("Your active avatar is ready for battle again!");
           }
         }
+        
+        // Reset player's reserve avatars
+        if (currState.player.reserveAvatars.length > 0) {
+          set(state => ({
+            player: {
+              ...state.player,
+              reserveAvatars: state.player.reserveAvatars.map(avatar => ({
+                ...avatar,
+                isTapped: false,
+                // Reset any position-related properties
+                position: undefined,
+                rotation: undefined,
+                transform: undefined,
+                translateX: undefined,
+                translateY: undefined,
+                style: undefined
+              }))
+            }
+          }));
+        }
+        
+        // Now reset the opponent's avatars
+        if (currState.opponent.activeAvatar) {
+          set(state => ({
+            opponent: {
+              ...state.opponent,
+              activeAvatar: {
+                ...state.opponent.activeAvatar!,
+                isTapped: false,
+                // Reset any position-related properties
+                position: undefined,
+                rotation: undefined,
+                transform: undefined,
+                translateX: undefined,
+                translateY: undefined,
+                style: undefined
+              }
+            }
+          }));
+          
+          // Only show toast if it's the opponent's turn
+          if (currPlayer === 'opponent') {
+            toast.info("Opponent's active avatar is ready for battle again");
+          }
+        }
+        
+        // Reset opponent's reserve avatars
+        if (currState.opponent.reserveAvatars.length > 0) {
+          set(state => ({
+            opponent: {
+              ...state.opponent,
+              reserveAvatars: state.opponent.reserveAvatars.map(avatar => ({
+                ...avatar,
+                isTapped: false,
+                // Reset any position-related properties
+                position: undefined,
+                rotation: undefined,
+                transform: undefined,
+                translateX: undefined,
+                translateY: undefined,
+                style: undefined
+              }))
+            }
+          }));
+        }
+        
+        // Log the reset for debugging purposes
+        get().addLog(`All avatars have been reset for the new turn.`);
         
         break;
         
