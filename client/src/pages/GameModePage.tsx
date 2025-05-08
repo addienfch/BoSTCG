@@ -121,25 +121,58 @@ const GameModePage: React.FC<GameModePageProps> = ({ onStartGame }) => {
             </div>
             
             <div className="grid grid-cols-1 gap-3 mb-2">
-              {decks.map(deck => (
-                <button
-                  key={deck.id}
-                  onClick={() => setSelectedDeckId(deck.id)}
-                  className={`p-3 rounded-lg flex items-center transition-colors ${
-                    selectedDeckId === deck.id
-                      ? 'bg-amber-800 border-2 border-amber-600'
-                      : 'bg-gray-700 hover:bg-gray-600'
-                  }`}
-                >
-                  <div className="w-12 h-16 bg-gray-600 rounded-md mr-3 flex items-center justify-center">
-                    <span className="text-xs text-center">Deck</span>
-                  </div>
-                  <div className="text-left">
-                    <span className="font-bold">{deck.name}</span>
-                    <div className="text-xs text-gray-300 mt-1">{deck.cards.length} cards</div>
-                  </div>
-                </button>
-              ))}
+              {decks.map(deck => {
+                // Find a card to display (preferably a level 2 avatar)
+                const displayCard = deck.cards.find(card => 
+                  card.type === 'avatar' && card.level === 2
+                ) || deck.cards[0];
+                
+                // Determine tribe badge color
+                let tribeBadgeColor = 'bg-gray-500';
+                let tribeLabel = '';
+                
+                if (deck.tribe === 'kobar-borah') {
+                  tribeBadgeColor = 'bg-red-700';
+                  tribeLabel = 'Kobar-Borah';
+                } else if (deck.tribe === 'kujana-kuhaka') {
+                  tribeBadgeColor = 'bg-orange-700';
+                  tribeLabel = 'Kujana-Kuhaka';
+                }
+                
+                return (
+                  <button
+                    key={deck.id}
+                    onClick={() => setSelectedDeckId(deck.id)}
+                    className={`p-3 rounded-lg flex items-center transition-colors ${
+                      selectedDeckId === deck.id
+                        ? 'bg-amber-800 border-2 border-amber-600'
+                        : 'bg-gray-700 hover:bg-gray-600'
+                    }`}
+                  >
+                    <div 
+                      className="w-12 h-16 bg-gray-600 rounded-md mr-3 overflow-hidden"
+                      style={{
+                        backgroundImage: `url(${displayCard.art})`,
+                        backgroundSize: 'cover',
+                        backgroundPosition: 'center'
+                      }}
+                    >
+                    </div>
+                    <div className="text-left flex-1">
+                      <span className="font-bold">{deck.name}</span>
+                      
+                      <div className="flex justify-between items-center mt-1">
+                        <div className="text-xs text-gray-300">{deck.cards.length} cards</div>
+                        {tribeLabel && (
+                          <div className={`text-xs px-2 py-0.5 rounded-full text-white ${tribeBadgeColor}`}>
+                            {tribeLabel}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </button>
+                );
+              })}
               
               {decks.length === 0 && (
                 <div className="bg-gray-700 p-4 rounded-lg text-center">

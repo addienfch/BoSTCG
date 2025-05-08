@@ -127,6 +127,7 @@ export const useGameStore = create<GameState>((set, get) => ({
   initGame: () => {
     // Get the active deck from useDeckStore
     const { decks, activeDeckId } = useDeckStore.getState();
+    const gameMode = useGameMode.getState();
     
     // Find the active deck
     let activeDeck = decks.find(deck => deck.id === activeDeckId);
@@ -144,13 +145,22 @@ export const useGameStore = create<GameState>((set, get) => ({
     // Get deck cards or use empty array if no deck is available
     const deckCards = activeDeck ? [...activeDeck.cards] : [];
     
-    // Shuffle the deck before using it (using Fisher-Yates algorithm)
-    const shuffledDeckCards = shuffleArray(deckCards);
+    // Shuffle the deck for player
+    const shuffledPlayerDeckCards = shuffleArray([...deckCards]);
     console.log('Deck shuffled before game start');
+    
+    // For AI mode, use the same deck as the player (but with different IDs to avoid conflicts)
+    const aiDeck = deckCards.map(card => ({
+      ...card,
+      id: `ai-${card.id.replace(/^[^-]+-/, '')}` // Replace the first ID prefix like "p-" with "ai-"
+    }));
+    
+    // Shuffle the AI deck separately
+    const shuffledAIDeckCards = shuffleArray(aiDeck);
     
     // Create player state with the shuffled deck
     const playerState = initPlayerState(true);
-    playerState.deck = shuffledDeckCards;
+    playerState.deck = shuffledPlayerDeckCards;
     
     // Reset game state with default values first
     set(state => ({

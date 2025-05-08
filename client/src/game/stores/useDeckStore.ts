@@ -2,6 +2,8 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { Card } from '../data/cardTypes';
 import { fireAvatarCards, fireActionCards } from '../data/fireCards';
+import { kobarBorahAvatarCards, kobarBorahActionCards } from '../data/kobarBorahCards';
+import { kujanaKuhakaAvatarCards, kujanaKuhakaActionCards } from '../data/kujanaKuhakaCards';
 
 // Define the deck interface
 export interface Deck {
@@ -11,6 +13,7 @@ export interface Deck {
   coverCardId?: string; // Optional card to show as the deck cover
   createdAt: number;
   updatedAt: number;
+  tribe?: string; // Optional tribe identifier
 }
 
 // Define the deck store interface
@@ -19,7 +22,7 @@ interface DeckStore {
   activeDeckId: string | null;
   
   // Actions
-  addDeck: (name: string, cards: Card[]) => Deck;
+  addDeck: (name: string, cards: Card[], tribe?: string) => Deck;
   updateDeck: (id: string, updates: Partial<Omit<Deck, 'id' | 'createdAt'>>) => void;
   deleteDeck: (id: string) => void;
   setActiveDeck: (id: string) => void;
@@ -28,9 +31,114 @@ interface DeckStore {
   getAvailableCards: () => Card[];
   findCard: (id: string) => Card | undefined;
   getAvailableCardsByElement: (element: string) => Card[];
+  getAvailableCardsByTribe: (tribe: string) => Card[];
 }
 
-// Helper function to create a default deck
+// Helper function to create a Kobar-Borah tribe deck
+const createKobarBorahDeck = (): Deck => {
+  const avatars = kobarBorahAvatarCards.filter(card => card.level === 1);
+  const level2Avatars = kobarBorahAvatarCards.filter(card => card.level === 2);
+  const actions = kobarBorahActionCards;
+  
+  const cards: Card[] = [];
+  
+  // Add copies of level 1 avatars (3 of each)
+  avatars.forEach(avatar => {
+    for (let i = 1; i <= 3; i++) {
+      cards.push({...avatar, id: `${avatar.id}-${i}`});
+    }
+  });
+  
+  // Add 4 copies of each action card
+  actions.forEach(action => {
+    for (let i = 0; i < 4; i++) {
+      cards.push({...action, id: `${action.id}-${i+1}`});
+    }
+  });
+  
+  // Also add 1 copy of each level 2 avatar for evolution possibilities
+  level2Avatars.forEach(avatar => {
+    cards.push({...avatar, id: `${avatar.id}-1`});
+  });
+  
+  // If deck size is less than 40, add more action cards until we reach minimum size
+  if (cards.length < 40) {
+    const cardsNeeded = 40 - cards.length;
+    let index = 0;
+    
+    for (let i = 0; i < cardsNeeded; i++) {
+      const action = actions[index % actions.length]; // Cycle through action cards
+      const copyId = Math.floor(i / actions.length) + 5; // Start from copy #5
+      cards.push({...action, id: `${action.id}-extra-${copyId}`});
+      index++;
+    }
+  }
+  
+  const now = Date.now();
+  return {
+    id: `deck-kb-${now}`,
+    name: "Kobar-Borah Deck",
+    cards,
+    coverCardId: cards.find(card => card.name === "Radja")?.id || cards[0].id,
+    createdAt: now,
+    updatedAt: now,
+    tribe: "kobar-borah"
+  };
+};
+
+// Helper function to create a Kujana-Kuhaka tribe deck
+const createKujanaKuhakaDeck = (): Deck => {
+  const avatars = kujanaKuhakaAvatarCards.filter(card => card.level === 1);
+  const level2Avatars = kujanaKuhakaAvatarCards.filter(card => card.level === 2);
+  const actions = kujanaKuhakaActionCards;
+  
+  const cards: Card[] = [];
+  
+  // Add copies of level 1 avatars (3 of each)
+  avatars.forEach(avatar => {
+    for (let i = 1; i <= 3; i++) {
+      cards.push({...avatar, id: `${avatar.id}-${i}`});
+    }
+  });
+  
+  // Add 4 copies of each action card
+  actions.forEach(action => {
+    for (let i = 0; i < 4; i++) {
+      cards.push({...action, id: `${action.id}-${i+1}`});
+    }
+  });
+  
+  // Also add 1 copy of each level 2 avatar for evolution possibilities
+  level2Avatars.forEach(avatar => {
+    cards.push({...avatar, id: `${avatar.id}-1`});
+  });
+  
+  // If deck size is less than 40, add more action cards until we reach minimum size
+  if (cards.length < 40) {
+    const cardsNeeded = 40 - cards.length;
+    let index = 0;
+    
+    for (let i = 0; i < cardsNeeded; i++) {
+      const action = actions[index % actions.length]; // Cycle through action cards
+      const copyId = Math.floor(i / actions.length) + 5; // Start from copy #5
+      cards.push({...action, id: `${action.id}-extra-${copyId}`});
+      index++;
+    }
+  }
+  
+  const now = Date.now();
+  return {
+    id: `deck-kk-${now}`,
+    name: "Kujana-Kuhaka Deck",
+    cards,
+    coverCardId: cards.find(card => card.name === "Boar Witch")?.id || cards[0].id,
+    createdAt: now,
+    updatedAt: now,
+    tribe: "kujana-kuhaka"
+  };
+};
+
+// Helper function to create a default deck from the old structure (keeping for backwards compatibility)
 const createDefaultDeck = (name: string): Deck => {
   // Create a deck with Fire element cards
   const avatars = fireAvatarCards.filter(card => card.level === 1);
@@ -87,10 +195,14 @@ const createDefaultDeck = (name: string): Deck => {
 export const useDeckStore = create<DeckStore>()(
   persist(
     (set, get) => ({
-      decks: [createDefaultDeck("Fire Starter Deck")],
+      // Initialize with both tribal decks
+      decks: [
+        createKobarBorahDeck(),
+        createKujanaKuhakaDeck()
+      ],
       activeDeckId: null,
       
-      addDeck: (name, cards) => {
+      addDeck: (name, cards, tribe) => {
         // Validate the deck (must have at least 40 cards)
         if (cards.length < 40) {
           throw new Error("A deck must have at least 40 cards");
@@ -103,7 +215,8 @@ export const useDeckStore = create<DeckStore>()(
           cards,
           coverCardId: cards[0].id,
           createdAt: now,
-          updatedAt: now
+          updatedAt: now,
+          tribe
         };
         
         set(state => ({
@@ -145,21 +258,44 @@ export const useDeckStore = create<DeckStore>()(
       
       getAvailableCards: () => {
         // Return all available cards for deck building
-        const avatars = [...fireAvatarCards]; 
-        const actions = [...fireActionCards];
+        const kobarBorahAvatars = [...kobarBorahAvatarCards];
+        const kobarBorahActions = [...kobarBorahActionCards];
+        const kujanaKuhakaAvatars = [...kujanaKuhakaAvatarCards];
+        const kujanaKuhakaActions = [...kujanaKuhakaActionCards];
         
-        return [...avatars, ...actions];
+        return [
+          ...kobarBorahAvatars, 
+          ...kobarBorahActions,
+          ...kujanaKuhakaAvatars,
+          ...kujanaKuhakaActions
+        ];
       },
       
       findCard: (id) => {
         // Find the base card by id (without copy number)
         const baseId = id.split('-')[0] + '-' + id.split('-')[1];
-        const allCards = [...fireAvatarCards, ...fireActionCards];
+        const allCards = [
+          ...kobarBorahAvatarCards, 
+          ...kobarBorahActionCards,
+          ...kujanaKuhakaAvatarCards,
+          ...kujanaKuhakaActionCards
+        ];
         return allCards.find(card => card.id.startsWith(baseId));
       },
       
       getAvailableCardsByElement: (element) => {
         return get().getAvailableCards().filter(card => card.element === element);
+      },
+      
+      getAvailableCardsByTribe: (tribe) => {
+        if (tribe === 'kobar-borah') {
+          return [...kobarBorahAvatarCards, ...kobarBorahActionCards];
+        } else if (tribe === 'kujana-kuhaka') {
+          return [...kujanaKuhakaAvatarCards, ...kujanaKuhakaActionCards];
+        }
+        
+        // Default to all cards if tribe not recognized
+        return get().getAvailableCards();
       }
     }),
     {
