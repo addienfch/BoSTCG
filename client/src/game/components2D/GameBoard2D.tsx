@@ -1,5 +1,6 @@
 import React from 'react';
 import { useGameStore } from '../stores/useGameStore';
+import { useGameMode } from '../stores/useGameMode';
 import Card2D from './Card2D';
 import { toast } from 'sonner';
 import { AvatarCard, Card } from '../data/cardTypes';
@@ -90,22 +91,22 @@ const GameBoard2D: React.FC<GameBoard2DProps> = ({ onAction }) => {
         return;
       }
       
-      // Manually set up the card placement in reserve
-      set(state => {
-        const updatedHand = [...state.player.hand];
-        updatedHand.splice(index, 1);
-        
-        return {
-          player: {
-            ...state.player,
-            hand: updatedHand,
-            reserveAvatars: [...state.player.reserveAvatars, card as AvatarCard]
-          }
-        };
-      });
+      // Use the game store's internal methods to handle this
+      const updatedHand = [...game.player.hand];
+      const cardIndex = updatedHand.findIndex(c => c.id === card.id);
       
-      game.addLog(`${card.name} placed in reserve.`);
-      toast.success(`${card.name} placed in reserve!`);
+      if (cardIndex !== -1) {
+        // Remove the card from hand
+        const avatarCard = updatedHand.splice(cardIndex, 1)[0] as AvatarCard;
+        
+        // Update the game state
+        game.player.hand = updatedHand;
+        game.player.reserveAvatars.push(avatarCard);
+        
+        // Log the action
+        game.addLog(`${card.name} placed in reserve.`);
+        toast.success(`${card.name} placed in reserve!`);
+      }
       
     } else if (action === 'toEnergy') {
       // Only allow one avatar card to energy pile per turn
@@ -145,6 +146,9 @@ const GameBoard2D: React.FC<GameBoard2DProps> = ({ onAction }) => {
   
   // Current phase display text
   const phaseText = game.getPhaseText();
+  
+  // Get game mode information
+  const gameMode = useGameMode();
   
   // Determine if it's the player's turn
   const isPlayerTurn = game.currentPlayer === 'player';
@@ -194,6 +198,23 @@ const GameBoard2D: React.FC<GameBoard2DProps> = ({ onAction }) => {
           <span className="font-bold">Turn {game.turn}</span>
           <span className="ml-2 bg-blue-600 px-2 py-0.5 rounded text-xs">
             {phaseText}
+          </span>
+          
+          {/* Game mode indicator */}
+          <span className="ml-2 px-2 py-0.5 rounded text-xs" 
+                style={{
+                  backgroundColor: gameMode.mode === 'vs-ai' ? '#8B0000' : 
+                                  gameMode.mode === 'practice' ? '#006400' : 
+                                  gameMode.mode === 'online' ? '#4169E1' : '#555'
+                }}>
+            {gameMode.mode === 'vs-ai' ? 'VS AI' : 
+             gameMode.mode === 'practice' ? 'Practice' : 
+             gameMode.mode === 'online' ? 'Online' : 'Unknown Mode'}
+          </span>
+          
+          {/* Player name */}
+          <span className="ml-2 text-gray-300 text-xs">
+            {gameMode.playerName || 'Player'}
           </span>
         </div>
         <div>

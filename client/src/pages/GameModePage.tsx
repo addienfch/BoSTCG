@@ -3,8 +3,12 @@ import { useGameMode } from '../game/stores/useGameMode';
 import SolanaWalletConnect from '../components/SolanaWalletConnect';
 import { toast } from 'sonner';
 
+interface GameModePageProps {
+  onStartGame: () => void;
+}
+
 // Component for selecting game modes
-const GameModePage: React.FC = () => {
+const GameModePage: React.FC<GameModePageProps> = ({ onStartGame }) => {
   const gameMode = useGameMode();
   const [roomCode, setRoomCode] = useState('');
   const [playerName, setPlayerName] = useState(gameMode.playerName);
@@ -20,6 +24,7 @@ const GameModePage: React.FC = () => {
     gameMode.setPlayerName(playerName);
     gameMode.joinRoom(roomCode);
     toast.success(`Joining room ${roomCode}...`);
+    onStartGame(); // Navigate to the game
   };
   
   // Handle creating a new room
@@ -27,6 +32,9 @@ const GameModePage: React.FC = () => {
     gameMode.setPlayerName(playerName);
     gameMode.createRoom();
     toast.success('Creating a new room...');
+    // For now, we still navigate to the game even when waiting for an opponent
+    // In a real implementation, this would wait for the opponent to join
+    onStartGame();
   };
   
   // Handle starting single player game
@@ -34,6 +42,7 @@ const GameModePage: React.FC = () => {
     gameMode.setPlayerName(playerName);
     gameMode.startSinglePlayer();
     toast.success('Starting single player game...');
+    onStartGame(); // Call the parent component callback to navigate to the game
   };
   
   // Handle starting AI opponent game
@@ -41,6 +50,7 @@ const GameModePage: React.FC = () => {
     gameMode.setPlayerName(playerName);
     gameMode.startAIGame();
     toast.success('Starting game against AI...');
+    onStartGame(); // Call the parent component callback to navigate to the game
   };
   
   return (
