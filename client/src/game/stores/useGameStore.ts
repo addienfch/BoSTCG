@@ -636,6 +636,13 @@ export const useGameStore = create<GameState>((set, get) => ({
       return;
     }
     
+    // Check if the avatar was played this turn
+    if (avatar.turnPlayed === state.turn) {
+      // This was causing the issue - avatars couldn't use skills on the turn they were played
+      // Removing this restriction as per user requirements
+      console.log("Avatar can use skills immediately:", avatar.name);
+    }
+    
     // Get the skill based on the index
     const skill = skillIndex === 1 ? avatar.skill1 : avatar.skill2;
     
@@ -1138,8 +1145,22 @@ export const useGameStore = create<GameState>((set, get) => ({
         
         // Dispatch an event to notify UI components about avatar reset
         console.log("Dispatching gamePhaseChanged event from refresh phase");
+        
+        // Dispatch multiple events to ensure all components receive the notification
+        // First one for phase change
         const phaseChangeEvent = new Event('gamePhaseChanged');
         document.dispatchEvent(phaseChangeEvent);
+        
+        // Second one specifically for avatar reset
+        const avatarResetEvent = new Event('avatarReset');
+        document.dispatchEvent(avatarResetEvent);
+        
+        // Add a slight delay and dispatch the events again for redundancy
+        setTimeout(() => {
+          console.log("Re-dispatching avatar reset events after delay");
+          document.dispatchEvent(new Event('gamePhaseChanged'));
+          document.dispatchEvent(new Event('avatarReset'));
+        }, 100);
         
         break;
         

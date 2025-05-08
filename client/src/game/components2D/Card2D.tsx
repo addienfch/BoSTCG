@@ -202,8 +202,19 @@ const Card2D: React.FC<Card2DProps> = ({
   
   // Reset the card transform when isTapped changes or forced refresh occurs
   useEffect(() => {
-    if (card.type === 'avatar') {
+    if (card.type === 'avatar' && cardRef.current) {
       console.log(`Avatar ${card.name} visual state refresh. isTapped:`, isTapped, "refresh count:", visualRefreshCounter);
+      
+      // Apply visual transform based on isTapped state
+      const cardElement = cardRef.current;
+      
+      if (isTapped) {
+        // Apply tapped visual effect (rotated 90 degrees)
+        cardElement.style.transform = 'rotate(90deg)';
+      } else {
+        // Reset to untapped state (no rotation)
+        cardElement.style.transform = 'rotate(0deg)';
+      }
     }
   }, [isTapped, visualRefreshCounter, card.name, card.type]);
 
