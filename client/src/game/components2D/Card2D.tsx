@@ -316,11 +316,11 @@ const Card2D: React.FC<Card2DProps> = ({
       style={{ 
         width: `${width}px`, 
         height: `${height}px`,
-        transform: isTapped ? 'rotate(90deg) translateY(0px) translateX(0px)' : 'none',
+        transform: isTapped ? 'rotate(90deg)' : 'none',
         transformOrigin: 'center center',
-        transition: 'all 0.3s ease',
+        transition: 'transform 0.3s ease-in-out',
         position: 'relative',
-        zIndex: isTapped ? 10 : 1
+        zIndex: 1
       }}
     >
       {/* Card base */}

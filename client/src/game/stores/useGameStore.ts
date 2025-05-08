@@ -1046,14 +1046,9 @@ export const useGameStore = create<GameState>((set, get) => ({
           if (updatedState.player.activeAvatar) {
             updatedState.player.activeAvatar = {
               ...updatedState.player.activeAvatar,
-              isTapped: false,
-              // Reset all position properties
-              position: undefined,
-              rotation: undefined,
-              transform: undefined,
-              translateX: undefined,
-              translateY: undefined,
-              style: undefined
+              isTapped: false
+              // AvatarCard type doesn't have position properties,
+              // those are handled by the Card2D component's transform style
             };
           }
           
@@ -1061,14 +1056,9 @@ export const useGameStore = create<GameState>((set, get) => ({
           if (updatedState.player.reserveAvatars.length > 0) {
             updatedState.player.reserveAvatars = updatedState.player.reserveAvatars.map(avatar => ({
               ...avatar,
-              isTapped: false,
-              // Reset all position properties
-              position: undefined,
-              rotation: undefined,
-              transform: undefined,
-              translateX: undefined,
-              translateY: undefined,
-              style: undefined
+              isTapped: false
+              // AvatarCard type doesn't have position properties,
+              // those are handled by the Card2D component's transform style
             }));
           }
           
@@ -1076,14 +1066,9 @@ export const useGameStore = create<GameState>((set, get) => ({
           if (updatedState.opponent.activeAvatar) {
             updatedState.opponent.activeAvatar = {
               ...updatedState.opponent.activeAvatar,
-              isTapped: false,
-              // Reset all position properties
-              position: undefined,
-              rotation: undefined,
-              transform: undefined,
-              translateX: undefined,
-              translateY: undefined,
-              style: undefined
+              isTapped: false
+              // AvatarCard type doesn't have position properties,
+              // those are handled by the Card2D component's transform style
             };
           }
           
@@ -1091,14 +1076,9 @@ export const useGameStore = create<GameState>((set, get) => ({
           if (updatedState.opponent.reserveAvatars.length > 0) {
             updatedState.opponent.reserveAvatars = updatedState.opponent.reserveAvatars.map(avatar => ({
               ...avatar,
-              isTapped: false,
-              // Reset all position properties
-              position: undefined,
-              rotation: undefined,
-              transform: undefined,
-              translateX: undefined, 
-              translateY: undefined,
-              style: undefined
+              isTapped: false
+              // AvatarCard type doesn't have position properties,
+              // those are handled by the Card2D component's transform style
             }));
           }
           
