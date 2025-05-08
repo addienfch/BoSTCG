@@ -143,7 +143,8 @@ const initPlayerState = (isPlayer: boolean): PlayerState => {
     fieldCards: [],
     lifeCards: [],
     graveyard: [],
-    avatarToEnergyCount: 0 // Track avatars moved to energy this turn
+    avatarToEnergyCount: 0, // Track avatars moved to energy this turn
+    isAI: !isPlayer  // If not player, it's AI-controlled
   };
 };
 
