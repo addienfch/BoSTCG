@@ -1686,10 +1686,17 @@ export const useGameStore = create<GameState>((set, get) => ({
               get().addLog(`Your ${newActiveAvatar?.name} has moved to the active position.`);
             }
           } else {
-            // No reserve avatars - lose a life card if available
+            // No reserve avatars - lose a life card and reduce health
+            // Reduce health by 1
+            const newHealth = Math.max(0, state.player.health - 1);
+            updatedState.player.health = newHealth;
+            
+            // Check if player has any life cards left
             if (state.player.lifeCards.length === 0) {
+              // No life cards and no reserve avatars - game over
               updatedState.winner = 'opponent';
               get().addLog('You have lost! Your opponent is victorious.');
+              toast.error('You have no reserve avatars and no life cards left. Game over!', { duration: 5000 });
             } else {
               // Remove a life card
               const lifeCards = [...state.player.lifeCards];
@@ -1702,8 +1709,8 @@ export const useGameStore = create<GameState>((set, get) => ({
                 // Add the life card to player's hand
                 updatedState.player.hand = [...state.player.hand, lostLifeCard];
                 
-                get().addLog(`You lost a life card: ${lostLifeCard.name}! It has been added to your hand.`);
-                toast.error(`You lost a life card: ${lostLifeCard.name}! It has been added to your hand.`, { duration: 5000 });
+                get().addLog(`Your health reduced to ${newHealth}. You lost a life card: ${lostLifeCard.name}! It has been added to your hand.`);
+                toast.error(`Your health reduced to ${newHealth}. You lost a life card: ${lostLifeCard.name}!`, { duration: 5000 });
               }
             }
           }
@@ -1739,10 +1746,17 @@ export const useGameStore = create<GameState>((set, get) => ({
             get().addLog(`Opponent's ${newActiveAvatar?.name} has moved to the active position.`);
             toast.info(`Opponent moved ${newActiveAvatar?.name} to the active position.`);
           } else {
-            // No reserve avatars - lose a life card if available
+            // No reserve avatars - lose a life card and reduce health
+            // Reduce health by 1
+            const newHealth = Math.max(0, state.opponent.health - 1);
+            updatedState.opponent.health = newHealth;
+            
+            // Check if opponent has any life cards left
             if (state.opponent.lifeCards.length === 0) {
+              // No life cards and no reserve avatars - game over
               updatedState.winner = 'player';
               get().addLog('You are victorious! Your opponent has been defeated.');
+              toast.success('Your opponent has no reserve avatars and no life cards left. You win!', { duration: 5000 });
             } else {
               // Remove a life card
               const lifeCards = [...state.opponent.lifeCards];
@@ -1755,8 +1769,8 @@ export const useGameStore = create<GameState>((set, get) => ({
                 // Add the life card to opponent's hand
                 updatedState.opponent.hand = [...state.opponent.hand, lostLifeCard];
                 
-                get().addLog(`Opponent lost a life card: ${lostLifeCard.name}! It has been added to their hand.`);
-                toast.success(`Opponent lost a life card: ${lostLifeCard.name}!`, { duration: 5000 });
+                get().addLog(`Opponent's health reduced to ${newHealth}. They lost a life card: ${lostLifeCard.name}! It has been added to their hand.`);
+                toast.success(`Opponent's health reduced to ${newHealth}. They lost a life card!`, { duration: 5000 });
               }
             }
           }
