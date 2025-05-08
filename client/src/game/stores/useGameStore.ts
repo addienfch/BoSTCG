@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { toast } from 'sonner';
 import { ActionCard, AvatarCard, Card, ElementType } from '../data/cardTypes';
 import { Player, GamePhase } from '../data/gameTypes';
+import { useDeckStore } from './useDeckStore';
 
 // Helper function to shuffle an array (Fisher-Yates algorithm)
 const shuffleArray = <T extends any>(array: T[]): T[] => {
@@ -124,12 +125,8 @@ export const useGameStore = create<GameState>((set, get) => ({
   
   // Initialize game
   initGame: () => {
-    // Import useDeckStore
-    const { useDeckStore } = require('./useDeckStore');
-    
-    // Get the active deck
-    const deckStore = useDeckStore.getState();
-    const { decks, activeDeckId } = deckStore;
+    // Get the active deck from useDeckStore
+    const { decks, activeDeckId } = useDeckStore.getState();
     
     // Find the active deck
     let activeDeck = decks.find(deck => deck.id === activeDeckId);
