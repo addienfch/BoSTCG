@@ -260,7 +260,7 @@ const GameBoard2D: React.FC<GameBoard2DProps> = ({ onAction }) => {
         return;
       }
 
-      // No limit on other card types
+      // No limit on other card types - all cards can be moved to energy
       game.moveCardToEnergy(index);
       toast.success(`${card.name} added to your energy pile`);
     }

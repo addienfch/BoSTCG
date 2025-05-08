@@ -1014,16 +1014,22 @@ export const useGameStore = create<GameState>((set, get) => ({
           get().addLog(`${currPlayer === 'player' ? 'Your' : 'Opponent\'s'} used energy has been refreshed.`);
         }
         
-        // ALWAYS reset avatar tap status for current player during refresh phase
+        // ALWAYS reset avatar tap status AND position for current player during refresh phase
         if (currPlayer === 'player') {
-          // Reset player's active avatar tap status
+          // Reset player's active avatar tap status and position
           if (currState.player.activeAvatar) {
             set(state => ({
               player: {
                 ...state.player,
                 activeAvatar: {
                   ...state.player.activeAvatar!,
-                  isTapped: false
+                  isTapped: false,
+                  // Reset any position-related properties
+                  position: undefined,
+                  rotation: undefined,
+                  transform: undefined,
+                  translateX: undefined,
+                  translateY: undefined
                 }
               }
             }));
@@ -1037,20 +1043,32 @@ export const useGameStore = create<GameState>((set, get) => ({
                 ...state.player,
                 reserveAvatars: state.player.reserveAvatars.map(avatar => ({
                   ...avatar,
-                  isTapped: false
+                  isTapped: false,
+                  // Reset any position-related properties
+                  position: undefined,
+                  rotation: undefined,
+                  transform: undefined,
+                  translateX: undefined,
+                  translateY: undefined
                 }))
               }
             }));
           }
         } else if (currPlayer === 'opponent') {
-          // Reset opponent's active avatar tap status
+          // Reset opponent's active avatar tap status and position
           if (currState.opponent.activeAvatar) {
             set(state => ({
               opponent: {
                 ...state.opponent,
                 activeAvatar: {
                   ...state.opponent.activeAvatar!,
-                  isTapped: false
+                  isTapped: false,
+                  // Reset any position-related properties
+                  position: undefined,
+                  rotation: undefined,
+                  transform: undefined,
+                  translateX: undefined,
+                  translateY: undefined
                 }
               }
             }));
@@ -1063,7 +1081,13 @@ export const useGameStore = create<GameState>((set, get) => ({
                 ...state.opponent,
                 reserveAvatars: state.opponent.reserveAvatars.map(avatar => ({
                   ...avatar,
-                  isTapped: false
+                  isTapped: false,
+                  // Reset any position-related properties
+                  position: undefined,
+                  rotation: undefined,
+                  transform: undefined,
+                  translateX: undefined,
+                  translateY: undefined
                 }))
               }
             }));
