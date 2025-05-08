@@ -196,7 +196,8 @@ const Card2D: React.FC<Card2DProps> = ({
         
         // Apply untapped state immediately through the ref
         if (cardRef.current) {
-          cardRef.current.style.transform = 'rotate(0deg)';
+          // Rotate 90 degrees to the left for untapped state
+          cardRef.current.style.transform = 'rotate(-90deg)';
           console.log("Applied direct reset to card element for", card.name);
         }
         
@@ -224,11 +225,12 @@ const Card2D: React.FC<Card2DProps> = ({
       const cardElement = cardRef.current;
       
       if (isTapped) {
-        // Apply tapped visual effect (rotated 90 degrees)
+        // Apply tapped visual effect (rotated 90 degrees to the right)
         cardElement.style.transform = 'rotate(90deg)';
       } else {
-        // Reset to untapped state (no rotation)
-        cardElement.style.transform = 'rotate(0deg)';
+        // For the refresh phase, rotate 90 degrees to the left 
+        // This creates a visually distinct "untapped" state
+        cardElement.style.transform = 'rotate(-90deg)';
       }
     }
   }, [isTapped, visualRefreshCounter, card.name, card.type]);
@@ -393,7 +395,7 @@ const Card2D: React.FC<Card2DProps> = ({
         style={{ 
           width: `${width}px`, 
           height: `${height}px`,
-          transform: isTapped ? 'rotate(90deg)' : 'rotate(0deg)', // Explicit rotation for resetting
+          transform: isTapped ? 'rotate(90deg)' : 'rotate(-90deg)', // Rotate left when untapped
           transformOrigin: 'center center',
           transition: 'transform 0.3s ease-in-out',
           position: 'relative',
