@@ -19,6 +19,13 @@ const GameBoard2D: React.FC<GameBoard2DProps> = ({ onAction }) => {
     // Check game phase and energy requirements
     const { player, gamePhase, currentPlayer } = game;
     
+    // Special handling for the setup phase
+    if (gamePhase === 'setup' && currentPlayer === 'player') {
+      // During setup phase, only level 1 avatars can be played if player has no active avatar
+      return card.type === 'avatar' && (card as AvatarCard).level === 1 && player.activeAvatar === null;
+    }
+    
+    // For regular phases
     if (currentPlayer !== 'player' || (gamePhase !== 'main1' && gamePhase !== 'main2')) {
       return false;
     }
@@ -47,7 +54,53 @@ const GameBoard2D: React.FC<GameBoard2DProps> = ({ onAction }) => {
   const handleCardAction = (card: Card, action: string) => {
     console.log(action, card);
     
-    // Common validation for all actions
+    // Special handling for setup phase
+    if (game.gamePhase === 'setup') {
+      // During setup phase, only allow placing level 1 avatars as active
+      if (action !== 'active') {
+        toast.error("You can only place level 1 avatars as active during the Setup Phase!");
+        return;
+      }
+      
+      if (card.type !== 'avatar' || (card as AvatarCard).level !== 1) {
+        toast.error("You can only place level 1 avatars during the Setup Phase!");
+        return;
+      }
+      
+      if (game.player.activeAvatar !== null) {
+        toast.error("You already have an active avatar! Click 'Next Phase' to continue.");
+        return;
+      }
+      
+      // Find the card index
+      const index = game.player.hand.findIndex(c => c.id === card.id);
+      if (index === -1) {
+        toast.error("Card not found in your hand!");
+        return;
+      }
+      
+      // Create a copy of the hand
+      const updatedHand = [...game.player.hand];
+      
+      // Get the avatar card
+      const avatarCard = updatedHand[index] as AvatarCard;
+      
+      // Remove from hand
+      updatedHand.splice(index, 1);
+      
+      // Set as active avatar with turn tracking
+      avatarCard.turnPlayed = game.turn;
+      
+      // Update game state
+      game.player.hand = updatedHand;
+      game.player.activeAvatar = avatarCard;
+      
+      game.addLog(`Setup: You played ${card.name} as your active avatar.`);
+      toast.success(`${card.name} placed as active avatar. Click 'Next Phase' to continue.`);
+      return;
+    }
+    
+    // Common validation for regular phases
     if (game.currentPlayer !== 'player' || (game.gamePhase !== 'main1' && game.gamePhase !== 'main2')) {
       toast.error("You can only perform actions during your Main Phases!");
       return;
