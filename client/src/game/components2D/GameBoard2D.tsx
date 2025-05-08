@@ -281,7 +281,7 @@ const GameBoard2D: React.FC<GameBoard2DProps> = ({ onAction }) => {
       currentTurn: game.turn
     });
     
-    // Note: We removed the turnPlayed check here - avatars can use skills regardless of when they were played
+    // Note: Each avatar can use skills once per battle phase, regardless of when they were played
     
     // Check if the skill exists
     if (skillNumber === 2 && !game.player.activeAvatar.skill2) {

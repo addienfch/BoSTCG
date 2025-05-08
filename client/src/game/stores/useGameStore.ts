@@ -629,19 +629,15 @@ export const useGameStore = create<GameState>((set, get) => ({
     // Get the avatar and skill
     const avatar = playerState.activeAvatar;
     
-    // Check if avatar is tapped (already used)
+    // Check if avatar is tapped (already used a skill this battle phase)
     if (avatar.isTapped) {
-      toast.error(`This avatar has already used a skill this turn!`);
+      toast.error(`This avatar has already used a skill this battle phase!`);
       console.log("Avatar is tapped, can't use skill:", avatar);
       return;
     }
     
-    // Check if the avatar was played this turn
-    if (avatar.turnPlayed === state.turn) {
-      // This was causing the issue - avatars couldn't use skills on the turn they were played
-      // Removing this restriction as per user requirements
-      console.log("Avatar can use skills immediately:", avatar.name);
-    }
+    // Avatars can use skills immediately after being played - no turn restriction
+    console.log("Avatar using skill:", avatar.name);
     
     // Get the skill based on the index
     const skill = skillIndex === 1 ? avatar.skill1 : avatar.skill2;
@@ -1071,7 +1067,7 @@ export const useGameStore = create<GameState>((set, get) => ({
           if (updatedState.player.activeAvatar) {
             const resetAvatar = {
               ...updatedState.player.activeAvatar,
-              isTapped: false
+              isTapped: false // Reset tap status at refresh phase
             };
             console.log("AVATAR RESET - Player avatar reset from:", 
               updatedState.player.activeAvatar.isTapped, "to:", resetAvatar.isTapped);
