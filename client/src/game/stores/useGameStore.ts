@@ -1137,7 +1137,47 @@ export const useGameStore = create<GameState>((set, get) => ({
   endTurn: () => {
     // Get current player before switching
     const oldCurrentPlayer = get().currentPlayer;
+    const gameState = get();
     
+    // First, manually refresh the energy pile for the next player
+    const nextPlayer = oldCurrentPlayer === 'player' ? 'opponent' : 'player';
+    
+    if (nextPlayer === 'player') {
+      // Refresh player's energy
+      const playerEnergy = [...gameState.player.energyPile, ...gameState.player.usedEnergyPile];
+      set(state => ({
+        player: {
+          ...state.player,
+          avatarToEnergyCount: 0,
+          energyPile: playerEnergy,
+          usedEnergyPile: []
+        }
+      }));
+      
+      // Log this action
+      if (gameState.player.usedEnergyPile.length > 0) {
+        toast.success(`${gameState.player.usedEnergyPile.length} used energy cards moved back to your energy pile!`);
+        get().addLog(`Your used energy has been refreshed (${gameState.player.usedEnergyPile.length} cards).`);
+      }
+    } else {
+      // Refresh opponent's energy
+      const opponentEnergy = [...gameState.opponent.energyPile, ...gameState.opponent.usedEnergyPile];
+      set(state => ({
+        opponent: {
+          ...state.opponent,
+          avatarToEnergyCount: 0,
+          energyPile: opponentEnergy,
+          usedEnergyPile: []
+        }
+      }));
+      
+      // Log this action
+      if (gameState.opponent.usedEnergyPile.length > 0) {
+        get().addLog(`Opponent's used energy has been refreshed (${gameState.opponent.usedEnergyPile.length} cards).`);
+      }
+    }
+    
+    // Now switch the current player
     set(state => {
       // Switch current player
       const newCurrentPlayer = state.currentPlayer === 'player' ? 'opponent' : 'player';
@@ -1145,25 +1185,10 @@ export const useGameStore = create<GameState>((set, get) => ({
       // If wrapping around to player, increment turn counter
       const newTurn = newCurrentPlayer === 'player' ? state.turn + 1 : state.turn;
       
-      // Always reset avatar to energy count at turn end
-      const playerUpdate = newCurrentPlayer === 'player' ? 
-        { avatarToEnergyCount: 0 } : {};
-        
-      const opponentUpdate = newCurrentPlayer === 'opponent' ? 
-        { avatarToEnergyCount: 0 } : {};
-      
       return {
         currentPlayer: newCurrentPlayer,
         turn: newTurn,
         gamePhase: 'refresh', // Always start a turn with refresh phase
-        player: {
-          ...state.player,
-          ...playerUpdate,
-        },
-        opponent: {
-          ...state.opponent,
-          ...opponentUpdate
-        }
       };
     });
     
