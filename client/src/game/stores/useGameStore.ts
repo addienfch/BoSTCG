@@ -1107,19 +1107,52 @@ export const useGameStore = create<GameState>((set, get) => ({
         });
         
         // Verify the avatars were reset correctly
-        const afterState = get();
-        console.log("AVATAR RESET VERIFICATION - Player Active Avatar:", 
-          afterState.player.activeAvatar ? 
+        // IMPORTANT: We need to modify the current state AGAIN to ensure all avatars are untapped
+        // This is a direct approach that will bypass any nested state issues
+        console.log("PERFORMING FINAL FORCE UNTAP OF ALL AVATARS");
+        
+        // Directly modify the state again - both active and reserve avatars
+        
+        // Player's active avatar
+        if (get().player.activeAvatar) {
+          // Direct modification with native JavaScript
+          get().player.activeAvatar.isTapped = false;
+          console.log("FORCE UNTAPPED player active avatar");
+        }
+        
+        // Player's reserve avatars
+        get().player.reserveAvatars.forEach(avatar => {
+          avatar.isTapped = false;
+          console.log("FORCE UNTAPPED player reserve avatar:", avatar.name);
+        });
+        
+        // Opponent's active avatar
+        if (get().opponent.activeAvatar) {
+          // Direct modification with native JavaScript
+          get().opponent.activeAvatar.isTapped = false;
+          console.log("FORCE UNTAPPED opponent active avatar");
+        }
+        
+        // Opponent's reserve avatars
+        get().opponent.reserveAvatars.forEach(avatar => {
+          avatar.isTapped = false;
+          console.log("FORCE UNTAPPED opponent reserve avatar:", avatar.name);
+        });
+        
+        // Log the final state
+        const finalState = get();
+        console.log("FINAL AVATAR STATE - Player Active Avatar:", 
+          finalState.player.activeAvatar ? 
           { 
-            name: afterState.player.activeAvatar.name,
-            isTapped: afterState.player.activeAvatar.isTapped
+            name: finalState.player.activeAvatar.name,
+            isTapped: finalState.player.activeAvatar.isTapped
           } : "None");
           
-        console.log("AVATAR RESET VERIFICATION - Opponent Active Avatar:", 
-          afterState.opponent.activeAvatar ? 
+        console.log("FINAL AVATAR STATE - Opponent Active Avatar:", 
+          finalState.opponent.activeAvatar ? 
           { 
-            name: afterState.opponent.activeAvatar.name,
-            isTapped: afterState.opponent.activeAvatar.isTapped
+            name: finalState.opponent.activeAvatar.name,
+            isTapped: finalState.opponent.activeAvatar.isTapped
           } : "None");
         
         // Show toast based on whose turn it is

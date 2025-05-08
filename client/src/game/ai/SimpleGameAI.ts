@@ -255,28 +255,21 @@ export class SimpleGameAI {
       return;
     }
     
-    // Try to find non-avatar cards first
-    const nonAvatarIndices: number[] = [];
+    // Only use avatar cards for energy (rule change to match player constraints)
     const avatarIndices: number[] = [];
     
     opponent.hand.forEach((card, index) => {
       if (card.type === 'avatar') {
         avatarIndices.push(index);
-      } else {
-        nonAvatarIndices.push(index);
       }
     });
     
-    // Prefer using non-avatar cards for energy
-    if (nonAvatarIndices.length > 0) {
-      this.gameState.moveCardToEnergy(nonAvatarIndices[0]);
-      this.gameState.addLog('Opponent added a card to their energy pile');
-    } 
-    // Use avatar card if we haven't used one for energy yet
-    else if (avatarIndices.length > 0 && opponent.avatarToEnergyCount < 1) {
+    // Only use avatar cards for energy, and only if we haven't used one yet this turn
+    if (avatarIndices.length > 0 && opponent.avatarToEnergyCount < 1) {
       this.gameState.moveCardToEnergy(avatarIndices[0]);
       this.gameState.addLog('Opponent added an avatar to their energy pile');
     } else {
+      // No valid cards or already added an avatar to energy this turn
       this.gameState.nextPhase();
     }
   }
