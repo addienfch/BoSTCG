@@ -1050,11 +1050,28 @@ const GameBoard2D: React.FC<GameBoard2DProps> = ({ onAction }) => {
           {/* Reserve Avatars */}
           <div className="flex flex-col">
             <div className="text-xs mb-1">Reserves: {game.player.reserveAvatars.length}/2</div>
-            {game.player.reserveAvatars.map((avatar, index) => (
-              <div key={index} className="text-xs mb-0.5 bg-blue-900 bg-opacity-50 px-1 py-0.5 rounded">
-                {avatar.name} (HP: {avatar.health})
+            {/* Check if player needs to select a reserve avatar */}
+            {game.player.needsToSelectReserveAvatar ? (
+              <div className="bg-yellow-800 bg-opacity-50 p-1 rounded mb-1">
+                <div className="text-xs text-yellow-300 font-bold mb-1">Select a reserve avatar:</div>
+                {game.player.reserveAvatars.map((avatar, index) => (
+                  <div 
+                    key={index} 
+                    className="text-xs mb-0.5 bg-yellow-900 hover:bg-yellow-700 px-1 py-1 rounded cursor-pointer transition-colors"
+                    onClick={() => handleSelectReserveAvatar(index)}
+                  >
+                    {avatar.name} (HP: {avatar.health})
+                  </div>
+                ))}
               </div>
-            ))}
+            ) : (
+              // Normal display of reserve avatars
+              game.player.reserveAvatars.map((avatar, index) => (
+                <div key={index} className="text-xs mb-0.5 bg-blue-900 bg-opacity-50 px-1 py-0.5 rounded">
+                  {avatar.name} (HP: {avatar.health})
+                </div>
+              ))
+            )}
           </div>
         </div>
       </div>
