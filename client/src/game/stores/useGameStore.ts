@@ -1543,11 +1543,16 @@ export const useGameStore = create<GameState>((set, get) => ({
   
   // Check if a card can be played based on current game state
   canPlayCard: (card: Card) => {
-    const { currentPlayer, gamePhase } = get();
+    const { currentPlayer, gamePhase, player } = get();
     
     // Can only play cards during your turn
     if (currentPlayer !== 'player') {
       return false;
+    }
+    
+    // During setup phase, only level 1 avatars can be played
+    if (gamePhase === 'setup') {
+      return card.type === 'avatar' && (card as AvatarCard).level === 1 && player.activeAvatar === null;
     }
     
     // Different card types have different play restrictions
