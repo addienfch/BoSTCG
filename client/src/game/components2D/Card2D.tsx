@@ -3,6 +3,13 @@ import { AvatarCard, ActionCard, Card as CardType, ElementType } from '../data/c
 import { useAudio } from '../../lib/stores/useAudio';
 import { toast } from 'sonner';
 
+// Declare the gameStore property on window
+declare global {
+  interface Window {
+    gameStore?: any;
+  }
+}
+
 // Accept either our new Card type or the legacy CardData type
 interface Card2DProps {
   card: CardType | any;
@@ -151,7 +158,16 @@ const Card2D: React.FC<Card2DProps> = ({
   
   const handleClick = () => {
     if (isPlayable && isInHand) {
-      // Don't play sound automatically - only on explicit user interaction
+      // During setup phase, automatically place level 1 avatars as active
+      if (card.type === 'avatar' && (card as AvatarCard).level === 1) {
+        const gameStore = window.gameStore; // Access global game state
+        if (gameStore && gameStore.gamePhase === 'setup' && gameStore.currentPlayer === 'player') {
+          handleAction('active'); // Directly place as active avatar
+          return;
+        }
+      }
+      
+      // For normal game phases, show action menu
       setShowActions(!showActions);
     } else if (onClick) {
       onClick();

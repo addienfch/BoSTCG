@@ -1925,3 +1925,13 @@ export const useGameStore = create<GameState>((set, get) => ({
     });
   }
 }));
+
+// Expose the store globally for access in Card2D component
+if (typeof window !== 'undefined') {
+  (window as any).gameStore = useGameStore.getState();
+  
+  // Keep it updated
+  useGameStore.subscribe((state) => {
+    (window as any).gameStore = state;
+  });
+}
