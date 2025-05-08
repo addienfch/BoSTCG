@@ -273,6 +273,14 @@ const GameBoard2D: React.FC<GameBoard2DProps> = ({ onAction }) => {
       return;
     }
     
+    // Add debug logging to track avatar state
+    console.log('Avatar state when using skill:', {
+      name: game.player.activeAvatar.name,
+      isTapped: game.player.activeAvatar.isTapped,
+      turnPlayed: game.player.activeAvatar.turnPlayed,
+      currentTurn: game.turn
+    });
+    
     // Check if the skill exists
     if (skillNumber === 2 && !game.player.activeAvatar.skill2) {
       toast.error("This avatar doesn't have a second skill!");
