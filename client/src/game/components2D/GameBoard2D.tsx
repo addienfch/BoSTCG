@@ -359,11 +359,14 @@ const GameBoard2D: React.FC<GameBoard2DProps> = ({ onAction }) => {
           // Get the card
           const card = game.opponent.hand[index];
           
-          // Check if it's an avatar and if we've already added an avatar to energy this turn
-          if (card.type === 'avatar') {
-            if (game.opponent.avatarToEnergyCount >= 1) {
-              return; // AI should know this rule already
-            }
+          // Check if the card is an avatar - only avatar cards can be added to energy
+          if (card.type !== 'avatar') {
+            return; // AI should know only avatars can be placed as energy
+          }
+
+          // Check if we've already added an avatar to energy this turn
+          if (game.opponent.avatarToEnergyCount >= 1) {
+            return; // AI should know this rule already
           }
           
           // Move the card to opponent's energy
@@ -373,9 +376,7 @@ const GameBoard2D: React.FC<GameBoard2DProps> = ({ onAction }) => {
           // Update opponent state
           game.opponent.hand = updatedHand;
           game.opponent.energyPile.push(card);
-          if (card.type === 'avatar') {
-            game.opponent.avatarToEnergyCount++;
-          }
+          game.opponent.avatarToEnergyCount++;
           
           game.addLog(`Opponent added ${card.name} to their energy pile.`);
         },

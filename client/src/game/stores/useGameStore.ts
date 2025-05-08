@@ -718,7 +718,7 @@ export const useGameStore = create<GameState>((set, get) => ({
     setTimeout(() => get().checkDefeatedAvatars(), 500);
   },
   
-  // Add a card to energy
+  // Add a card to energy (only avatar cards)
   addToEnergyPile: (handIndex) => {
     const { player, currentPlayer, gamePhase } = get();
     
@@ -736,8 +736,14 @@ export const useGameStore = create<GameState>((set, get) => ({
     
     const card = player.hand[handIndex];
     
-    // Check if it's an avatar and we've already added one this turn
-    if (card.type === 'avatar' && player.avatarToEnergyCount >= 1) {
+    // Check if the card is an avatar - only avatar cards can be added to energy
+    if (card.type !== 'avatar') {
+      toast.error("Only avatar cards can be placed in the energy pile!");
+      return;
+    }
+    
+    // Check if we've already added one avatar this turn
+    if (player.avatarToEnergyCount >= 1) {
       toast.error("You can only place one avatar card into energy per turn!");
       return;
     }
@@ -747,9 +753,8 @@ export const useGameStore = create<GameState>((set, get) => ({
       const updatedHand = [...state.player.hand];
       const cardToEnergy = updatedHand.splice(handIndex, 1)[0];
       
-      // Track if we added an avatar to energy
-      const avatarToEnergyCount = 
-        state.player.avatarToEnergyCount + (cardToEnergy.type === 'avatar' ? 1 : 0);
+      // Increase avatar to energy count
+      const avatarToEnergyCount = state.player.avatarToEnergyCount + 1;
       
       return {
         player: {
