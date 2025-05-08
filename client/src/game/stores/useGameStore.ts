@@ -144,9 +144,13 @@ export const useGameStore = create<GameState>((set, get) => ({
     // Get deck cards or use empty array if no deck is available
     const deckCards = activeDeck ? [...activeDeck.cards] : [];
     
-    // Create player state with the deck
+    // Shuffle the deck before using it (using Fisher-Yates algorithm)
+    const shuffledDeckCards = shuffleArray(deckCards);
+    console.log('Deck shuffled before game start');
+    
+    // Create player state with the shuffled deck
     const playerState = initPlayerState(true);
-    playerState.deck = deckCards;
+    playerState.deck = shuffledDeckCards;
     
     // Reset game state with default values first
     set(state => ({
@@ -747,10 +751,30 @@ export const useGameStore = create<GameState>((set, get) => ({
             }
           }
           
-          // Move to refresh phase
-          set({
-            gamePhase: nextPhase,
-          });
+          // Show toast for refresh phase
+          toast.info('Setup complete. Starting game with Refresh Phase...', { duration: 3000 });
+          
+          // Move to refresh phase with a 3-second delay
+          setTimeout(() => {
+            set({
+              gamePhase: nextPhase,
+            });
+            
+            // After the refresh phase completes, wait 3 more seconds before moving to draw phase
+            toast.info('Refresh Phase - Resetting energy...', { duration: 3000 });
+            
+            setTimeout(() => {
+              // Move to draw phase after the refresh phase delay
+              set({ gamePhase: 'draw' });
+              get().addLog(`Your Draw Phase`);
+              
+              // Draw a card automatically
+              get().drawCard('player');
+            }, 3000);
+          }, 3000);
+          
+          // Return early to prevent automatic phase transition
+          return;
         } else {
           // Player must place an active avatar first
           toast.warning('You must place a Level 1 avatar as your active avatar first!');
@@ -784,7 +808,35 @@ export const useGameStore = create<GameState>((set, get) => ({
           return updatedState;
         });
         
+        // Add visibile feedback for the refresh phase
         get().addLog(`${currentPlayer === 'player' ? 'Your' : 'Opponent\'s'} Refresh Phase: Energy refreshed.`);
+        toast.info(`${currentPlayer === 'player' ? 'Your' : 'Opponent\'s'} Refresh Phase - Resetting energy...`, { duration: 3000 });
+        
+        // Wait 3 seconds before transitioning to the draw phase
+        setTimeout(() => {
+          // Move to draw phase after delay
+          set({ gamePhase: nextPhase });
+          get().addLog(`${currentPlayer === 'player' ? 'Your' : 'Opponent\'s'} Draw Phase`);
+          
+          // After another short delay, draw a card for visual clarity
+          setTimeout(() => {
+            if (currentPlayer === 'player') {
+              get().drawCard('player');
+            } else {
+              get().drawCard('opponent');
+              
+              // If it's AI's turn, continue with AI decision-making after another delay
+              if (get().opponent.isAI) {
+                setTimeout(() => {
+                  get().performAIActions();
+                }, 1000);
+              }
+            }
+          }, 500);
+        }, 3000);
+        
+        // Return early to prevent automatic phase transition
+        return;
         break;
         
       case 'draw':
