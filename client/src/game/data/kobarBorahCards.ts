@@ -28,7 +28,7 @@ export const kobarTraineeA: AvatarCard = {
   level: 1,
   subType: 'kobar',
   health: 6,
-  art: '/textures/cards/kobar-trainee-a.png',
+  art: '/attached_assets/Red Elemental Avatar_Ava - Kobar Trainee A.png',
   skill1: {
     name: 'Dagger Play',
     energyCost: createEnergyCost(1),
@@ -45,7 +45,7 @@ export const kobarTraineeB: AvatarCard = {
   level: 1,
   subType: 'kobar',
   health: 7,
-  art: '/textures/cards/kobar-trainee-b.png',
+  art: '/attached_assets/Red Elemental Avatar_Ava - Kobar Trainee B.png',
   skill1: {
     name: 'Fire Blade',
     energyCost: createEnergyCost(1),
@@ -62,7 +62,7 @@ export const kobarTraineeC: AvatarCard = {
   level: 1,
   subType: 'kobar',
   health: 5,
-  art: '/textures/cards/kobar-trainee-c.png',
+  art: '/attached_assets/Red Elemental Avatar_Ava - Kobar Trainee C.png',
   skill1: {
     name: 'Flame Strike',
     energyCost: createEnergyCost(2),
@@ -132,7 +132,7 @@ export const radja: AvatarCard = {
   subType: 'kobar',
   baseType: 'kobar',
   health: 16,
-  art: '/textures/cards/radja.png',
+  art: '/attached_assets/Red Elemental Avatar_Ava - Radja.png',
   skill1: {
     name: 'Pyro Punch',
     energyCost: createEnergyCost(1, 1),
@@ -156,7 +156,7 @@ export const daisy: AvatarCard = {
   subType: 'borah',
   baseType: 'borah',
   health: 15,
-  art: '/textures/cards/daisy.png',
+  art: '/attached_assets/Red Elemental Avatar_Ava - Daisy.png',
   skill1: {
     name: 'Pyro Kick',
     energyCost: createEnergyCost(1, 1),
