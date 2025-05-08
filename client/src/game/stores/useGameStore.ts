@@ -15,6 +15,7 @@ interface PlayerState {
   lifeCards: Card[];
   graveyard: Card[];
   avatarToEnergyCount: number; // Track how many avatars were moved to energy this turn
+  isAI?: boolean; // Flag to identify AI-controlled player
 }
 
 interface GameState {

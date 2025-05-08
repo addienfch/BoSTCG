@@ -1,9 +1,10 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { useGameStore } from '../stores/useGameStore';
 import { useGameMode } from '../stores/useGameMode';
 import Card2D from './Card2D';
 import { toast } from 'sonner';
 import { AvatarCard, Card } from '../data/cardTypes';
+import { SimpleGameAI, AIGameState } from '../ai/SimpleGameAI';
 
 interface GameBoard2DProps {
   onAction?: (action: string, data?: any) => void;
@@ -251,6 +252,9 @@ const GameBoard2D: React.FC<GameBoard2DProps> = ({ onAction }) => {
   const [showUsedEnergyPopup, setShowUsedEnergyPopup] = React.useState(false);
   const [showOpponentEnergyPopup, setShowOpponentEnergyPopup] = React.useState(false);
   
+  // Create an AI reference
+  const aiRef = useRef<SimpleGameAI | null>(null);
+  
   // Initialize the game once on mount
   React.useEffect(() => {
     // Initialize game state
@@ -258,6 +262,242 @@ const GameBoard2D: React.FC<GameBoard2DProps> = ({ onAction }) => {
     
     // Log message about hand limit
     game.addLog('Hand limit is 8 cards. If you have more, you must discard at the end of your turn.');
+    
+    // If in AI mode, create the AI instance
+    if (gameMode.mode === 'vs-ai') {
+      // Create adapter for game state to AI interface
+      const aiGameState: AIGameState = {
+        currentPlayer: game.currentPlayer,
+        gamePhase: game.gamePhase,
+        turn: game.turn,
+        
+        player: {
+          activeAvatar: game.player.activeAvatar,
+          reserveAvatars: game.player.reserveAvatars,
+          energyPile: game.player.energyPile,
+          hand: game.player.hand,
+          fieldCards: game.player.fieldCards,
+        },
+        
+        opponent: {
+          activeAvatar: game.opponent.activeAvatar,
+          reserveAvatars: game.opponent.reserveAvatars,
+          energyPile: game.opponent.energyPile,
+          hand: game.opponent.hand,
+          fieldCards: game.opponent.fieldCards,
+          avatarToEnergyCount: game.opponent.avatarToEnergyCount,
+        },
+        
+        // Functions to pass to AI
+        moveCardToEnergy: (index: number) => {
+          // If opponent has no cards, return
+          if (index < 0 || index >= game.opponent.hand.length) {
+            return;
+          }
+          
+          // Get the card
+          const card = game.opponent.hand[index];
+          
+          // Check if it's an avatar and if we've already added an avatar to energy this turn
+          if (card.type === 'avatar') {
+            if (game.opponent.avatarToEnergyCount >= 1) {
+              return; // AI should know this rule already
+            }
+          }
+          
+          // Move the card to opponent's energy
+          const updatedHand = [...game.opponent.hand];
+          updatedHand.splice(index, 1);
+          
+          // Update opponent state
+          game.opponent.hand = updatedHand;
+          game.opponent.energyPile.push(card);
+          if (card.type === 'avatar') {
+            game.opponent.avatarToEnergyCount++;
+          }
+          
+          game.addLog(`Opponent added ${card.name} to their energy pile.`);
+        },
+        
+        playAsActiveAvatar: (index: number) => {
+          if (index < 0 || index >= game.opponent.hand.length) {
+            return;
+          }
+          
+          // Get the card
+          const card = game.opponent.hand[index];
+          
+          // Make sure it's an avatar
+          if (card.type !== 'avatar') {
+            return;
+          }
+          
+          // Make sure there's no active avatar
+          if (game.opponent.activeAvatar !== null) {
+            return;
+          }
+          
+          // Move card from hand to active avatar
+          const updatedHand = [...game.opponent.hand];
+          updatedHand.splice(index, 1);
+          
+          // Add turn played tracking
+          const avatarCard = card as AvatarCard;
+          avatarCard.turnPlayed = game.turn;
+          
+          // Update opponent state
+          game.opponent.hand = updatedHand;
+          game.opponent.activeAvatar = avatarCard;
+          
+          game.addLog(`Opponent played ${card.name} as their active avatar.`);
+        },
+        
+        playAsReserveAvatar: (index: number) => {
+          if (index < 0 || index >= game.opponent.hand.length) {
+            return;
+          }
+          
+          // Get the card
+          const card = game.opponent.hand[index];
+          
+          // Make sure it's an avatar
+          if (card.type !== 'avatar') {
+            return;
+          }
+          
+          // Make sure there's room in reserves
+          if (game.opponent.reserveAvatars.length >= 2) {
+            return;
+          }
+          
+          // Move card from hand to reserves
+          const updatedHand = [...game.opponent.hand];
+          updatedHand.splice(index, 1);
+          
+          // Add turn played tracking
+          const avatarCard = card as AvatarCard;
+          avatarCard.turnPlayed = game.turn;
+          
+          // Update opponent state
+          game.opponent.hand = updatedHand;
+          game.opponent.reserveAvatars.push(avatarCard);
+          
+          game.addLog(`Opponent placed ${card.name} in their reserve.`);
+        },
+        
+        playSpell: (index: number) => {
+          if (index < 0 || index >= game.opponent.hand.length) {
+            return;
+          }
+          
+          // Get the card
+          const card = game.opponent.hand[index];
+          
+          // Make sure it's a spell
+          if (card.type !== 'spell' && card.type !== 'quickSpell') {
+            return;
+          }
+          
+          // Check energy requirements
+          if (!game.hasEnoughEnergy(card.energyCost || [], 'opponent')) {
+            return;
+          }
+          
+          // Use energy
+          if (game.useEnergy(card.energyCost || [], 'opponent')) {
+            // Remove card from hand
+            const updatedHand = [...game.opponent.hand];
+            updatedHand.splice(index, 1);
+            
+            // Update opponent state
+            game.opponent.hand = updatedHand;
+            game.opponent.graveyard.push(card);
+            
+            game.addLog(`Opponent played ${card.name}.`);
+            
+            // Handle spell effect (simplified for now)
+            if (card.name === 'Burn Ball' && game.player.activeAvatar) {
+              // Apply damage to player's avatar
+              const playerAvatar = game.player.activeAvatar;
+              const damage = 2; // Burn Ball does 2 damage
+              
+              // Add damage counter
+              playerAvatar.counters = playerAvatar.counters || { damage: 0, bleed: 0, shield: 0 };
+              playerAvatar.counters.damage += damage;
+              
+              game.addLog(`Burn Ball deals ${damage} damage to your avatar!`);
+              game.checkDefeatedAvatars();
+            }
+          }
+        },
+        
+        useAvatarSkill: (skillNumber: 1 | 2) => {
+          // Make sure opponent has an active avatar
+          if (!game.opponent.activeAvatar) {
+            return;
+          }
+          
+          // Check if avatar can use skills (not tapped)
+          if (game.opponent.activeAvatar.isTapped) {
+            return;
+          }
+          
+          // Get the skill
+          const skill = skillNumber === 1 
+            ? game.opponent.activeAvatar.skill1
+            : game.opponent.activeAvatar.skill2;
+          
+          // Make sure the skill exists (skill2 might not)
+          if (!skill) {
+            return;
+          }
+          
+          // Check energy requirements
+          if (!game.hasEnoughEnergy(skill.energyCost, 'opponent')) {
+            return;
+          }
+          
+          // Use energy
+          if (game.useEnergy(skill.energyCost, 'opponent')) {
+            // Apply skill effect
+            const damage = skill.damage || 0;
+            
+            // Apply damage to player's avatar if it exists
+            if (game.player.activeAvatar && damage > 0) {
+              // Add damage counter
+              game.player.activeAvatar.counters = game.player.activeAvatar.counters || { damage: 0, bleed: 0, shield: 0 };
+              game.player.activeAvatar.counters.damage += damage;
+              
+              game.addLog(`Opponent used ${skill.name}, dealing ${damage} damage to your avatar!`);
+              
+              // Mark avatar as tapped (used)
+              game.opponent.activeAvatar.isTapped = true;
+              
+              // Check for defeated avatars
+              game.checkDefeatedAvatars();
+            } else {
+              game.addLog(`Opponent used ${skill.name}!`);
+              game.opponent.activeAvatar.isTapped = true;
+            }
+          }
+        },
+        
+        nextPhase: () => {
+          game.nextPhase();
+        },
+        
+        hasEnoughEnergy: (energyCost: string[]) => {
+          return game.hasEnoughEnergy(energyCost as any, 'opponent');
+        },
+        
+        addLog: (message: string) => {
+          game.addLog(message);
+        }
+      };
+      
+      // Create AI and store in ref
+      aiRef.current = new SimpleGameAI(aiGameState);
+    }
   }, []);
   
   // Check for hand size limit at the end of the turn
@@ -282,6 +522,56 @@ const GameBoard2D: React.FC<GameBoard2DProps> = ({ onAction }) => {
       }
     }
   }, [game.gamePhase, game.currentPlayer]);
+  
+  // AI opponent logic - watch for change in current player and game phase
+  React.useEffect(() => {
+    // Only run AI logic if we're in vs-ai mode and it's the opponent's turn
+    if (
+      String(gameMode.mode) === 'vs-ai' && 
+      game.currentPlayer === 'opponent' && 
+      aiRef.current
+    ) {
+      // Make sure the AI has the latest game state
+      const aiGameState: AIGameState = {
+        currentPlayer: game.currentPlayer,
+        gamePhase: game.gamePhase,
+        turn: game.turn,
+        
+        player: {
+          activeAvatar: game.player.activeAvatar,
+          reserveAvatars: game.player.reserveAvatars,
+          energyPile: game.player.energyPile,
+          hand: game.player.hand,
+          fieldCards: game.player.fieldCards,
+        },
+        
+        opponent: {
+          activeAvatar: game.opponent.activeAvatar,
+          reserveAvatars: game.opponent.reserveAvatars,
+          energyPile: game.opponent.energyPile,
+          hand: game.opponent.hand,
+          fieldCards: game.opponent.fieldCards,
+          avatarToEnergyCount: game.opponent.avatarToEnergyCount,
+        },
+        
+        // Use the same functions defined earlier
+        moveCardToEnergy: aiRef.current.gameState.moveCardToEnergy,
+        playAsActiveAvatar: aiRef.current.gameState.playAsActiveAvatar,
+        playAsReserveAvatar: aiRef.current.gameState.playAsReserveAvatar,
+        playSpell: aiRef.current.gameState.playSpell,
+        useAvatarSkill: aiRef.current.gameState.useAvatarSkill,
+        nextPhase: aiRef.current.gameState.nextPhase,
+        hasEnoughEnergy: aiRef.current.gameState.hasEnoughEnergy,
+        addLog: aiRef.current.gameState.addLog
+      };
+      
+      // Update AI state
+      aiRef.current.gameState = aiGameState;
+      
+      // Make AI move
+      aiRef.current.makeMove();
+    }
+  }, [game.currentPlayer, game.gamePhase, game.turn]);
   
   return (
     <div className="w-full h-full bg-gray-900 text-white p-4 relative">

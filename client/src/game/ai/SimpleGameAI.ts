@@ -50,7 +50,7 @@ export interface AIGameState {
 
 // Simple AI to play against the player
 export class SimpleGameAI {
-  private gameState: AIGameState;
+  public gameState: AIGameState;
   
   constructor(gameState: AIGameState) {
     this.gameState = gameState;
