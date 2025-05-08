@@ -5,6 +5,7 @@ import Card2D from './Card2D';
 import { toast } from 'sonner';
 import { AvatarCard, Card } from '../data/cardTypes';
 import { SimpleGameAI, AIGameState } from '../ai/SimpleGameAI';
+import { useNavigate } from 'react-router-dom';
 
 interface GameBoard2DProps {
   onAction?: (action: string, data?: any) => void;
@@ -13,6 +14,8 @@ interface GameBoard2DProps {
 const GameBoard2D: React.FC<GameBoard2DProps> = ({ onAction }) => {
   // Get game state from store
   const game = useGameStore();
+  // Get the navigate function from react-router
+  const navigate = useNavigate();
   
   // Determine if a card is playable (can be placed on the field)
   const isCardPlayable = (card: Card) => {
@@ -1189,9 +1192,9 @@ const GameBoard2D: React.FC<GameBoard2DProps> = ({ onAction }) => {
             </p>
             <button
               className="bg-yellow-600 hover:bg-yellow-700 px-4 py-2 rounded"
-              onClick={() => game.initGame()}
+              onClick={() => navigate('/')}
             >
-              Play Again
+              Return to Home
             </button>
           </div>
         </div>
