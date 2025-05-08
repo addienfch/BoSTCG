@@ -270,17 +270,8 @@ export const useDeckStore = create<DeckStore>()(
         // Find the base card by id (without copy number)
         const baseId = id.split('-')[0] + '-' + id.split('-')[1];
         
-        // Include all cards from all collections
-        const allCards = [
-          ...kobarBorahAvatarCards, 
-          ...kobarBorahActionCards,
-          ...kujanaKuhakaAvatarCards,
-          ...kujanaKuhakaActionCards,
-          ...(fireAvatarCards || []), 
-          ...(fireActionCards || [])
-        ];
-        
-        return allCards.find(card => card.id.startsWith(baseId));
+        // Use our comprehensive allFireCards array that contains all cards
+        return allFireCards.find(card => card.id.startsWith(baseId));
       },
       
       getAvailableCardsByElement: (element) => {
@@ -292,6 +283,14 @@ export const useDeckStore = create<DeckStore>()(
           return [...kobarBorahAvatarCards, ...kobarBorahActionCards];
         } else if (tribe === 'kujana-kuhaka') {
           return [...kujanaKuhakaAvatarCards, ...kujanaKuhakaActionCards];
+        } else if (tribe === 'kujana') {
+          return allFireCards.filter(card => card.subType === 'kujana');
+        } else if (tribe === 'kuhaka') {
+          return allFireCards.filter(card => card.subType === 'kuhaka');
+        } else if (tribe === 'kobar') {
+          return allFireCards.filter(card => card.subType === 'kobar');
+        } else if (tribe === 'borah') {
+          return allFireCards.filter(card => card.subType === 'borah');
         }
         
         // Default to all cards if tribe not recognized
