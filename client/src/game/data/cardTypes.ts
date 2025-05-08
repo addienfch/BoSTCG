@@ -41,6 +41,7 @@ export interface AvatarCard extends BaseCard {
   skill2?: Skill;
   counters?: Counter;
   isTapped?: boolean; // If avatar has already used a skill this turn
+  turnPlayed?: number; // Track which turn the avatar was played
 }
 
 // Action Card interface

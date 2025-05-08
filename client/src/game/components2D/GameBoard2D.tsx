@@ -70,15 +70,62 @@ const GameBoard2D: React.FC<GameBoard2DProps> = ({ onAction }) => {
         return;
       }
       
-      if (game.player.activeAvatar !== null) {
-        toast.error("You already have an active avatar!");
-        return;
+      // Get the avatar card for type checking
+      const avatarCard = card as AvatarCard;
+      
+      // Check if trying to place a level 2 avatar
+      if (avatarCard.level === 2) {
+        // Check if there's an active avatar to upgrade
+        if (!game.player.activeAvatar) {
+          toast.error("You need a level 1 active avatar to upgrade to level 2!");
+          return;
+        }
+        
+        // Check if the active avatar is of the same subType
+        if (game.player.activeAvatar.subType !== avatarCard.subType) {
+          toast.error(`You can only upgrade to a level 2 ${avatarCard.subType} avatar from a level 1 ${avatarCard.subType} avatar!`);
+          return;
+        }
+        
+        // Check if the avatar has been in play for at least one turn
+        if (game.player.activeAvatar.turnPlayed !== undefined && 
+            game.turn <= game.player.activeAvatar.turnPlayed) {
+          toast.error("You need to wait at least one turn before upgrading your avatar!");
+          return;
+        }
+        
+        // Perform upgrade - move current active avatar to graveyard
+        game.player.graveyard.push(game.player.activeAvatar);
+        
+        // Remove the level 2 card from hand
+        const updatedHand = [...game.player.hand];
+        const cardIndex = updatedHand.findIndex(c => c.id === card.id);
+        updatedHand.splice(cardIndex, 1);
+        game.player.hand = updatedHand;
+        
+        // Set the new active avatar
+        avatarCard.turnPlayed = game.turn;
+        game.player.activeAvatar = avatarCard;
+        
+        game.addLog(`${game.player.activeAvatar.name} upgraded to ${avatarCard.name}.`);
+        toast.success(`${avatarCard.name} placed as active avatar!`);
+      } else {
+        // Normal level 1 avatar placement
+        if (game.player.activeAvatar !== null) {
+          toast.error("You already have an active avatar!");
+          return;
+        }
+        
+        // This uses the playCard implementation specifically for avatars
+        // Track which turn the avatar was played
+        const avatarFromHand = game.player.hand.find(c => c.id === card.id) as AvatarCard;
+        if (avatarFromHand) {
+          avatarFromHand.turnPlayed = game.turn;
+        }
+        
+        game.playCard(index);
+        toast.success(`${card.name} placed as active avatar!`);
       }
-      
-      // This uses the playCard implementation specifically for avatars
-      game.playCard(index);
-      toast.success(`${card.name} placed as active avatar!`);
-      
     } else if (action === 'reserve') {
       // Place as reserve avatar
       if (card.type !== 'avatar') {
@@ -86,36 +133,82 @@ const GameBoard2D: React.FC<GameBoard2DProps> = ({ onAction }) => {
         return;
       }
       
-      if (game.player.reserveAvatars.length >= 2) {
-        toast.error("You already have the maximum number of reserve avatars (2)!");
-        return;
-      }
+      // Get the avatar card for type checking
+      const avatarCard = card as AvatarCard;
       
-      // Use the game store's internal methods to handle this
-      const updatedHand = [...game.player.hand];
-      const cardIndex = updatedHand.findIndex(c => c.id === card.id);
-      
-      if (cardIndex !== -1) {
-        // Remove the card from hand
-        const avatarCard = updatedHand.splice(cardIndex, 1)[0] as AvatarCard;
+      // Check if trying to place a level 2 avatar in reserve
+      if (avatarCard.level === 2) {
+        // Check if there's a matching level 1 avatar to upgrade
+        const matchingReserveIndex = game.player.reserveAvatars.findIndex(
+          a => a.subType === avatarCard.subType && a.level === 1
+        );
         
-        // Update the game state
+        if (matchingReserveIndex === -1) {
+          toast.error(`You need a level 1 ${avatarCard.subType} avatar in reserve to upgrade to level 2!`);
+          return;
+        }
+        
+        // Check if the avatar has been in play for at least one turn
+        const reserveToUpgrade = game.player.reserveAvatars[matchingReserveIndex];
+        if (reserveToUpgrade.turnPlayed !== undefined && 
+            game.turn <= reserveToUpgrade.turnPlayed) {
+          toast.error("You need to wait at least one turn before upgrading your reserve avatar!");
+          return;
+        }
+        
+        // Perform upgrade - move matching reserve avatar to graveyard
+        game.player.graveyard.push(reserveToUpgrade);
+        
+        // Remove the level 2 card from hand
+        const updatedHand = [...game.player.hand];
+        const cardIndex = updatedHand.findIndex(c => c.id === card.id);
+        updatedHand.splice(cardIndex, 1);
         game.player.hand = updatedHand;
-        game.player.reserveAvatars.push(avatarCard);
         
-        // Log the action
-        game.addLog(`${card.name} placed in reserve.`);
-        toast.success(`${card.name} placed in reserve!`);
+        // Replace the upgraded reserve avatar
+        avatarCard.turnPlayed = game.turn;
+        game.player.reserveAvatars[matchingReserveIndex] = avatarCard;
+        
+        game.addLog(`${reserveToUpgrade.name} in reserve upgraded to ${avatarCard.name}.`);
+        toast.success(`${avatarCard.name} placed in reserve!`);
+      } else {
+        // Normal level 1 avatar placement
+        if (game.player.reserveAvatars.length >= 2) {
+          toast.error("You already have the maximum number of reserve avatars (2)!");
+          return;
+        }
+        
+        // Use the game store's internal methods to handle this
+        const updatedHand = [...game.player.hand];
+        const cardIndex = updatedHand.findIndex(c => c.id === card.id);
+        
+        if (cardIndex !== -1) {
+          // Remove the card from hand
+          const avatarCard = updatedHand.splice(cardIndex, 1)[0] as AvatarCard;
+          
+          // Track which turn the avatar was played
+          avatarCard.turnPlayed = game.turn;
+          
+          // Update the game state
+          game.player.hand = updatedHand;
+          game.player.reserveAvatars.push(avatarCard);
+          
+          // Log the action
+          game.addLog(`${card.name} placed in reserve.`);
+          toast.success(`${card.name} placed in reserve!`);
+        }
       }
       
     } else if (action === 'toEnergy') {
-      // Only allow one avatar card to energy pile per turn
+      // Only limit avatar cards to energy pile - one per turn
       if (card.type === 'avatar' && game.player.avatarToEnergyCount >= 1) {
         toast.error("You can only put 1 Avatar card into energy per turn!");
         return;
       }
 
+      // No limit on other card types
       game.moveCardToEnergy(index);
+      toast.success(`${card.name} added to your energy pile`);
     }
   };
   
