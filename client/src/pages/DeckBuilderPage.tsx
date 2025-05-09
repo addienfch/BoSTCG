@@ -337,7 +337,16 @@ const DeckBuilderPage: React.FC = () => {
           
           {/* Card collection */}
           <div className="md:col-span-2 bg-gray-800 rounded-lg p-4">
-            <h2 className="text-xl font-semibold mb-2">Card Collection</h2>
+            <div className="flex justify-between items-center mb-2">
+              <h2 className="text-xl font-semibold">Card Collection</h2>
+              <a 
+                href="/card_import_template.csv"
+                download="spektrum_card_template.csv"
+                className="bg-blue-600 hover:bg-blue-700 text-white text-xs px-3 py-1 rounded transition-colors flex items-center"
+              >
+                <span className="mr-1">📥</span> Download Card CSV Template
+              </a>
+            </div>
             
             {/* Filters */}
             <div className="flex flex-wrap gap-2 mb-4">
