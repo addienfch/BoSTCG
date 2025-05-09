@@ -2041,38 +2041,32 @@ export const useGameStore = create<GameState>((set, get) => ({
           }
         }
         
-        // Add energy if we have cards left
+        // Add energy if we have cards left - ONLY use avatar cards
         if (opponent.hand.length > 0 && opponent.avatarToEnergyCount < 1) {
-          // Find a good card to use as energy - prioritize non-avatars
-          let energyIndex = opponent.hand.findIndex(card => card.type !== 'avatar');
+          // Only use avatar cards for energy (following game rules)
+          const avatarIndex = opponent.hand.findIndex(card => card.type === 'avatar');
           
-          // If no non-avatar cards, use any card
-          if (energyIndex === -1) {
-            energyIndex = 0;
-          }
-          
-          if (energyIndex !== -1) {
-            const energyCard = opponent.hand[energyIndex];
-            const isAvatar = energyCard.type === 'avatar';
-            const cardName = energyCard.name;
+          if (avatarIndex !== -1) {
+            const avatarCard = opponent.hand[avatarIndex];
+            const cardName = avatarCard.name;
             
             // Add to energy
             set(state => {
               const updatedHand = [...state.opponent.hand];
-              updatedHand.splice(energyIndex, 1);
+              updatedHand.splice(avatarIndex, 1);
               
               return {
                 opponent: {
                   ...state.opponent,
                   hand: updatedHand,
-                  energyPile: [...state.opponent.energyPile, energyCard],
-                  avatarToEnergyCount: state.opponent.avatarToEnergyCount + (isAvatar ? 1 : 0)
+                  energyPile: [...state.opponent.energyPile, avatarCard],
+                  avatarToEnergyCount: state.opponent.avatarToEnergyCount + 1
                 }
               };
             });
             
             get().addLog(`Opponent added ${cardName} to their energy pile.`);
-            toast.info(`Opponent added a card to their energy pile.`);
+            toast.info(`Opponent added an avatar card to their energy pile.`);
             
             // After adding energy, move to next phase
             setTimeout(() => get().nextPhase(), 1000);

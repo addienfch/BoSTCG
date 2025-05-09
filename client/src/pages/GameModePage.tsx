@@ -243,6 +243,31 @@ const GameModePage: React.FC<GameModePageProps> = ({ onStartGame }) => {
           </div>
         </div>
         
+        {/* Marketplace Buttons */}
+        <div className="bg-gray-800 rounded-lg p-6 shadow-lg mb-6">
+          <h3 className="text-lg font-semibold mb-4">Marketplace</h3>
+          <div className="grid grid-cols-2 gap-3">
+            <button 
+              onClick={() => toast.info("Booster Pack feature coming soon!")} 
+              className="bg-amber-600 hover:bg-amber-700 text-white py-3 px-4 rounded-md transition-colors flex flex-col items-center justify-center"
+            >
+              <span className="text-2xl mb-1">🎁</span>
+              <span className="font-medium">Buy Booster Pack</span>
+            </button>
+            
+            <button 
+              onClick={() => toast.info("NFT Marketplace feature coming soon!")} 
+              className="bg-indigo-600 hover:bg-indigo-700 text-white py-3 px-4 rounded-md transition-colors flex flex-col items-center justify-center"
+            >
+              <span className="text-2xl mb-1">🛒</span>
+              <span className="font-medium">NFT Marketplace</span>
+            </button>
+          </div>
+          <div className="mt-3 text-xs text-center text-gray-400">
+            Connect your Solana wallet to access these features
+          </div>
+        </div>
+        
         {/* Solana Wallet Connection */}
         <SolanaWalletConnect />
         
