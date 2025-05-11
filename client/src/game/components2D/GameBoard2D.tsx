@@ -981,12 +981,12 @@ const GameBoard2D: React.FC<GameBoard2DProps> = ({ onAction }) => {
           <div className="flex justify-between bg-gray-800 bg-opacity-50 p-2 rounded">
             {/* Opponent Stats */}
             <div className="flex flex-col">
-              <div className="text-xs">Deck: {game.opponent.deck.length}</div>
-              <div className="text-xs">Hand: {game.opponent.hand.length}</div>
-              <div className="text-xs">Life: {game.opponent.lifeCards.length}</div>
+              <div className="text-xs">Deck: {game.opponent && game.opponent.deck ? game.opponent.deck.length : 0}</div>
+              <div className="text-xs">Hand: {game.opponent && game.opponent.hand ? game.opponent.hand.length : 0}</div>
+              <div className="text-xs">Life: {game.opponent && game.opponent.lifeCards ? game.opponent.lifeCards.length : 0}</div>
               <div className="text-xs flex flex-col">
-                <span>Energy: {game.opponent.energyPile.length} available</span>
-                {game.opponent.usedEnergyPile.length > 0 && 
+                <span>Energy: {game.opponent && game.opponent.energyPile ? game.opponent.energyPile.length : 0} available</span>
+                {game.opponent && game.opponent.usedEnergyPile && game.opponent.usedEnergyPile.length > 0 && 
                   <span className="text-gray-400 text-[10px]">(+ {game.opponent.usedEnergyPile.length} used)</span>
                 }
               </div>
@@ -999,7 +999,7 @@ const GameBoard2D: React.FC<GameBoard2DProps> = ({ onAction }) => {
               onMouseLeave={() => setShowOpponentEnergyPopup(false)}
             >
               <div className="flex items-center gap-1">
-                {game.opponent.energyPile.length > 0 && (
+                {game.opponent && game.opponent.energyPile && game.opponent.energyPile.length > 0 && (
                   <div className="flex flex-wrap gap-0.5 max-w-[100px] cursor-help">
                     {/* Show energy count by element type */}
                     {Object.entries(
@@ -1030,7 +1030,7 @@ const GameBoard2D: React.FC<GameBoard2DProps> = ({ onAction }) => {
               </div>
               
               {/* Energy Pile Popup */}
-              {showOpponentEnergyPopup && game.opponent.energyPile.length > 0 && (
+              {showOpponentEnergyPopup && game.opponent && game.opponent.energyPile && game.opponent.energyPile.length > 0 && (
                 <div className="absolute -top-2 left-0 transform -translate-y-full z-50 bg-gray-900 bg-opacity-95 border border-amber-600 rounded p-2 shadow-lg w-60">
                   <h4 className="text-xs font-bold mb-1 text-amber-400">Opponent's Energy Pile</h4>
                   <div className="max-h-40 overflow-y-auto">
@@ -1076,8 +1076,8 @@ const GameBoard2D: React.FC<GameBoard2DProps> = ({ onAction }) => {
             
             {/* Opponent Reserves */}
             <div className="flex flex-col">
-              <div className="text-xs mb-1">Reserves: {game.opponent.reserveAvatars?.length || 0}/2</div>
-              {game.opponent.reserveAvatars && game.opponent.reserveAvatars.length > 0 ? (
+              <div className="text-xs mb-1">Reserves: {game.opponent && game.opponent.reserveAvatars ? game.opponent.reserveAvatars.length : 0}/2</div>
+              {game.opponent && game.opponent.reserveAvatars && game.opponent.reserveAvatars.length > 0 ? (
                 game.opponent.reserveAvatars.map((avatar, index) => (
                   <div 
                     key={index} 

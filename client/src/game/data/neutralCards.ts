@@ -9,7 +9,7 @@ export const neutralCards: Record<string, Card> = {
     type: "item",
     element: "neutral",
     description: "Discard 1 Avatar card, then search the deck for an Avatar card who has same element with the discarded card.",
-    art: "/attached_assets/Non Elemental - Spell_Rec Scroll.png",
+    art: "/textures/cards/neutral/rec_scroll.png",
     energyCost: ["neutral"],
   },
   
