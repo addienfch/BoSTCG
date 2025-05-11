@@ -694,26 +694,9 @@ export const useGameStore = create<GameState>((set, get) => ({
     // Calculate damage
     let damageAmount = skill.damage || 0;
     
-    // Apply special effects
+    // Apply special effects via skill trigger system
     if (skill.effect) {
-      // Handle Radja's skill: "If you has 1 or less card in hand, this Skill1Damage become 5"
-      if (skill.effect.includes("1 or less card in hand") && playerState.hand.length <= 1) {
-        damageAmount = 5; // Set to exact value 5 as per card text
-        toast.info(`Skill bonus: Damage set to 5 due to having 1 or fewer cards!`);
-      }
-      
-      // Example effect: "This attack does 2 more damage if opponent Active Avatar were Air type."
-      if ((skill.effect.includes("If opponent Active Avatar is wind Element Avatar") || 
-          skill.effect.includes("if opponent Active Avatar were Air type")) && 
-          targetAvatar.element === 'air') {
-        if (skill.effect.includes("become 111")) {
-          damageAmount = 111; // Set to ridiculous damage value for Radja's skill 2
-          toast.info(`Type bonus: Massive damage against Air/Wind type!`);
-        } else {
-          damageAmount += 2;
-          toast.info(`Type bonus: +2 damage against Air type!`);
-        }
-      }
+      damageAmount = checkSkillTriggers(skill, damageAmount, playerState, targetAvatar);
     }
     
     console.log("Applying skill with damage:", damageAmount);
@@ -875,15 +858,27 @@ export const useGameStore = create<GameState>((set, get) => ({
       const updatedHand = [...state.player.hand];
       updatedHand.splice(handIndex, 1);
       
+      // Log the counters before evolution
+      console.log("Evolution - Original avatar counters:", targetAvatarCard!.counters);
+      
+      // Use deep clone to ensure we don't lose the counters
+      const existingCounters = targetAvatarCard!.counters 
+        ? JSON.parse(JSON.stringify(targetAvatarCard!.counters))
+        : { damage: 0, bleed: 0, shield: 0 };
+        
+      console.log("Evolution - Cloned counters:", existingCounters);
+      
       // Preserve important properties from level 1 avatar, including damage counters
       const evolvedAvatar: AvatarCard = {
         ...level2Card,
         // Make sure we preserve existing counters from the level 1 avatar
-        counters: targetAvatarCard!.counters || { damage: 0, bleed: 0, shield: 0 },
+        counters: existingCounters,
         turnPlayed: state.turn,
         // Also preserve tapped state from the level 1 avatar
         isTapped: targetAvatarCard!.isTapped
       };
+      
+      console.log("Evolution - Final evolved avatar:", evolvedAvatar);
       
       // Update the appropriate avatar slot
       if (targetLocation === 'active') {
