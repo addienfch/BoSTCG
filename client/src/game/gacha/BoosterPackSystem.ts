@@ -82,6 +82,19 @@ export const availableBoosterPacks: BoosterPack[] = [
       spell: 1
     },
     image: '/textures/cards/kuhaka_booster.png'
+  },
+  {
+    id: 'neutral-item-pack',
+    name: 'Neutral Item Pack',
+    description: 'A specialized pack with neutral item cards. Contains 5 cards with a mix of valuable item cards.',
+    type: BoosterPackType.NEUTRAL,
+    price: 150,
+    cardCount: 5,
+    guaranteedRarity: {
+      avatar: 0,
+      spell: 5
+    },
+    image: '/textures/cards/neutral_booster.png'
   }
 ];
 
