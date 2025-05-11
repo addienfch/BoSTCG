@@ -87,7 +87,7 @@ export const useCollectionStore = create<CollectionState>()(
     (set, get) => ({
       // Initial state
       cards: [],
-      coins: 1000, // Starting coins
+      coins: 100000, // Increased starting coins for testing
       packHistory: [],
       stats: {
         totalCards: 0,

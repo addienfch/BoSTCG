@@ -48,7 +48,8 @@ const CardReveal: React.FC<{
   card: Card;
   index: number;
   isRevealed: boolean;
-}> = ({ card, index, isRevealed }) => {
+  onClick?: () => void;
+}> = ({ card, index, isRevealed, onClick }) => {
   const avatarCard = card.type === 'avatar' ? card as AvatarCard : null;
   const actionCard = card.type !== 'avatar' ? card as ActionCard : null;
   
@@ -66,18 +67,29 @@ const CardReveal: React.FC<{
         isRevealed 
           ? 'scale-100 rotate-0 opacity-100' 
           : 'scale-90 rotate-12 opacity-0'
-      }`}
+      } cursor-pointer hover:scale-110`}
       style={{ transitionDelay: `${index * 300}ms` }}
+      onClick={onClick}
     >
       <div className={`w-28 h-40 rounded-lg overflow-hidden bg-gradient-to-br ${getCardColor()} shadow-xl`}>
         <div className="p-2 h-full flex flex-col">
-          <div className="text-xs font-bold bg-black bg-opacity-50 px-1 py-0.5 rounded mb-1 text-white">
+          <div className="text-xs font-bold bg-black bg-opacity-50 px-1 py-0.5 rounded mb-1 text-white truncate">
             {card.name}
           </div>
           
           {card.art ? (
             <div className="h-16 bg-black bg-opacity-30 rounded overflow-hidden mb-1">
-              <img src={card.art} alt={card.name} className="w-full h-full object-cover" />
+              <img 
+                src={card.art} 
+                alt={card.name} 
+                className="w-full h-full object-cover"
+                onError={(e) => {
+                  // Fallback for broken images
+                  const target = e.target as HTMLImageElement;
+                  target.onerror = null;
+                  target.src = `/textures/cards/${card.type}-placeholder.png`;
+                }} 
+              />
             </div>
           ) : (
             <div className="h-16 bg-black bg-opacity-30 rounded mb-1"></div>
@@ -98,7 +110,105 @@ const CardReveal: React.FC<{
             
             {actionCard && (
               <div className="text-[10px]">
-                {actionCard.description}
+                {actionCard.description || "Special card effect"}
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Card preview component
+const CardPreview: React.FC<{
+  card: Card;
+  onClose: () => void;
+}> = ({ card, onClose }) => {
+  const avatarCard = card.type === 'avatar' ? card as AvatarCard : null;
+  const actionCard = card.type !== 'avatar' ? card as ActionCard : null;
+  
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-80 z-50 flex items-center justify-center p-4" onClick={onClose}>
+      <div className="relative bg-gray-800 rounded-lg shadow-lg max-w-md w-full max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+        <button 
+          className="absolute top-2 right-2 text-white bg-red-600 rounded-full w-8 h-8 flex items-center justify-center"
+          onClick={onClose}
+        >
+          ✕
+        </button>
+        
+        <div className="p-4">
+          <div className="mb-4 rounded-lg overflow-hidden">
+            {card.art && (
+              <img 
+                src={card.art} 
+                alt={card.name} 
+                className="w-full object-cover"
+                onError={(e) => {
+                  // Fallback for broken images
+                  const target = e.target as HTMLImageElement;
+                  target.onerror = null;
+                  target.src = `/textures/cards/${card.type}-placeholder.png`;
+                }}
+              />
+            )}
+          </div>
+          
+          <div className="text-white">
+            <h2 className="text-xl font-bold mb-2">{card.name}</h2>
+            <div className="mb-2">
+              <span className="inline-block bg-gray-700 px-2 py-1 rounded mr-2">
+                {card.type.charAt(0).toUpperCase() + card.type.slice(1)}
+              </span>
+              <span className="inline-block bg-gray-700 px-2 py-1 rounded">
+                {card.element.charAt(0).toUpperCase() + card.element.slice(1)}
+              </span>
+            </div>
+            
+            {avatarCard && (
+              <div className="mb-2">
+                <div className="flex justify-between items-center">
+                  <span>Level: {avatarCard.level}</span>
+                  <span className="text-green-500">
+                    HP: {avatarCard.health}
+                  </span>
+                </div>
+              </div>
+            )}
+            
+            {avatarCard && (
+              <div className="mt-4 space-y-2">
+                <div className="p-2 bg-gray-700 rounded">
+                  <h3 className="font-bold">Skill 1: {avatarCard.skill1.name}</h3>
+                  <p className="text-xs">{avatarCard.skill1.effect || "Basic attack"}</p>
+                  <div className="mt-1 text-sm">Damage: {avatarCard.skill1.damage}</div>
+                  <div className="mt-1 text-xs">
+                    Energy: {avatarCard.skill1.energyCost.map(e => e.charAt(0).toUpperCase() + e.slice(1)).join(', ')}
+                  </div>
+                </div>
+                
+                {avatarCard.skill2 && (
+                  <div className="p-2 bg-gray-700 rounded">
+                    <h3 className="font-bold">Skill 2: {avatarCard.skill2.name}</h3>
+                    <p className="text-xs">{avatarCard.skill2.effect || "Advanced attack"}</p>
+                    <div className="mt-1 text-sm">Damage: {avatarCard.skill2.damage}</div>
+                    <div className="mt-1 text-xs">
+                      Energy: {avatarCard.skill2.energyCost.map(e => e.charAt(0).toUpperCase() + e.slice(1)).join(', ')}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+            
+            {actionCard && (
+              <div className="mt-2">
+                <p className="text-sm text-gray-300">{actionCard.description || "Special effect card"}</p>
+                {actionCard.energyCost && (
+                  <div className="mt-1 text-xs">
+                    Energy: {actionCard.energyCost.map(e => e.charAt(0).toUpperCase() + e.slice(1)).join(', ')}
+                  </div>
+                )}
               </div>
             )}
           </div>
@@ -117,6 +227,9 @@ const ShopPage: React.FC = () => {
   const [isOpeningPack, setIsOpeningPack] = useState(false);
   const [openedCards, setOpenedCards] = useState<Card[]>([]);
   const [allCardsRevealed, setAllCardsRevealed] = useState(false);
+  
+  // State for card preview
+  const [previewCard, setPreviewCard] = useState<Card | null>(null);
   
   // State for pack selection animation
   const [selectedPackType, setSelectedPackType] = useState<BoosterPackType | null>(null);
@@ -202,6 +315,11 @@ const ShopPage: React.FC = () => {
       
       <h1 className="text-2xl font-bold mb-6 text-center">Card Shop</h1>
       
+      {/* Card preview modal */}
+      {previewCard && (
+        <CardPreview card={previewCard} onClose={() => setPreviewCard(null)} />
+      )}
+      
       {/* Pack opening modal */}
       {isOpeningPack && (
         <div className="fixed inset-0 bg-black bg-opacity-80 z-50 flex items-center justify-center">
@@ -215,7 +333,8 @@ const ShopPage: React.FC = () => {
                     key={index} 
                     card={card} 
                     index={index} 
-                    isRevealed={true} 
+                    isRevealed={true}
+                    onClick={() => setPreviewCard(card)} 
                   />
                 ))}
               </div>
@@ -226,12 +345,23 @@ const ShopPage: React.FC = () => {
             )}
             
             {allCardsRevealed && (
-              <button
-                onClick={handleClosePack}
-                className="w-full bg-blue-600 hover:bg-blue-700 py-2 rounded font-bold"
-              >
-                Done
-              </button>
+              <div className="flex flex-col space-y-2">
+                <button
+                  onClick={handleClosePack}
+                  className="w-full bg-blue-600 hover:bg-blue-700 py-2 rounded font-bold"
+                >
+                  Done
+                </button>
+                <button
+                  onClick={() => {
+                    handleClosePack();
+                    setSelectedPackType(null); // Go back to pack selection screen
+                  }}
+                  className="w-full bg-green-600 hover:bg-green-700 py-2 rounded font-bold"
+                >
+                  Open Another Pack
+                </button>
+              </div>
             )}
           </div>
         </div>
