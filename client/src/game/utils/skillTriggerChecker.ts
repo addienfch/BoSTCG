@@ -1,6 +1,33 @@
-import { AvatarCard, SkillEffect } from '../data/cardTypes';
-import { GameState, Player } from '../stores/useGameStore';
+import { AvatarCard } from '../data/cardTypes';
 import { toast } from 'sonner';
+
+// SkillEffect interface since it doesn't exist in cardTypes
+export interface SkillEffect {
+  name: string;
+  energyCost: string[];
+  damage: number;
+  effect?: string;
+}
+
+// Types needed from useGameStore
+export type Player = 'player' | 'opponent';
+
+export interface PlayerState {
+  hand: any[];
+  energyPile: any[];
+  usedEnergyPile: any[];
+  activeAvatar: AvatarCard | null;
+  reserveAvatars: AvatarCard[];
+  graveyard: any[];
+  avatarToEnergyCount: number;
+}
+
+export interface GameState {
+  player: PlayerState;
+  opponent: PlayerState;
+  gamePhase: string;
+  currentPlayer: Player;
+}
 
 // Interface for skill trigger check result
 export interface SkillTriggerResult {

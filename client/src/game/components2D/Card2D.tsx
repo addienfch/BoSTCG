@@ -4,6 +4,7 @@ import { AvatarCard, ActionCard, Card as CardType, ElementType } from '../data/c
 import { useAudio } from '../../lib/stores/useAudio';
 import { toast } from 'sonner';
 import PreviewButton from './PreviewButton';
+import { getFixedCardImagePath, handleCardImageError } from '../utils/cardImageFixer';
 
 // Declare the gameStore property on window
 declare global {
@@ -46,7 +47,12 @@ const CardPreview = ({
         <div className="p-4">
           <div className="mb-4 rounded-lg overflow-hidden">
             {card.art && (
-              <img src={card.art} alt={card.name} className="w-full object-cover" />
+              <img 
+                src={getFixedCardImagePath(card)} 
+                alt={card.name} 
+                className="w-full object-cover" 
+                onError={(e) => handleCardImageError(e, card)}
+              />
             )}
           </div>
           
@@ -560,7 +566,12 @@ const Card2D: React.FC<Card2DProps> = ({
             className="absolute top-9 left-2 right-2 h-20 bg-black bg-opacity-30 rounded overflow-hidden"
           >
             {card.art ? (
-              <img src={card.art} alt={card.name} className="h-full w-full object-cover" />
+              <img 
+                src={getFixedCardImagePath(card)} 
+                alt={card.name} 
+                className="h-full w-full object-cover" 
+                onError={(e) => handleCardImageError(e, card)}
+              />
             ) : (
               <div className="h-full w-full flex items-center justify-center text-white text-opacity-70 text-xs">
                 [Card Art]
