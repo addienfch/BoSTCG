@@ -2,6 +2,7 @@ import { Card } from '../data/cardTypes';
 import { redElementalCards } from '../data/redElementalCards';
 import { allKobarBorahCards } from '../data/kobarBorahCards';
 import { allKujanaKuhakaCards } from '../data/kujanaKuhakaCards';
+import { allNeutralCards } from '../data/neutralCards';
 import { toast } from 'sonner';
 
 // Define different booster pack types
@@ -98,7 +99,8 @@ const getCardPoolByPackType = (packType: BoosterPackType): Card[] => {
       return [
         ...Object.values(redElementalCards),
         ...allKobarBorahCards,
-        ...allKujanaKuhakaCards
+        ...allKujanaKuhakaCards,
+        ...allNeutralCards
       ];
   }
 };

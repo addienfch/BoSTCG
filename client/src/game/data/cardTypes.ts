@@ -2,6 +2,7 @@
 
 export type ElementType = 'fire' | 'water' | 'earth' | 'air' | 'light' | 'dark' | 'neutral';
 export type SubType = 'kobar' | 'borah' | 'kuhaka' | 'kujana';
+export type ActionSubType = 'equipment' | 'healing' | 'damage' | 'draw' | 'search';
 export type CardCategory = 'avatar' | 'spell' | 'quickSpell' | 'ritualArmor' | 'field' | 'equipment' | 'item';
 
 // Card interfaces
@@ -47,6 +48,7 @@ export interface AvatarCard extends BaseCard {
 // Action Card interface
 export interface ActionCard extends BaseCard {
   type: 'spell' | 'quickSpell' | 'ritualArmor' | 'field' | 'equipment' | 'item';
+  subType?: ActionSubType;
 }
 
 export type Card = AvatarCard | ActionCard;
