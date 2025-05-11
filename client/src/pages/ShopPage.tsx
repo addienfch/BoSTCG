@@ -307,9 +307,17 @@ const ShopPage: React.FC = () => {
         >
           Back to Home
         </button>
-        <div className="flex items-center bg-green-700 px-4 py-2 rounded-md shadow-md">
-          <span className="mr-2">$</span>
-          <span className="font-bold">{coins}</span>
+        <div className="flex items-center space-x-2">
+          <div className="flex items-center bg-green-700 px-4 py-2 rounded-md shadow-md">
+            <span className="mr-2">$</span>
+            <span className="font-bold">{coins.toLocaleString()}</span>
+          </div>
+          <button 
+            onClick={resetCoins}
+            className="bg-yellow-600 hover:bg-yellow-700 px-3 py-2 rounded-md shadow-md text-sm"
+          >
+            Reset Coins
+          </button>
         </div>
       </div>
       
