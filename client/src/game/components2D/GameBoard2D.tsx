@@ -28,13 +28,13 @@ const GameBoard2D: React.FC<GameBoard2DProps> = ({ onAction }) => {
       return card.type === 'avatar' && (card as AvatarCard).level === 1 && player.activeAvatar === null;
     }
     
-    // Special case: Quick spells can be played during opponent's turn
-    if (card.type === 'quickSpell' && player.activeAvatar) {
-      // Quick spells only need energy check, regardless of turn or phase
-      return game.hasEnoughEnergy(card.energyCost || [], 'player');
+    // Special case for quick spells - they can be played during opponent's turn or any phase
+    if (card.type === 'quickSpell') {
+      // Quick spells only need an active avatar and enough energy
+      return player.activeAvatar !== null && game.hasEnoughEnergy(card.energyCost || [], 'player');
     }
     
-    // For regular phases
+    // For regular cards, only allow during player's main phases
     if (currentPlayer !== 'player' || (gamePhase !== 'main1' && gamePhase !== 'main2')) {
       return false;
     }
@@ -46,8 +46,9 @@ const GameBoard2D: React.FC<GameBoard2DProps> = ({ onAction }) => {
         return true;
       }
       return false;
-    } else if (card.type === 'spell' || card.type === 'quickSpell') {
-      // Spells require an active avatar
+    } else {
+      // All other card types (spell, ritualArmor, field, equipment, item)
+      // They all require an active avatar
       if (!player.activeAvatar) {
         return false;
       }
@@ -55,8 +56,6 @@ const GameBoard2D: React.FC<GameBoard2DProps> = ({ onAction }) => {
       // Check if player has enough energy
       return game.hasEnoughEnergy(card.energyCost || [], 'player');
     }
-    
-    return false;
   };
   
   // Function to handle card actions
@@ -123,8 +122,33 @@ const GameBoard2D: React.FC<GameBoard2DProps> = ({ onAction }) => {
     }
     
     if (action === 'play') {
-      // Play non-avatar cards
-      game.playCard(index);
+      // Handle quick spells specially to allow them to be played during opponent's turn
+      if (card.type === 'quickSpell') {
+        // Check if player has an active avatar and enough energy
+        if (!game.player.activeAvatar) {
+          toast.error("You need an active avatar to play quick spells!");
+          return;
+        }
+        
+        // Check energy requirements
+        if (!game.hasEnoughEnergy(card.energyCost || [], 'player')) {
+          toast.error("Not enough energy to play this quick spell!");
+          return;
+        }
+        
+        // Play the quick spell card even during opponent's turn
+        game.playCard(index);
+        toast.success(`You played quick spell: ${card.name}!`);
+      } else {
+        // For regular cards, check if it's player's turn and proper phase
+        if (game.currentPlayer !== 'player' || (game.gamePhase !== 'main1' && game.gamePhase !== 'main2')) {
+          toast.error("You can only play regular cards during your Main Phases!");
+          return;
+        }
+        
+        // Play non-avatar cards normally
+        game.playCard(index);
+      }
       
     } else if (action === 'active') {
       // Place as active avatar
