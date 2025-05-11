@@ -433,11 +433,25 @@ const GameBoard2D: React.FC<GameBoard2DProps> = ({ onAction }) => {
     
     // Note: Each avatar can use skills once per battle phase, regardless of when they were played
     
+    // Get the skill to check its energy cost
+    const skill = skillNumber === 1 
+      ? game.player.activeAvatar.skill1 
+      : game.player.activeAvatar.skill2;
+    
     // Check if the skill exists
-    if (skillNumber === 2 && !game.player.activeAvatar.skill2) {
+    if (skillNumber === 2 && !skill) {
       toast.error("This avatar doesn't have a second skill!");
       return;
     }
+    
+    // Check energy requirements first
+    if (!game.hasEnoughEnergy(skill.energyCost, 'player')) {
+      toast.error(`Not enough energy to use this skill. You need: ${skill.energyCost.join(', ')}`);
+      return;
+    }
+    
+    // Log energy requirements
+    console.log(`Using skill ${skillNumber}. Energy cost:`, skill.energyCost);
     
     // Handle skill use logic
     // Third parameter is target (optional)

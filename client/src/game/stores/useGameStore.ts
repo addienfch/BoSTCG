@@ -686,9 +686,29 @@ export const useGameStore = create<GameState>((set, get) => ({
       return;
     }
     
+    // Debug log the skill's energy cost before consuming
+    console.log(`Attempting to use energy for ${skill.name}:`, {
+      energyCost: skill.energyCost,
+      playerEnergy: playerState.energyPile.length,
+      energyDetails: playerState.energyPile.map(card => card.element)
+    });
+    
     // Use energy for the skill - make sure we consume all the required energy
-    if (!state.useEnergy(skill.energyCost, player)) {
-      toast.error(`Failed to consume energy for skill! This is unexpected.`);
+    try {
+      const energyUsed = state.useEnergy(skill.energyCost, player);
+      if (!energyUsed) {
+        toast.error(`Failed to consume energy for skill! This is unexpected.`);
+        console.error("Energy consumption failed for skill:", {
+          skill,
+          playerEnergyPile: playerState.energyPile,
+          energyCost: skill.energyCost
+        });
+        return;
+      }
+      console.log(`Successfully consumed ${skill.energyCost.length} energy for skill ${skill.name}`);
+    } catch (err: any) {
+      console.error("Error consuming energy:", err);
+      toast.error(`Error using skill: ${err?.message || "Unknown error"}`);
       return;
     }
     
@@ -1660,7 +1680,8 @@ export const useGameStore = create<GameState>((set, get) => ({
   
   // Use energy to play a card
   useEnergy: (energyCost: ElementType[], player: Player) => {
-    if (energyCost.length === 0) {
+    if (!energyCost || energyCost.length === 0) {
+      console.log("No energy cost to use");
       return true; // No energy cost, nothing to do
     }
     
@@ -1668,7 +1689,11 @@ export const useGameStore = create<GameState>((set, get) => ({
     
     // First check if we have enough energy
     if (!get().hasEnoughEnergy(energyCost, player)) {
-      console.log("Not enough energy to use");
+      console.log("Not enough energy to use:", {
+        required: energyCost,
+        player,
+        playerState: player === 'player' ? get().player : get().opponent
+      });
       return false;
     }
     
