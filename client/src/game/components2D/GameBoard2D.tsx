@@ -433,16 +433,16 @@ const GameBoard2D: React.FC<GameBoard2DProps> = ({ onAction }) => {
     
     // Note: Each avatar can use skills once per battle phase, regardless of when they were played
     
-    // Get the skill to check its energy cost
-    const skill = skillNumber === 1 
-      ? game.player.activeAvatar.skill1 
-      : game.player.activeAvatar.skill2;
-    
-    // Check if the skill exists
-    if (skillNumber === 2 && !skill) {
+    // Get the skill to check its energy cost (ensuring null safety)
+    if (skillNumber === 2 && !game.player.activeAvatar.skill2) {
       toast.error("This avatar doesn't have a second skill!");
       return;
     }
+    
+    // Now we know the selected skill exists
+    const skill = skillNumber === 1 
+      ? game.player.activeAvatar.skill1 
+      : game.player.activeAvatar.skill2!;
     
     // Check energy requirements first
     if (!game.hasEnoughEnergy(skill.energyCost, 'player')) {
@@ -1242,23 +1242,33 @@ const GameBoard2D: React.FC<GameBoard2DProps> = ({ onAction }) => {
                 {isPlayerTurn && game.gamePhase === 'battle' && !game.player.activeAvatar.isTapped && (
                   <div className="absolute -bottom-8 left-0 right-0 flex justify-center gap-1">
                     <button 
-                      className="text-[8px] px-1 py-0.5 bg-red-600 text-white rounded-sm hover:bg-red-500"
+                      className={`text-[8px] px-1 py-0.5 rounded-sm ${
+                        game.hasEnoughEnergy(game.player.activeAvatar.skill1.energyCost, 'player') 
+                          ? 'bg-red-600 hover:bg-red-500 text-white' 
+                          : 'bg-red-900 text-gray-300 cursor-not-allowed'
+                      }`}
                       onClick={(e) => {
                         e.stopPropagation();
                         handleSkillUse(1);
                       }}
+                      title={`Energy cost: ${game.player.activeAvatar.skill1.energyCost.join(', ')}`}
                     >
-                      Use Skill 1
+                      {game.player.activeAvatar.skill1.name} [{game.player.activeAvatar.skill1.energyCost.length}]
                     </button>
                     {game.player.activeAvatar.skill2 && (
                       <button 
-                        className="text-[8px] px-1 py-0.5 bg-purple-600 text-white rounded-sm hover:bg-purple-500"
+                        className={`text-[8px] px-1 py-0.5 rounded-sm ${
+                          game.hasEnoughEnergy(game.player.activeAvatar.skill2.energyCost, 'player') 
+                            ? 'bg-purple-600 hover:bg-purple-500 text-white' 
+                            : 'bg-purple-900 text-gray-300 cursor-not-allowed'
+                        }`}
                         onClick={(e) => {
                           e.stopPropagation();
                           handleSkillUse(2);
                         }}
+                        title={`Energy cost: ${game.player.activeAvatar.skill2.energyCost.join(', ')}`}
                       >
-                        Use Skill 2
+                        {game.player.activeAvatar.skill2.name} [{game.player.activeAvatar.skill2.energyCost.length}]
                       </button>
                     )}
                   </div>
