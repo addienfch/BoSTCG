@@ -194,7 +194,7 @@ export const useCollectionStore = create<CollectionState>()(
         const randomSpells = shuffleArray(spells);   // Get all random spells
         
         // Take at least 1 avatar and fill the rest to make exactly 5 cards total
-        const packCards = [
+        const packCards: Card[] = [
           randomAvatars[0], // Guaranteed first avatar
           ...randomAvatars.slice(1, 2), // Potentially a second avatar
         ];

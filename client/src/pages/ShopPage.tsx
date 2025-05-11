@@ -67,9 +67,15 @@ const CardReveal: React.FC<{
         isRevealed 
           ? 'scale-100 rotate-0 opacity-100' 
           : 'scale-90 rotate-12 opacity-0'
-      } cursor-pointer hover:scale-110`}
+      } cursor-pointer hover:scale-110 hover:brightness-110 active:scale-95`}
       style={{ transitionDelay: `${index * 300}ms` }}
-      onClick={onClick}
+      onClick={() => {
+        console.log('Card clicked:', card.name);
+        // Show a temporary visual feedback
+        toast.info(`Viewing ${card.name} details`);
+        // Call the onClick handler to show the preview
+        if (onClick) onClick();
+      }}
     >
       <div className={`w-28 h-40 rounded-lg overflow-hidden bg-gradient-to-br ${getCardColor()} shadow-xl`}>
         <div className="p-2 h-full flex flex-col">
