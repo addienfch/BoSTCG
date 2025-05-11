@@ -48,6 +48,15 @@ export function checkSkillTrigger(
   gameState: GameState,
   player: Player
 ): SkillTriggerResult {
+  // Safety check for invalid inputs
+  if (!skill || !avatar || !gameState) {
+    console.error('Invalid parameters passed to checkSkillTrigger:', { skill, avatar, gameState });
+    return {
+      shouldTrigger: false,
+      message: 'Error: Missing skill or game state information'
+    };
+  }
+
   // Default result - no trigger
   const result: SkillTriggerResult = {
     shouldTrigger: false
@@ -58,7 +67,20 @@ export function checkSkillTrigger(
     return result;
   }
 
+  // Ensure skill has a damage value
+  if (skill.damage === undefined || skill.damage === null) {
+    skill.damage = 0;
+    console.warn('Skill has no damage value, defaulting to 0:', skill.name);
+  }
+
   const effectText = skill.effect.toLowerCase();
+  
+  // Safety check for playerState and opponentState
+  if (!gameState.player || !gameState.opponent) {
+    console.error('Game state is missing player or opponent data');
+    return result;
+  }
+  
   const playerState = player === 'player' ? gameState.player : gameState.opponent;
   const opponentState = player === 'player' ? gameState.opponent : gameState.player;
   
@@ -350,8 +372,27 @@ export function getModifiedDamage(
   originalDamage: number,
   triggerResult: SkillTriggerResult
 ): number {
+  // Safety checks
+  if (!triggerResult) {
+    console.warn('Missing triggerResult in getModifiedDamage, returning original damage');
+    return originalDamage || 0;
+  }
+  
+  // Ensure originalDamage is a valid number
+  if (typeof originalDamage !== 'number' || isNaN(originalDamage)) {
+    console.warn('Invalid originalDamage in getModifiedDamage:', originalDamage);
+    originalDamage = 0;
+  }
+  
+  // Apply modified damage if trigger condition is met
   if (triggerResult.shouldTrigger && triggerResult.modifiedDamage !== undefined) {
+    // Ensure modifiedDamage is a valid number
+    if (typeof triggerResult.modifiedDamage !== 'number' || isNaN(triggerResult.modifiedDamage)) {
+      console.warn('Invalid modifiedDamage in triggerResult:', triggerResult.modifiedDamage);
+      return originalDamage;
+    }
     return triggerResult.modifiedDamage;
   }
+  
   return originalDamage;
 }

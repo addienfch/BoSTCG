@@ -746,19 +746,40 @@ export const useGameStore = create<GameState>((set, get) => ({
     set(state => {
       const opponent = player === 'player' ? 'opponent' : 'player';
       const opponentState = state[opponent];
-      const opponentAvatar = opponentState.activeAvatar!;
+      
+      // Safety check to make sure opponent has an active avatar
+      if (!opponentState.activeAvatar) {
+        toast.error('No target avatar found!');
+        return {}; // Return empty object to avoid state changes
+      }
+      
+      const opponentAvatar = opponentState.activeAvatar;
+      
+      // Initialize counters safely
+      if (!opponentAvatar.counters) {
+        opponentAvatar.counters = { damage: 0, bleed: 0, shield: 0 };
+      }
+      
       const currentDamage = opponentAvatar.counters?.damage || 0;
       const newDamage = currentDamage + damageAmount;
       
       // Mark avatar as tapped (with debug info)
       console.log("Marking avatar as tapped:", state[player].activeAvatar);
       
+      // Safety check for player's avatar
+      if (!state[player].activeAvatar) {
+        toast.error('Your active avatar was not found!');
+        return {}; // Return empty object to avoid state changes
+      }
+      
       // Create updated player state with tapped avatar
       const updatePlayerState = {
         ...state[player],
         activeAvatar: {
-          ...state[player].activeAvatar!,
-          isTapped: true
+          ...state[player].activeAvatar,
+          isTapped: true,
+          // Make sure counters exist
+          counters: state[player].activeAvatar.counters || { damage: 0, bleed: 0, shield: 0 }
         }
       };
       
@@ -768,7 +789,7 @@ export const useGameStore = create<GameState>((set, get) => ({
         activeAvatar: {
           ...opponentAvatar,
           counters: {
-            ...opponentAvatar.counters || { damage: 0, bleed: 0, shield: 0 },
+            ...opponentAvatar.counters,
             damage: newDamage
           }
         }
@@ -784,7 +805,7 @@ export const useGameStore = create<GameState>((set, get) => ({
       if (skillTriggerResult.applyShield && skillTriggerResult.applyShield > 0) {
         const currentShield = updatePlayerState.activeAvatar.counters?.shield || 0;
         updatePlayerState.activeAvatar.counters = {
-          ...updatePlayerState.activeAvatar.counters || { damage: 0, bleed: 0, shield: 0 },
+          ...updatePlayerState.activeAvatar.counters,
           shield: currentShield + skillTriggerResult.applyShield
         };
       }
