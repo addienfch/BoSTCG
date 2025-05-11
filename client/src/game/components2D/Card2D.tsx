@@ -496,12 +496,24 @@ const Card2D: React.FC<Card2DProps> = ({
   
   const renderActionContent = () => {
     const actionCard = card as ActionCard;
+    const isQuickSpell = actionCard.type === 'quickSpell';
+    
     return (
       <>
         {/* Energy cost for action cards */}
         <div className="absolute top-2 right-2">
           {renderEnergyCost(actionCard.energyCost)}
         </div>
+        
+        {/* Quick Spell Indicator */}
+        {isQuickSpell && (
+          <div className="absolute top-1 left-1 z-10">
+            <div className="bg-purple-700 text-white text-[6px] px-1.5 py-0.5 rounded shadow-lg" 
+                 title="Quick Spells can be played during any phase, including your opponent's turn!">
+              <span className="animate-pulse inline-block">⚡</span> QUICK SPELL
+            </div>
+          </div>
+        )}
       </>
     );
   };
