@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useGameStore } from '../stores/useGameStore';
 import { useGameMode } from '../stores/useGameMode';
 import Card2D from './Card2D';
@@ -6,6 +6,108 @@ import { toast } from 'sonner';
 import { AvatarCard, Card } from '../data/cardTypes';
 import { SimpleGameAI, AIGameState } from '../ai/SimpleGameAI';
 import { useNavigate } from 'react-router-dom';
+
+// Card Preview Component
+const CardPreview = ({ 
+  card, 
+  onClose 
+}: { 
+  card: Card; 
+  onClose: () => void; 
+}) => {
+  // For avatar cards, get the damage counter
+  const damageCounter = card.type === 'avatar' ? (card as AvatarCard).counters?.damage || 0 : 0;
+  
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-70 z-50 flex items-center justify-center p-4" onClick={onClose}>
+      <div className="relative bg-gray-800 rounded-lg shadow-lg max-w-md w-full max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+        <button 
+          className="absolute top-2 right-2 text-white bg-red-600 rounded-full w-8 h-8 flex items-center justify-center"
+          onClick={onClose}
+        >
+          ✕
+        </button>
+        
+        <div className="p-4">
+          <div className="mb-4 rounded-lg overflow-hidden">
+            {card.art && (
+              <img src={card.art} alt={card.name} className="w-full object-cover" />
+            )}
+          </div>
+          
+          <div className="text-white">
+            <h2 className="text-xl font-bold mb-2">{card.name}</h2>
+            <div className="mb-2">
+              <span className="inline-block bg-gray-700 px-2 py-1 rounded mr-2">
+                {card.type.charAt(0).toUpperCase() + card.type.slice(1)}
+              </span>
+              <span className="inline-block bg-gray-700 px-2 py-1 rounded">
+                {card.element.charAt(0).toUpperCase() + card.element.slice(1)}
+              </span>
+            </div>
+            
+            {card.type === 'avatar' && (
+              <div className="mb-2">
+                <div className="flex justify-between items-center">
+                  <span>Level: {(card as AvatarCard).level}</span>
+                  <span className="text-green-500">
+                    HP: {(card as AvatarCard).health - damageCounter}/{(card as AvatarCard).health}
+                  </span>
+                </div>
+                {damageCounter > 0 && (
+                  <div className="w-full bg-gray-700 rounded-full h-2.5 mt-1">
+                    <div 
+                      className="bg-red-600 h-2.5 rounded-full" 
+                      style={{ width: `${((card as AvatarCard).health - damageCounter) / (card as AvatarCard).health * 100}%` }}
+                    ></div>
+                  </div>
+                )}
+              </div>
+            )}
+            
+            <p className="text-gray-300 mb-4">{card.description || "No description available."}</p>
+            
+            {card.energyCost && card.energyCost.length > 0 && (
+              <div className="mb-2">
+                <span>Energy Cost: </span>
+                {card.energyCost.map((energy, index) => (
+                  <span 
+                    key={index}
+                    className={`inline-block w-5 h-5 rounded-full mx-0.5 ${
+                      energy === 'fire' ? 'bg-red-500' : 
+                      energy === 'water' ? 'bg-blue-500' : 
+                      energy === 'earth' ? 'bg-amber-700' : 
+                      energy === 'air' ? 'bg-cyan-300' : 
+                      'bg-gray-400'
+                    }`}
+                  ></span>
+                ))}
+              </div>
+            )}
+            
+            {card.type === 'avatar' && (
+              <div className="mt-4 space-y-2">
+                <div className="p-2 bg-gray-700 rounded">
+                  <h3 className="font-bold">Skill 1: {(card as AvatarCard).skill1.name}</h3>
+                  <p className="text-xs">{(card as AvatarCard).skill1.effect}</p>
+                  <div className="mt-1 text-sm">Damage: {(card as AvatarCard).skill1.damage}</div>
+                </div>
+                
+                {(card as AvatarCard).skill2 && (
+                  <div className="p-2 bg-gray-700 rounded">
+                    <h3 className="font-bold">Skill 2: {(card as AvatarCard).skill2.name}</h3>
+                    <p className="text-xs">{(card as AvatarCard).skill2.effect}</p>
+                    <div className="mt-1 text-sm">Damage: {(card as AvatarCard).skill2.damage}</div>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 interface GameBoard2DProps {
   onAction?: (action: string, data?: any) => void;
@@ -1167,8 +1269,15 @@ const GameBoard2D: React.FC<GameBoard2DProps> = ({ onAction }) => {
             ) : (
               // Normal display of reserve avatars
               game.player.reserveAvatars.map((avatar, index) => (
-                <div key={index} className="text-xs mb-0.5 bg-blue-900 bg-opacity-50 px-1 py-0.5 rounded">
-                  {avatar.name} (HP: {avatar.health})
+                <div 
+                  key={index} 
+                  className="text-xs mb-0.5 bg-blue-900 bg-opacity-50 px-1 py-0.5 rounded cursor-pointer hover:bg-blue-800"
+                  onClick={() => {
+                    // Add card preview functionality
+                    setShowPreviewCard(avatar);
+                  }}
+                >
+                  {avatar.name} (HP: {avatar.health - (avatar.counters?.damage || 0)})
                 </div>
               ))
             )}

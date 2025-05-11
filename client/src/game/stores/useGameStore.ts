@@ -872,10 +872,11 @@ export const useGameStore = create<GameState>((set, get) => ({
       // Preserve important properties from level 1 avatar, including damage counters
       const evolvedAvatar: AvatarCard = {
         ...level2Card,
-        counters: {
-          ...(targetAvatarCard!.counters || { damage: 0, bleed: 0, shield: 0 })
-        },
-        turnPlayed: state.turn
+        // Make sure we preserve existing counters from the level 1 avatar
+        counters: targetAvatarCard!.counters || { damage: 0, bleed: 0, shield: 0 },
+        turnPlayed: state.turn,
+        // Also preserve tapped state from the level 1 avatar
+        isTapped: targetAvatarCard!.isTapped
       };
       
       // Update the appropriate avatar slot
