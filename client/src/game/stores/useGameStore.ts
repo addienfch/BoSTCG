@@ -1559,8 +1559,13 @@ export const useGameStore = create<GameState>((set, get) => ({
     const playerState = player === 'player' ? get().player : get().opponent;
     const energyPile = playerState.energyPile;
     
-    // Count available energy by element
-    const energyCount: Record<ElementType, number> = {
+    // Make sure we have enough total energy cards
+    if (energyPile.length < energyCost.length) {
+      return false;
+    }
+    
+    // Track available energy by element
+    const availableElements: {[key in ElementType]: number} = {
       fire: 0,
       water: 0,
       earth: 0,
@@ -1570,18 +1575,15 @@ export const useGameStore = create<GameState>((set, get) => ({
       neutral: 0
     };
     
-    // Count how many of each element we have in the energy pile
+    // Count all available energy cards by element
     energyPile.forEach(card => {
       if (card.element) {
-        energyCount[card.element as ElementType]++;
+        availableElements[card.element as ElementType]++;
       }
-      
-      // All cards can be used as neutral energy
-      energyCount.neutral++;
     });
     
-    // Check if we have enough of each required element
-    const requiredEnergy: Record<ElementType, number> = {
+    // Count required energy by type
+    const requiredElements: {[key in ElementType]: number} = {
       fire: 0,
       water: 0,
       earth: 0,
@@ -1591,28 +1593,42 @@ export const useGameStore = create<GameState>((set, get) => ({
       neutral: 0
     };
     
-    // Count required energy by type
     energyCost.forEach(element => {
-      requiredEnergy[element]++;
+      requiredElements[element]++;
     });
     
-    // Check each element
-    for (const element of Object.keys(requiredEnergy) as ElementType[]) {
-      if (element === 'neutral') {
-        // Neutral can be paid with any energy
-        const totalAvailable = Object.values(energyCount).reduce((sum, count) => sum + count, 0);
-        if (totalAvailable < requiredEnergy.neutral) {
-          return false;
-        }
-      } else {
-        // For specific elements, check if we have enough
-        if (energyCount[element] < requiredEnergy[element]) {
-          return false;
+    // First check specific elements (fire, water, earth, air)
+    const specificElements = ['fire', 'water', 'earth', 'air'] as ElementType[];
+    let remainingNonSpecific = 0;
+    
+    // Check each specific element requirement
+    for (const element of specificElements) {
+      if (requiredElements[element] > 0) {
+        // If we have this element type, use it
+        const available = availableElements[element];
+        const required = requiredElements[element];
+        
+        if (available >= required) {
+          // We have enough specific energy
+          availableElements[element] -= required;
+        } else {
+          // We need to use other cards for the missing energy
+          const missing = required - available;
+          remainingNonSpecific += missing;
+          // Use what we have of this element
+          availableElements[element] = 0;
         }
       }
     }
     
-    return true;
+    // Add neutral energy requirement
+    remainingNonSpecific += requiredElements.neutral;
+    
+    // Count remaining total energy
+    const totalRemainingEnergy = Object.values(availableElements).reduce((sum, count) => sum + count, 0);
+    
+    // Check if we have enough total energy for the remaining non-specific requirements
+    return totalRemainingEnergy >= remainingNonSpecific;
   },
   
   // Use energy to play a card
@@ -1621,36 +1637,77 @@ export const useGameStore = create<GameState>((set, get) => ({
       return true; // No energy cost, nothing to do
     }
     
+    console.log(`Using energy for ${player}:`, energyCost);
+    
+    // First check if we have enough energy
+    if (!get().hasEnoughEnergy(energyCost, player)) {
+      console.log("Not enough energy to use");
+      return false;
+    }
+    
     set(state => {
       const playerState = player === 'player' ? state.player : state.opponent;
       const energyPile = [...playerState.energyPile];
       const usedEnergyPile = [...playerState.usedEnergyPile];
       
+      // Count how many of each element we need
+      const elementCounts: Partial<Record<ElementType, number>> = {
+        fire: 0,
+        water: 0,
+        earth: 0,
+        air: 0,
+        neutral: 0,
+        light: 0,
+        dark: 0
+      };
+      
+      // Count required elements
+      energyCost.forEach(element => {
+        elementCounts[element]++;
+      });
+      
+      console.log("Required elements:", elementCounts);
+      
       // Track which energy cards we've used
       const usedIndices: number[] = [];
       
-      // Process each energy cost
-      for (const element of energyCost) {
-        // Find an energy card of the right element
-        let foundIndex = -1;
-        
-        if (element === 'neutral') {
-          // Can use any card for neutral
-          foundIndex = 0; // Just use the first available card
-        } else {
-          // Find a card of the specified element
-          foundIndex = energyPile.findIndex(card => card.element === element);
-          
-          // If we can't find the exact element, use any card as neutral
-          if (foundIndex === -1) {
-            foundIndex = 0; // Just use the first available card
+      // First try to match specific elements
+      const elements: ElementType[] = ['fire', 'water', 'earth', 'air'];
+      elements.forEach(element => {
+        let required = elementCounts[element];
+        if (required > 0) {
+          for (let i = 0; i < energyPile.length && required > 0; i++) {
+            if (!usedIndices.includes(i) && energyPile[i].element === element) {
+              usedIndices.push(i);
+              required--;
+            }
+          }
+          // Update how many we still need
+          elementCounts[element] = required;
+        }
+      });
+      
+      // Then use any card for neutral and remaining specific elements
+      let totalRemaining = 
+        elementCounts.fire + 
+        elementCounts.water + 
+        elementCounts.earth + 
+        elementCounts.air + 
+        elementCounts.neutral;
+      
+      if (totalRemaining > 0) {
+        // Use any remaining cards for neutral/unmatched elements
+        for (let i = 0; i < energyPile.length && totalRemaining > 0; i++) {
+          if (!usedIndices.includes(i)) {
+            usedIndices.push(i);
+            totalRemaining--;
           }
         }
-        
-        // If we found a card to use, mark it
-        if (foundIndex !== -1 && !usedIndices.includes(foundIndex)) {
-          usedIndices.push(foundIndex);
-        }
+      }
+      
+      // Double check we used the right number of cards
+      if (usedIndices.length !== energyCost.length) {
+        console.error(`Energy mismatch: used ${usedIndices.length} cards for ${energyCost.length} cost`);
       }
       
       // Move the used cards to the used energy pile
@@ -1681,7 +1738,7 @@ export const useGameStore = create<GameState>((set, get) => ({
     });
     
     // Log the energy usage
-    get().addLog(`${player === 'player' ? 'You' : 'Opponent'} used ${energyCost.length} energy to play a card.`);
+    get().addLog(`${player === 'player' ? 'You' : 'Opponent'} used ${energyCost.length} energy.`);
     return true;
   },
   

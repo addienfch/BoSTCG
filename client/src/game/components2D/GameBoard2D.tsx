@@ -1280,7 +1280,9 @@ const GameBoard2D: React.FC<GameBoard2DProps> = ({ onAction }) => {
                 <div 
                   key={index} 
                   className="text-xs mb-0.5 bg-blue-900 bg-opacity-50 px-1 py-0.5 rounded cursor-pointer hover:bg-blue-800"
-                  onClick={() => {
+                  onClick={(e) => {
+                    // Prevent action from triggering
+                    e.stopPropagation();
                     // Add card preview functionality
                     setPreviewCard(avatar);
                   }}
