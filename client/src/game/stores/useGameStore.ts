@@ -866,11 +866,11 @@ export const useGameStore = create<GameState>((set, get) => ({
       const updatedHand = [...state.player.hand];
       updatedHand.splice(handIndex, 1);
       
-      // Preserve important properties from level 1 avatar
+      // Preserve important properties from level 1 avatar, including damage counters
       const evolvedAvatar: AvatarCard = {
         ...level2Card,
         counters: {
-          ...targetAvatarCard!.counters || { damage: 0, bleed: 0, shield: 0 }
+          ...(targetAvatarCard!.counters || { damage: 0, bleed: 0, shield: 0 })
         },
         turnPlayed: state.turn
       };
