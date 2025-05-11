@@ -222,7 +222,7 @@ const DeckBuilderPage: React.FC = () => {
           ))}
           
           {/* New deck button */}
-          {decks.length < 3 && (
+          {decks.length < 5 && (
             <div 
               className="p-3 rounded-lg cursor-pointer flex flex-col items-center bg-green-700 hover:bg-green-600 transition-colors"
               onClick={handleNewDeck}
@@ -231,7 +231,7 @@ const DeckBuilderPage: React.FC = () => {
                 <span className="text-3xl">+</span>
               </div>
               <span className="font-medium text-sm">New Deck</span>
-              <span className="text-xs text-gray-300">{decks.length}/3 decks</span>
+              <span className="text-xs text-gray-300">{decks.length}/5 decks</span>
             </div>
           )}
         </div>
