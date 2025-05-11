@@ -8,7 +8,8 @@ import {
   kujanaKuhakaAvatarCards, 
   allFireCards 
 } from '../data/kobarBorahCards';
-import { kujanaKuhakaActionCards } from '../data/kujanaKuhakaCards';
+import { allKujanaKuhakaCards } from '../data/kujanaKuhakaCards';
+import { redElementalSpellCards } from '../data/redElementalCards';
 
 // Define the deck interface
 export interface Deck {
@@ -95,7 +96,7 @@ const createKobarBorahDeck = (): Deck => {
 const createKujanaKuhakaDeck = (): Deck => {
   const avatars = kujanaKuhakaAvatarCards.filter(card => card.level === 1);
   const level2Avatars = kujanaKuhakaAvatarCards.filter(card => card.level === 2);
-  const actions = kujanaKuhakaActionCards;
+  const actions = redElementalSpellCards;
   
   const cards: Card[] = [];
   
@@ -406,7 +407,7 @@ export const useDeckStore = create<DeckStore>()(
         if (tribe === 'kobar-borah') {
           return [...kobarBorahAvatarCards, ...kobarBorahActionCards];
         } else if (tribe === 'kujana-kuhaka') {
-          return [...kujanaKuhakaAvatarCards, ...kujanaKuhakaActionCards];
+          return [...kujanaKuhakaAvatarCards, ...redElementalSpellCards];
         } else if (tribe === 'kujana') {
           return allFireCards.filter(card => 
             card.type === 'avatar' && (card as AvatarCard).subType === 'kujana'

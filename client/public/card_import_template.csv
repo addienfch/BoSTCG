@@ -1,7 +1,9 @@
 Name,Type,Element,Level,SubType,Health,Art,Skill1Name,Skill1EnergyCost,Skill1Damage,Skill1Effect,Skill2Name,Skill2EnergyCost,Skill2Damage,Skill2Effect,CardEnergyCost,CardDamage,CardEffect
-Boar Berserker,avatar,fire,1,kobar,8,/attached_assets/Red Elemental Avatar_Ava - Boar Berserker.png,Fire Slash,"fire,neutral",3,Basic attack,,,,,,,
-Daisy,avatar,fire,2,borah,15,/attached_assets/Red Elemental Avatar_Ava - Daisy.png,Pyro Kick,"fire,neutral",5,If you have 1 card or less card in hand this attack get +1,Burning Body,"fire,fire,neutral,neutral",10,This attack does 3 more damage if opponent Active Avatar were Air type.,,,
-Banaspati,avatar,fire,1,kujana,5,/attached_assets/Red Elemental Avatar_Ava - Banaspati.png,Ember Burst,"fire,fire",2,Add 1 bleed counter to target avatar,,,,,,,
-Burn Ball,spell,,,,,/attached_assets/Red Elemental Spell_2 - Burn Ball.png,,,,,,,,,"fire,neutral",2,Deal 2 damage to target avatar
-Burning Armor,spell,,,,,/attached_assets/Red Elemental Spell_4 - Burning Armor.png,,,,,,,,,"fire,fire,neutral",0,Your active avatar gains 3 shield counters
-Cracking Sword,quickSpell,,,,,/attached_assets/Red Elemental Spell_1 - Cracking Sword.png,,,,,,,,,"fire,fire",3,Deal 3 damage to target avatar. Can be played during opponent's turn.
+Banaspati,avatar,fire,2,kuhaka,13,/attached_assets/Red Elemental Avatar_Ava - Banaspati.png,Burning Dagger,"fire,neutral",1,"Flip a coin, if head, opponent defending Avatar get 2 Bleed Counters",Blood Abssorbtion,"fire,fire,neutral,neutral",9,"If opponent Active Avatar has Bleed Counter, heal 2 damage to one of your Reserve Avatar.",,,
+Banaspati Female,avatar,fire,2,kujana,12,/attached_assets/Red Elemental Avatar_Ava - Banaspati Fem.png,Pyro Punch,"fire,neutral",3,"If opponent Active Avatar has Bleed Counter, this Skill1 Damage become 4",Burning Body,"fire,fire,neutral,neutral",9,"If opponent Active Avatar is wind Element Avatar, this Skill2 Damage become 11",,,
+Kobar Trainee A,avatar,fire,1,kobar,7,/attached_assets/Red Elemental Avatar_Ava - Kobar Trainee A.png,Punch,fire,1,Basic attack,,,,,,,
+Borah Trainee B,avatar,fire,1,borah,5,/attached_assets/Red Elemental Avatar_Ava - Borah Trainee B.png,Slash,"fire,neutral",2,Basic attack,,,,,,,
+Cracking Sword,equipment,fire,,,,/attached_assets/Red Elemental Spell_1 - Cracking Sword.png,,,,,,,,,"fire,fire",,Equipped Kobar avatar deals +2 damage with attacks.
+After Burn,quickSpell,fire,,,,/attached_assets/Red Elemental Spell_2 - After Burn.png,,,,,,,,,"fire,fire",,Add 2 damage to an Avatar that took damage this turn.
+Burn Ball,quickSpell,fire,,,,/attached_assets/Red Elemental Spell_2 - Burn Ball.png,,,,,,,,,"fire,neutral",,Direct 2 damage to opponent's active Avatar
+Double Bomb,spell,fire,,,,/attached_assets/Red Elemental Spell_4 - Double Bomb.png,,,,,,,,,"fire,fire,fire",,Deals 4 damage to opponent's active Avatar.
