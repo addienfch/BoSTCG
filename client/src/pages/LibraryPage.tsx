@@ -350,10 +350,12 @@ const LibraryPage: React.FC = () => {
               <option value="avatar">Avatars</option>
               <option value="spell">Spells</option>
               <option value="quickSpell">Quick Spells</option>
+              <option value="item">Items</option>
               <option value="fire">Fire Element</option>
               <option value="water">Water Element</option>
               <option value="earth">Earth Element</option>
               <option value="air">Air Element</option>
+              <option value="neutral">Neutral Element</option>
             </select>
           </div>
           

@@ -309,9 +309,11 @@ const ShopPage: React.FC = () => {
   const handleClosePack = () => {
     setIsOpeningPack(false);
     setOpenedCards([]);
+    setAllCardsRevealed(false);
+    setPreviewCard(null);
+    setSelectedPackType(null);
     
-    // Redirect to the home page
-    navigate('/');
+    // Stay on the shop page instead of navigating away
   };
   
   return (
