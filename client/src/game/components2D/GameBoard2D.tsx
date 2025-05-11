@@ -1076,17 +1076,21 @@ const GameBoard2D: React.FC<GameBoard2DProps> = ({ onAction }) => {
             
             {/* Opponent Reserves */}
             <div className="flex flex-col">
-              <div className="text-xs mb-1">Reserves: {game.opponent.reserveAvatars.length}/2</div>
-              {game.opponent.reserveAvatars.map((avatar, index) => (
-                <div 
-                  key={index} 
-                  className="text-xs mb-0.5 bg-red-900 bg-opacity-50 px-1 py-0.5 rounded flex justify-between cursor-pointer hover:bg-red-800"
-                  onClick={() => setSelectedCard(avatar)}
-                >
-                  <span>{avatar.name}</span>
-                  <span className="font-bold text-yellow-400">HP: {avatar.health - (avatar.counters?.damage || 0)}</span>
-                </div>
-              ))}
+              <div className="text-xs mb-1">Reserves: {game.opponent.reserveAvatars?.length || 0}/2</div>
+              {game.opponent.reserveAvatars && game.opponent.reserveAvatars.length > 0 ? (
+                game.opponent.reserveAvatars.map((avatar, index) => (
+                  <div 
+                    key={index} 
+                    className="text-xs mb-0.5 bg-red-900 bg-opacity-50 px-1 py-0.5 rounded flex justify-between cursor-pointer hover:bg-red-800"
+                    onClick={() => setSelectedCard(avatar)}
+                  >
+                    <span>{avatar.name}</span>
+                    <span className="font-bold text-yellow-400">HP: {avatar.health - (avatar.counters?.damage || 0)}</span>
+                  </div>
+                ))
+              ) : (
+                <div className="text-xs text-gray-400">No reserve avatars</div>
+              )}
             </div>
           </div>
         </div>

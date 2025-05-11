@@ -10,6 +10,7 @@ import {
 } from '../data/kobarBorahCards';
 import { allKujanaKuhakaCards } from '../data/kujanaKuhakaCards';
 import { redElementalSpellCards } from '../data/redElementalCards';
+import { toast } from 'sonner';
 
 // Define the deck interface
 export interface Deck {
