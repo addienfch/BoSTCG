@@ -402,10 +402,15 @@ export const useGameStore = create<GameState>((set, get) => ({
         return;
       }
       
-      // Check energy for quick spells separately - we allow them anytime
+      // Check energy for quick spells separately - we allow them anytime, including opponent's turn
       if (!get().hasEnoughEnergy(card.energyCost || [], 'player')) {
-        toast.error("Not enough energy to play this quick spell!");
+        toast.error("Not enough energy to play this quick spell! Check your energy pile.");
         return;
+      }
+      
+      // Log that a quick spell is being played in a non-standard phase
+      if (currentPlayer !== 'player' || (gamePhase !== 'main1' && gamePhase !== 'main2')) {
+        get().addLog(`Quick Spell: Playing ${card.name} during ${currentPlayer}'s ${gamePhase} phase!`);
       }
     } else {
       // Other cards are restricted to proper phases and turn
@@ -571,7 +576,17 @@ export const useGameStore = create<GameState>((set, get) => ({
                 toast.info("Spell had no effect - opponent has no active avatar.");
               }
             } else if (card.type === 'quickSpell') {
-              toast.success(`You cast quick spell ${card.name}!`);
+              // Enhanced toast for quick spells
+              const phase = get().gamePhase;
+              const isOppTurn = get().currentPlayer === 'opponent';
+              
+              if (isOppTurn) {
+                toast.success(`You cast quick spell ${card.name} during opponent's turn!`);
+              } else if (phase === 'battle') {
+                toast.success(`You cast quick spell ${card.name} during battle phase!`);
+              } else {
+                toast.success(`You cast quick spell ${card.name}!`);
+              }
               
               // Apply effects for quick spells
               if (get().opponent.activeAvatar) {
