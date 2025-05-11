@@ -1062,8 +1062,13 @@ const GameBoard2D: React.FC<GameBoard2DProps> = ({ onAction }) => {
             <div className="flex flex-col">
               <div className="text-xs mb-1">Reserves: {game.opponent.reserveAvatars.length}/2</div>
               {game.opponent.reserveAvatars.map((avatar, index) => (
-                <div key={index} className="text-xs mb-0.5 bg-red-900 bg-opacity-50 px-1 py-0.5 rounded">
-                  {avatar.name}
+                <div 
+                  key={index} 
+                  className="text-xs mb-0.5 bg-red-900 bg-opacity-50 px-1 py-0.5 rounded flex justify-between cursor-pointer hover:bg-red-800"
+                  onClick={() => setSelectedCard(avatar)}
+                >
+                  <span>{avatar.name}</span>
+                  <span className="font-bold text-yellow-400">HP: {avatar.health - (avatar.counters?.damage || 0)}</span>
                 </div>
               ))}
             </div>
@@ -1377,7 +1382,7 @@ const GameBoard2D: React.FC<GameBoard2DProps> = ({ onAction }) => {
         <button 
           className="bg-red-600 hover:bg-red-700 px-3 py-1 rounded text-sm"
           onClick={() => game.endTurn()}
-          disabled={!isPlayerTurn || game.gamePhase !== 'end'}
+          disabled={!isPlayerTurn}
         >
           End Turn
         </button>
