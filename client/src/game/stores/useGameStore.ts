@@ -1460,9 +1460,6 @@ export const useGameStore = create<GameState>((set, get) => ({
   canPlayCard: (card) => {
     const { gamePhase, currentPlayer, player } = get();
     
-    // Main phases for regular play
-    const isMainPhase = gamePhase === 'main1' || gamePhase === 'main2';
-    
     // Quick spells can be played anytime when player has enough energy
     if (card.type === 'quickSpell') {
       if (!player.activeAvatar) {
@@ -1473,6 +1470,9 @@ export const useGameStore = create<GameState>((set, get) => ({
       const energyCost = card.energyCost || [];
       return get().hasEnoughEnergy(energyCost, 'player');
     }
+    
+    // Main phases for regular play
+    const isMainPhase = gamePhase === 'main1' || gamePhase === 'main2';
     
     // Regular cards can only be played in main phases on your turn
     if (currentPlayer !== 'player' || !isMainPhase) {
