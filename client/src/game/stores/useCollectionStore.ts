@@ -1,30 +1,85 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { Card } from '../data/cardTypes';
+import { redElementalCards } from '../data/redElementalCards';
+import { allKobarBorahCards } from '../data/kobarBorahCards';
+import { allKujanaKuhakaCards } from '../data/kujanaKuhakaCards';
+import { BoosterPackType } from '../gacha/BoosterPackSystem';
 import { toast } from 'sonner';
-import { openBoosterPack, BoosterPackType } from '../gacha/BoosterPackSystem';
 
-// Define the collection state
+// Define the structure of the collection store
 interface CollectionState {
-  // Card collection
+  // Player's owned cards
   cards: Card[];
-  // Currency for purchasing cards
+  
+  // Currency for purchasing packs
   coins: number;
   
-  // Add cards to collection
-  addCards: (newCards: Card[]) => void;
-  // Remove cards from collection (e.g., when adding to a deck)
-  removeCards: (cardIds: string[]) => void;
-  // Set coins amount
-  setCoins: (amount: number) => void;
-  // Add coins
-  addCoins: (amount: number) => void;
-  // Spend coins
-  spendCoins: (amount: number) => boolean;
+  // Pack opening history
+  packHistory: {
+    date: string;
+    packType: BoosterPackType;
+    cards: Card[];
+  }[];
   
-  // Purchase a booster pack
-  purchaseBoosterPack: (packType: BoosterPackType, packPrice: number) => Card[] | null;
+  // Collection statistics
+  stats: {
+    totalCards: number;
+    avatarCards: number;
+    spellCards: number;
+    quickSpellCards: number;
+    elementalDistribution: {
+      fire: number;
+      water: number;
+      earth: number;
+      air: number;
+      neutral: number;
+      light: number;
+      dark: number;
+    };
+  };
+  
+  // Actions
+  addCard: (card: Card) => void;
+  addCards: (cards: Card[]) => void;
+  addCoins: (amount: number) => void;
+  purchaseBoosterPack: (packType: BoosterPackType, cost: number) => Card[] | null;
+  recalculateStats: () => void;
+  
+  // Dev actions (for testing)
+  resetCollection: () => void;
+  fillCollection: () => void;
 }
+
+// Extract card sets from available cards
+const getCardPoolByPackType = (packType: BoosterPackType): Card[] => {
+  switch (packType) {
+    case BoosterPackType.FIRE:
+      return Object.values(redElementalCards);
+    case BoosterPackType.KOBAR_BORAH:
+      return allKobarBorahCards;
+    case BoosterPackType.KUJANA_KUHAKA:
+      return allKujanaKuhakaCards;
+    case BoosterPackType.RANDOM:
+    default:
+      // Combine all card pools
+      return [
+        ...Object.values(redElementalCards),
+        ...allKobarBorahCards,
+        ...allKujanaKuhakaCards
+      ];
+  }
+};
+
+// Shuffle array using Fisher-Yates algorithm
+const shuffleArray = <T>(array: T[]): T[] => {
+  const shuffled = [...array];
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  return shuffled;
+};
 
 // Create the collection store with persistence
 export const useCollectionStore = create<CollectionState>()(
@@ -32,87 +87,210 @@ export const useCollectionStore = create<CollectionState>()(
     (set, get) => ({
       // Initial state
       cards: [],
-      coins: 1000, // Start with 1000 coins
+      coins: 1000, // Starting coins
+      packHistory: [],
+      stats: {
+        totalCards: 0,
+        avatarCards: 0,
+        spellCards: 0,
+        quickSpellCards: 0,
+        elementalDistribution: {
+          fire: 0,
+          water: 0,
+          earth: 0,
+          air: 0,
+          neutral: 0,
+          light: 0,
+          dark: 0,
+        },
+      },
       
-      // Add cards to collection
-      addCards: (newCards) => {
+      // Add a single card to the collection
+      addCard: (card: Card) => {
         set((state) => {
-          // Add the cards to the collection
-          const updatedCards = [...state.cards, ...newCards];
-          return { cards: updatedCards };
+          // Clone the card with a unique identifier
+          const uniqueCard = { 
+            ...card, 
+            id: `${card.id}-${state.cards.length}-${Date.now()}` 
+          };
+          
+          // Add to collection
+          const updatedCards = [...state.cards, uniqueCard];
+          
+          return { 
+            cards: updatedCards,
+          };
         });
         
-        // Show success message
-        toast.success(`Added ${newCards.length} new cards to your collection!`);
-      },
-      
-      // Remove cards from collection
-      removeCards: (cardIds) => {
-        set((state) => {
-          // Filter out the cards with matching IDs
-          const updatedCards = state.cards.filter(card => !cardIds.includes(card.id));
-          return { cards: updatedCards };
-        });
-      },
-      
-      // Set coins amount
-      setCoins: (amount) => {
-        set({ coins: amount });
-      },
-      
-      // Add coins
-      addCoins: (amount) => {
-        set((state) => ({ coins: state.coins + amount }));
-        toast.success(`Added ${amount} coins to your account!`);
-      },
-      
-      // Spend coins
-      spendCoins: (amount) => {
-        const { coins } = get();
+        // Recalculate stats after adding card
+        get().recalculateStats();
         
-        // Check if enough coins
-        if (coins < amount) {
-          toast.error(`Not enough coins! You need ${amount} coins.`);
-          return false;
+        // Show notification
+        toast.success(`Added ${card.name} to your collection!`);
+      },
+      
+      // Add multiple cards to the collection
+      addCards: (cards: Card[]) => {
+        if (cards.length === 0) return;
+        
+        set((state) => {
+          // Clone cards with unique identifiers
+          const uniqueCards = cards.map(card => ({
+            ...card,
+            id: `${card.id}-${state.cards.length}-${Date.now()}-${Math.random().toString(36).substring(7)}`,
+          }));
+          
+          // Add all cards to collection
+          const updatedCards = [...state.cards, ...uniqueCards];
+          
+          return { 
+            cards: updatedCards,
+          };
+        });
+        
+        // Recalculate stats after adding cards
+        get().recalculateStats();
+        
+        // Show notification
+        toast.success(`Added ${cards.length} cards to your collection!`);
+      },
+      
+      // Add coins to the player's balance
+      addCoins: (amount: number) => {
+        set((state) => ({ 
+          coins: state.coins + amount 
+        }));
+        
+        if (amount > 0) {
+          toast.success(`+${amount} coins added!`);
+        } else {
+          toast.info(`${amount} coins`);
         }
-        
-        // Deduct the coins
-        set((state) => ({ coins: state.coins - amount }));
-        return true;
       },
       
       // Purchase a booster pack
-      purchaseBoosterPack: (packType, packPrice) => {
+      purchaseBoosterPack: (packType: BoosterPackType, cost: number) => {
         const { coins } = get();
         
-        // Check if enough coins
-        if (coins < packPrice) {
-          toast.error(`Not enough coins! You need ${packPrice} coins.`);
+        // Check if player has enough coins
+        if (coins < cost) {
+          toast.error("Not enough coins!");
           return null;
         }
         
-        // Spend the coins
-        if (!get().spendCoins(packPrice)) {
-          return null;
-        }
+        // Deduct the cost
+        set((state) => ({ coins: state.coins - cost }));
         
-        // Open the booster pack
-        const cards = openBoosterPack(packType);
+        // Get the card pool for this pack type
+        const cardPool = getCardPoolByPackType(packType);
+        
+        // Separate avatars and spells
+        const avatars = cardPool.filter(card => card.type === 'avatar');
+        const spells = cardPool.filter(card => card.type !== 'avatar');
+        
+        // Determine pack contents (3 cards: 1 avatar, 2 spells)
+        const randomAvatar = shuffleArray(avatars)[0];
+        const randomSpells = shuffleArray(spells).slice(0, 2);
+        
+        // Create the pack
+        const packCards = [randomAvatar, ...randomSpells];
         
         // Add the cards to the collection
-        get().addCards(cards);
+        get().addCards(packCards);
         
-        // Return the cards for display
-        return cards;
-      }
+        // Record the pack history
+        set((state) => ({
+          packHistory: [
+            ...state.packHistory,
+            {
+              date: new Date().toISOString(),
+              packType,
+              cards: packCards,
+            }
+          ]
+        }));
+        
+        return packCards;
+      },
+      
+      // Recalculate collection statistics
+      recalculateStats: () => {
+        const { cards } = get();
+        
+        const stats = {
+          totalCards: cards.length,
+          avatarCards: cards.filter(card => card.type === 'avatar').length,
+          spellCards: cards.filter(card => card.type === 'spell').length,
+          quickSpellCards: cards.filter(card => card.type === 'quickSpell').length,
+          elementalDistribution: {
+            fire: cards.filter(card => card.element === 'fire').length,
+            water: cards.filter(card => card.element === 'water').length,
+            earth: cards.filter(card => card.element === 'earth').length,
+            air: cards.filter(card => card.element === 'air').length,
+            neutral: cards.filter(card => card.element === 'neutral').length,
+            light: cards.filter(card => card.element === 'light').length,
+            dark: cards.filter(card => card.element === 'dark').length,
+          },
+        };
+        
+        set({ stats });
+      },
+      
+      // Reset the collection (dev feature)
+      resetCollection: () => {
+        set({
+          cards: [],
+          coins: 1000,
+          packHistory: [],
+          stats: {
+            totalCards: 0,
+            avatarCards: 0,
+            spellCards: 0,
+            quickSpellCards: 0,
+            elementalDistribution: {
+              fire: 0,
+              water: 0,
+              earth: 0,
+              air: 0,
+              neutral: 0,
+              light: 0,
+              dark: 0,
+            },
+          },
+        });
+        
+        toast.info('Collection reset to default state');
+      },
+      
+      // Fill the collection with all cards (dev feature)
+      fillCollection: () => {
+        // Get all cards
+        const allCards = [
+          ...Object.values(redElementalCards),
+          ...allKobarBorahCards,
+          ...allKujanaKuhakaCards,
+        ];
+        
+        // Add all cards
+        get().addCards(allCards);
+        
+        toast.success('Added all cards to your collection!');
+      },
     }),
     {
-      name: 'spektrum-card-collection',
-      // Only persist these fields
-      partialize: (state) => ({ 
+      name: 'spektrum-collection-storage', // Local storage key
+      partialize: (state) => ({
         cards: state.cards,
-        coins: state.coins
+        coins: state.coins,
+        packHistory: state.packHistory,
+        // Don't persist stats as they can be recalculated
       }),
+      // After rehydration, recalculate stats
+      onRehydrateStorage: () => (state) => {
+        if (state) {
+          state.recalculateStats();
+        }
+      },
     }
   )
 );

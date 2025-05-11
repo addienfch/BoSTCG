@@ -112,12 +112,20 @@ const GameModePage: React.FC<GameModePageProps> = ({ onStartGame }) => {
               <label className="block text-sm font-medium">
                 Select Deck
               </label>
-              <Link 
-                to="/deck-builder"
-                className="text-blue-400 hover:text-blue-300 text-xs"
-              >
-                Manage Decks
-              </Link>
+              <div className="flex space-x-2">
+                <Link 
+                  to="/deck-builder"
+                  className="text-blue-400 hover:text-blue-300 text-xs"
+                >
+                  Manage Decks
+                </Link>
+                <Link 
+                  to="/library"
+                  className="text-green-400 hover:text-green-300 text-xs"
+                >
+                  Card Library
+                </Link>
+              </div>
             </div>
             
             <div className="grid grid-cols-1 gap-3 mb-2">
