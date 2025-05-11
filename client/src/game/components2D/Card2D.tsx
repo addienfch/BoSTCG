@@ -20,7 +20,114 @@ interface Card2DProps {
   onAction?: (action: string) => void;
   isDragging?: boolean;
   isTapped?: boolean;
+  counters?: { damage?: number; bleed?: number; shield?: number };
 }
+
+const CardPreview = ({ 
+  card, 
+  onClose, 
+  damageCounter = 0 
+}: { 
+  card: CardType | any; 
+  onClose: () => void; 
+  damageCounter?: number;
+}) => {
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-70 z-50 flex items-center justify-center p-4">
+      <div className="relative bg-gray-800 rounded-lg shadow-lg max-w-md w-full max-h-[90vh] overflow-y-auto">
+        <button 
+          className="absolute top-2 right-2 text-white bg-red-600 rounded-full w-8 h-8 flex items-center justify-center"
+          onClick={onClose}
+        >
+          ✕
+        </button>
+        
+        <div className="p-4">
+          <div className="mb-4 rounded-lg overflow-hidden">
+            {card.art && (
+              <img src={card.art} alt={card.name} className="w-full object-cover" />
+            )}
+          </div>
+          
+          <h3 className="text-xl font-bold text-white mb-2">{card.name}</h3>
+          
+          <div className="flex justify-between mb-2">
+            <div className="text-gray-300">
+              {card.type.charAt(0).toUpperCase() + card.type.slice(1)} • {card.element}
+              {card.type === 'avatar' && ` • Lv${(card as AvatarCard).level}`}
+            </div>
+            
+            {card.energyCost && Array.isArray(card.energyCost) && (
+              <div className="flex items-center gap-1">
+                {card.energyCost.map((energy, i) => (
+                  <div 
+                    key={i}
+                    className={`w-4 h-4 rounded-full ${
+                      energy === 'fire' ? 'bg-red-500' : 
+                      energy === 'water' ? 'bg-blue-500' : 
+                      energy === 'air' ? 'bg-cyan-300' : 
+                      energy === 'earth' ? 'bg-amber-700' : 
+                      energy === 'neutral' ? 'bg-gray-400' : 'bg-gray-400'
+                    }`}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
+          
+          {card.type === 'avatar' && (
+            <div className="mb-3">
+              <div className="flex justify-between items-center">
+                <div>Base Health: {(card as AvatarCard).health}</div>
+                {damageCounter > 0 && (
+                  <div className="text-red-500 font-bold">
+                    Current HP: {Math.max(0, (card as AvatarCard).health - damageCounter)}
+                  </div>
+                )}
+              </div>
+              
+              {(card as AvatarCard).skill1 && (
+                <div className="mt-3 p-2 bg-gray-700 rounded">
+                  <div className="font-medium">{(card as AvatarCard).skill1.name}</div>
+                  <div className="text-xs text-gray-300 mb-1">
+                    Energy: {(card as AvatarCard).skill1.energyCost.map(e => 
+                      e.charAt(0).toUpperCase() + e.slice(1)
+                    ).join(', ')}
+                  </div>
+                  <div>Damage: {(card as AvatarCard).skill1.damage}</div>
+                  <div className="text-xs mt-1">{(card as AvatarCard).skill1.effect}</div>
+                </div>
+              )}
+              
+              {(card as AvatarCard).skill2 && (
+                <div className="mt-2 p-2 bg-gray-700 rounded">
+                  <div className="font-medium">{(card as AvatarCard).skill2.name}</div>
+                  <div className="text-xs text-gray-300 mb-1">
+                    Energy: {(card as AvatarCard).skill2.energyCost.map(e => 
+                      e.charAt(0).toUpperCase() + e.slice(1)
+                    ).join(', ')}
+                  </div>
+                  <div>Damage: {(card as AvatarCard).skill2.damage}</div>
+                  <div className="text-xs mt-1">{(card as AvatarCard).skill2.effect}</div>
+                </div>
+              )}
+            </div>
+          )}
+          
+          {(card.type === 'spell' || card.type === 'quickSpell' || card.type === 'ritualArmor' || card.type === 'equipment') && (
+            <div className="mb-3 p-2 bg-gray-700 rounded">
+              <div className="text-gray-100">{card.description}</div>
+            </div>
+          )}
+          
+          <div className="text-gray-400 text-xs mt-3">
+            Card ID: {card.id}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 const Card2D: React.FC<Card2DProps> = ({
   card,
@@ -29,9 +136,11 @@ const Card2D: React.FC<Card2DProps> = ({
   onClick,
   onAction,
   isDragging = false,
-  isTapped = false
+  isTapped = false,
+  counters
 }) => {
   const [showActions, setShowActions] = useState(false);
+  const [showPreview, setShowPreview] = useState(false);
   const playHitSound = useAudio(state => state.playHit);
   const playCard = useAudio(state => state.playCard);
   const cardRef = useRef<HTMLDivElement>(null);
