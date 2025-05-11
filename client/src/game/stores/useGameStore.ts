@@ -27,6 +27,7 @@ interface PlayerState {
   lifeCards: Card[];
   graveyard: Card[];
   avatarToEnergyCount: number; // Track how many avatars were moved to energy this turn
+  hasPlayedItemThisTurn: boolean; // Track if an item card has been played this turn
   isAI?: boolean; // Flag to identify AI-controlled player
   needsToSelectReserveAvatar?: boolean; // Flag to indicate player needs to select a reserve avatar to become active
 }
@@ -99,6 +100,7 @@ const initPlayerState = (isPlayer: boolean): PlayerState => {
     lifeCards: [],
     graveyard: [],
     avatarToEnergyCount: 0,
+    hasPlayedItemThisTurn: false, // Track if an item card has been played this turn
     isAI: !isPlayer
   };
 };
@@ -392,6 +394,8 @@ export const useGameStore = create<GameState>((set, get) => ({
     
     // Quick spells can be played anytime as long as player has an active avatar and enough energy
     const isQuickSpell = card.type === 'quickSpell';
+    // Item cards can only be played once per turn during main phases
+    const isItemCard = card.type === 'item';
     // Setup phase check for proper variable scoping
     const isSetupPhase = gamePhase === 'setup';
     
@@ -411,6 +415,21 @@ export const useGameStore = create<GameState>((set, get) => ({
       // Log that a quick spell is being played in a non-standard phase
       if (currentPlayer !== 'player' || (gamePhase !== 'main1' && gamePhase !== 'main2')) {
         get().addLog(`Quick Spell: Playing ${card.name} during ${currentPlayer}'s ${gamePhase} phase!`);
+      }
+    } else if (isItemCard) {
+      // Item cards can only be played during main phases, only one per turn
+      const isMainPhase = gamePhase === 'main1' || gamePhase === 'main2';
+      
+      // Check if it's player's turn and in a main phase
+      if (currentPlayer !== 'player' || !isMainPhase) {
+        toast.error("Item cards can only be played during your Main Phases!");
+        return;
+      }
+      
+      // Check if player has already played an item card this turn
+      if (player.hasPlayedItemThisTurn) {
+        toast.error("You can only play one item card per turn!");
+        return;
       }
     } else {
       // Other cards are restricted to proper phases and turn
@@ -1143,6 +1162,7 @@ export const useGameStore = create<GameState>((set, get) => ({
               player: {
                 ...state.player,
                 avatarToEnergyCount: 0, // Reset avatar to energy count for new turn
+                hasPlayedItemThisTurn: false, // Reset item card usage flag
                 energyPile: combinedEnergy,
                 usedEnergyPile: []
               }
@@ -1153,6 +1173,7 @@ export const useGameStore = create<GameState>((set, get) => ({
               opponent: {
                 ...state.opponent,
                 avatarToEnergyCount: 0, // Reset avatar to energy count for new turn
+                hasPlayedItemThisTurn: false, // Reset item card usage flag
                 energyPile: combinedEnergy,
                 usedEnergyPile: []
               }
