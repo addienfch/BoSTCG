@@ -191,14 +191,17 @@ export const useCollectionStore = create<CollectionState>()(
         
         // Determine pack contents (5 cards: at least 1 avatar, rest are random)
         const randomAvatars = shuffleArray(avatars).slice(0, 2); // Get up to 2 random avatars
-        const randomSpells = shuffleArray(spells).slice(0, 4);   // Get up to 4 random spells
+        const randomSpells = shuffleArray(spells);   // Get all random spells
         
-        // Take at least 1 avatar and fill the rest to make 5 cards total
+        // Take at least 1 avatar and fill the rest to make exactly 5 cards total
         const packCards = [
           randomAvatars[0], // Guaranteed first avatar
           ...randomAvatars.slice(1, 2), // Potentially a second avatar
-          ...randomSpells.slice(0, 5 - Math.min(2, randomAvatars.length)) // Fill the rest with spells
         ];
+        
+        // Add spell cards to reach exactly 5 cards
+        const spellsNeeded = 5 - packCards.length;
+        packCards.push(...randomSpells.slice(0, spellsNeeded));
         
         // Add the cards to the collection
         get().addCards(packCards);

@@ -295,6 +295,9 @@ const ShopPage: React.FC = () => {
   const handleClosePack = () => {
     setIsOpeningPack(false);
     setOpenedCards([]);
+    
+    // Redirect to the home page
+    navigate('/');
   };
   
   return (
