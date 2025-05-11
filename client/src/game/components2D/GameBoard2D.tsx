@@ -911,6 +911,16 @@ const GameBoard2D: React.FC<GameBoard2DProps> = ({ onAction }) => {
             {phaseText}
           </span>
           
+          {/* Quick Spell indicator */}
+          {game.currentPlayer === 'opponent' && 
+           game.player.hand.some(card => card.type === 'quickSpell' && game.hasEnoughEnergy(card.energyCost || [], 'player')) && (
+            <span className="ml-2 bg-purple-700 px-2 py-0.5 rounded text-xs animate-pulse" 
+                  title="You have Quick Spells that can be played right now!">
+              <span className="mr-1">⚡</span>
+              Quick Spells Available
+            </span>
+          )}
+          
           {/* Game mode indicator */}
           <span className="ml-2 px-2 py-0.5 rounded text-xs" 
                 style={{
@@ -1338,7 +1348,17 @@ const GameBoard2D: React.FC<GameBoard2DProps> = ({ onAction }) => {
         <h3 className="text-sm font-bold mb-1">Your Hand ({game.player.hand.length})</h3>
         <div className="flex gap-2 overflow-x-auto pb-2 bg-gray-800 bg-opacity-30 p-2 rounded min-h-[120px]">
           {game.player.hand.map((card, index) => (
-            <div key={card.id} className="shrink-0" style={{ width: '80px' }}>
+            <div 
+              key={card.id} 
+              className="shrink-0" 
+              style={{ width: '80px' }}
+              title={card.type === 'quickSpell' ? 
+                "Quick Spells can be played during ANY phase, including your opponent's turn!" : 
+                isCardPlayable(card) ? 
+                  "This card is playable" : 
+                  "This card can only be played during your main phases"
+              }
+            >
               <Card2D 
                 card={card} 
                 isPlayable={isCardPlayable(card)}
