@@ -134,9 +134,9 @@ const GameBoard2D: React.FC<GameBoard2DProps> = ({ onAction }) => {
       return card.type === 'avatar' && (card as AvatarCard).level === 1 && player.activeAvatar === null;
     }
     
-    // Special case for quick spells - they can be played during opponent's turn or any phase
+    // Special case for quick spells - they can be played during opponent's turn or ANY phase (including battle phase)
     if (card.type === 'quickSpell') {
-      // Quick spells only need an active avatar and enough energy
+      // Quick spells only need an active avatar and enough energy - ignore current phase or turn
       return player.activeAvatar !== null && game.hasEnoughEnergy(card.energyCost || [], 'player');
     }
     
