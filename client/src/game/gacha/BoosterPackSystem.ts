@@ -108,13 +108,13 @@ const getCardPoolByPackType = (packType: BoosterPackType): Card[] => {
     case BoosterPackType.KUJANA_KUHAKA:
       return allKujanaKuhakaCards;
     case BoosterPackType.NEUTRAL:
-      return allNeutralCards;
+      return allNeutralCards;  // Only neutral cards in neutral pack
     case BoosterPackType.RANDOM:
     default:
       // Combine all card pools
       return [
         ...Object.values(redElementalCards),
-        ...allKobarBorahCards,
+        ...allKobarBorahCards, 
         ...allKujanaKuhakaCards,
         ...allNeutralCards
       ];
@@ -136,9 +136,23 @@ export const openBoosterPack = (packType: BoosterPackType, cardCount: number = 5
   // Get all cards for this pack type
   const allCards = getCardPoolByPackType(packType);
   
+  // Special handling for neutral pack - include only neutral/item cards
+  if (packType === BoosterPackType.NEUTRAL) {
+    const itemCards = allCards.filter(card => card.type === 'item');
+    const spellCards = allCards.filter(card => (card.type === 'spell' || card.type === 'quickSpell') && card.element === 'neutral');
+    
+    // Combine and shuffle
+    const allNeutralCards = shuffleArray([...itemCards, ...spellCards]);
+    
+    // Return 5 random neutral cards
+    return allNeutralCards.slice(0, cardCount);
+  }
+  
+  // Regular pack processing for other types
+  
   // Separate avatars and spells
   const avatarCards = allCards.filter(card => card.type === 'avatar');
-  const spellCards = allCards.filter(card => card.type === 'spell' || card.type === 'quickSpell');
+  const spellCards = allCards.filter(card => card.type === 'spell' || card.type === 'quickSpell' || card.type === 'item');
   
   // Shuffle the card pools
   const shuffledAvatars = shuffleArray(avatarCards);
