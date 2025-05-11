@@ -364,6 +364,7 @@ const DeckBuilderPage: React.FC = () => {
                   <option value="water">Water</option>
                   <option value="air">Air</option>
                   <option value="earth">Ground</option>
+                  <option value="neutral">Neutral</option>
                 </select>
               </div>
               
@@ -380,6 +381,7 @@ const DeckBuilderPage: React.FC = () => {
                   <option value="avatar">Avatar</option>
                   <option value="spell">Spell</option>
                   <option value="quickSpell">Quick Spell</option>
+                  <option value="item">Item</option>
                   <option value="ritualArmor">Ritual Armor</option>
                   <option value="equipment">Equipment</option>
                 </select>
