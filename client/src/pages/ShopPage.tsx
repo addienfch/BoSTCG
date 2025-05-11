@@ -379,7 +379,11 @@ const ShopPage: React.FC = () => {
                 </button>
                 <button
                   onClick={() => {
-                    handleClosePack();
+                    // Just close the pack opening modal and reset states
+                    setIsOpeningPack(false);
+                    setOpenedCards([]);
+                    setAllCardsRevealed(false);
+                    setPreviewCard(null);
                     setSelectedPackType(null); // Go back to pack selection screen
                   }}
                   className="w-full bg-green-600 hover:bg-green-700 py-2 rounded font-bold"

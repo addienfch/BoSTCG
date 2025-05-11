@@ -4,7 +4,7 @@ import { Card } from '../data/cardTypes';
 import { redElementalCards } from '../data/redElementalCards';
 import { allKobarBorahCards } from '../data/kobarBorahCards';
 import { allKujanaKuhakaCards } from '../data/kujanaKuhakaCards';
-import { BoosterPackType } from '../gacha/BoosterPackSystem';
+import { BoosterPackType, availableBoosterPacks } from '../gacha/BoosterPackSystem';
 import { toast } from 'sonner';
 
 // Define the structure of the collection store
@@ -182,6 +182,22 @@ export const useCollectionStore = create<CollectionState>()(
         // Deduct the cost
         set((state) => ({ coins: state.coins - cost }));
         
+        // Get the pack configuration
+        const packConfig = availableBoosterPacks.find(p => p.type === packType);
+        if (!packConfig) {
+          toast.error("Invalid pack type!");
+          return null;
+        }
+        
+        // Get the number of cards for this pack (always use 5)
+        const cardCount = 5;
+        
+        // Get guaranteed rarity counts
+        const guaranteedAvatars = packConfig.guaranteedRarity.avatar;
+        const guaranteedSpells = packConfig.guaranteedRarity.spell;
+        
+        console.log(`Opening ${packConfig.name} with ${cardCount} cards (${guaranteedAvatars} avatars, ${guaranteedSpells} spells)`);
+        
         // Get the card pool for this pack type
         const cardPool = getCardPoolByPackType(packType);
         
@@ -189,19 +205,30 @@ export const useCollectionStore = create<CollectionState>()(
         const avatars = cardPool.filter(card => card.type === 'avatar');
         const spells = cardPool.filter(card => card.type !== 'avatar');
         
-        // Determine pack contents (5 cards: at least 1 avatar, rest are random)
-        const randomAvatars = shuffleArray(avatars).slice(0, 2); // Get up to 2 random avatars
-        const randomSpells = shuffleArray(spells);   // Get all random spells
+        // Shuffle both pools
+        const randomAvatars = shuffleArray(avatars); 
+        const randomSpells = shuffleArray(spells);
         
-        // Take at least 1 avatar and fill the rest to make exactly 5 cards total
+        // Build the pack with guaranteed cards first
         const packCards: Card[] = [
-          randomAvatars[0], // Guaranteed first avatar
-          ...randomAvatars.slice(1, 2), // Potentially a second avatar
+          ...randomAvatars.slice(0, guaranteedAvatars), // Guaranteed avatars
+          ...randomSpells.slice(0, guaranteedSpells), // Guaranteed spells
         ];
         
-        // Add spell cards to reach exactly 5 cards
-        const spellsNeeded = 5 - packCards.length;
-        packCards.push(...randomSpells.slice(0, spellsNeeded));
+        // Add random cards to reach the total card count
+        const remainingCount = cardCount - packCards.length;
+        
+        if (remainingCount > 0) {
+          // Create a pool of remaining cards
+          const remainingPool = shuffleArray([
+            ...randomAvatars.slice(guaranteedAvatars),
+            ...randomSpells.slice(guaranteedSpells)
+          ]);
+          
+          packCards.push(...remainingPool.slice(0, remainingCount));
+        }
+        
+        console.log(`Pack contains ${packCards.length} cards:`, packCards.map(c => c.name));
         
         // Add the cards to the collection
         get().addCards(packCards);
