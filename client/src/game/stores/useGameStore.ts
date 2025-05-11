@@ -391,6 +391,8 @@ export const useGameStore = create<GameState>((set, get) => ({
     
     // Quick spells can be played anytime as long as player has an active avatar and enough energy
     const isQuickSpell = card.type === 'quickSpell';
+    // Setup phase check for proper variable scoping
+    const isSetupPhase = gamePhase === 'setup';
     
     // For quick spells, check if we have an active avatar and enough energy
     if (isQuickSpell) {
@@ -406,9 +408,8 @@ export const useGameStore = create<GameState>((set, get) => ({
       }
     } else {
       // Other cards are restricted to proper phases and turn
-      // Main phases for regular play, setup phase for avatar placement
+      // Main phases for regular play
       const isMainPhase = gamePhase === 'main1' || gamePhase === 'main2';
-      const isSetupPhase = gamePhase === 'setup';
       
       // Regular cards can only be played during your turn and in the right phases
       if (currentPlayer !== 'player' || (!isMainPhase && !isSetupPhase)) {
@@ -418,7 +419,7 @@ export const useGameStore = create<GameState>((set, get) => ({
     }
     
     // Special handling for setup phase
-    if (isSetupPhase) {
+    if (gamePhase === 'setup') {
       if (card.type !== 'avatar' || (card as AvatarCard).level !== 1) {
         toast.error("You can only play a Level 1 Avatar during the Setup Phase!");
         return;
