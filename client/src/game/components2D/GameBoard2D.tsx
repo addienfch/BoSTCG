@@ -444,14 +444,17 @@ const GameBoard2D: React.FC<GameBoard2DProps> = ({ onAction }) => {
       ? game.player.activeAvatar.skill1 
       : game.player.activeAvatar.skill2!;
     
+    // Ensure energyCost is always an array
+    const energyCost = skill.energyCost || [];
+    
     // Check energy requirements first
-    if (!game.hasEnoughEnergy(skill.energyCost, 'player')) {
-      toast.error(`Not enough energy to use this skill. You need: ${skill.energyCost.join(', ')}`);
+    if (!game.hasEnoughEnergy(energyCost, 'player')) {
+      toast.error(`Not enough energy to use this skill. You need: ${energyCost.map(e => e.charAt(0).toUpperCase() + e.slice(1)).join(', ') || 'None'}`);
       return;
     }
     
     // Log energy requirements
-    console.log(`Using skill ${skillNumber}. Energy cost:`, skill.energyCost);
+    console.log(`Using skill ${skillNumber}. Energy cost:`, energyCost);
     
     // Handle skill use logic
     // Third parameter is target (optional)
@@ -1243,7 +1246,7 @@ const GameBoard2D: React.FC<GameBoard2DProps> = ({ onAction }) => {
                   <div className="absolute -bottom-8 left-0 right-0 flex justify-center gap-1">
                     <button 
                       className={`text-[8px] px-1 py-0.5 rounded-sm ${
-                        game.hasEnoughEnergy(game.player.activeAvatar.skill1.energyCost, 'player') 
+                        game.hasEnoughEnergy(game.player.activeAvatar.skill1.energyCost || [], 'player') 
                           ? 'bg-red-600 hover:bg-red-500 text-white' 
                           : 'bg-red-900 text-gray-300 cursor-not-allowed'
                       }`}
@@ -1251,14 +1254,14 @@ const GameBoard2D: React.FC<GameBoard2DProps> = ({ onAction }) => {
                         e.stopPropagation();
                         handleSkillUse(1);
                       }}
-                      title={`Energy cost: ${game.player.activeAvatar.skill1.energyCost.join(', ')}`}
+                      title={`Energy cost: ${(game.player.activeAvatar.skill1.energyCost || []).map(e => e.charAt(0).toUpperCase() + e.slice(1)).join(', ') || 'None'}`}
                     >
-                      {game.player.activeAvatar.skill1.name} [{game.player.activeAvatar.skill1.energyCost.length}]
+                      {game.player.activeAvatar.skill1.name} [{(game.player.activeAvatar.skill1.energyCost || []).length}]
                     </button>
                     {game.player.activeAvatar.skill2 && (
                       <button 
                         className={`text-[8px] px-1 py-0.5 rounded-sm ${
-                          game.hasEnoughEnergy(game.player.activeAvatar.skill2.energyCost, 'player') 
+                          game.hasEnoughEnergy(game.player.activeAvatar.skill2.energyCost || [], 'player') 
                             ? 'bg-purple-600 hover:bg-purple-500 text-white' 
                             : 'bg-purple-900 text-gray-300 cursor-not-allowed'
                         }`}
@@ -1266,9 +1269,9 @@ const GameBoard2D: React.FC<GameBoard2DProps> = ({ onAction }) => {
                           e.stopPropagation();
                           handleSkillUse(2);
                         }}
-                        title={`Energy cost: ${game.player.activeAvatar.skill2.energyCost.join(', ')}`}
+                        title={`Energy cost: ${(game.player.activeAvatar.skill2.energyCost || []).map(e => e.charAt(0).toUpperCase() + e.slice(1)).join(', ') || 'None'}`}
                       >
-                        {game.player.activeAvatar.skill2.name} [{game.player.activeAvatar.skill2.energyCost.length}]
+                        {game.player.activeAvatar.skill2.name} [{(game.player.activeAvatar.skill2.energyCost || []).length}]
                       </button>
                     )}
                   </div>

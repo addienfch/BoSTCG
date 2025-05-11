@@ -66,8 +66,8 @@ interface GameState {
   // Helper functions
   getPhaseText: () => string;
   canPlayCard: (card: Card) => boolean;
-  hasEnoughEnergy: (energyCost: ElementType[], player: Player) => boolean;
-  useEnergy: (energyCost: ElementType[], player: Player) => boolean;
+  hasEnoughEnergy: (energyCost: ElementType[] | undefined | null, player: Player) => boolean;
+  useEnergy: (energyCost: ElementType[] | undefined | null, player: Player) => boolean;
   checkDefeatedAvatars: () => void;
   
   // Card management
@@ -1598,8 +1598,9 @@ export const useGameStore = create<GameState>((set, get) => ({
   },
   
   // Check if player has enough energy to play a card
-  hasEnoughEnergy: (energyCost: ElementType[], player: Player) => {
-    if (energyCost.length === 0) {
+  hasEnoughEnergy: (energyCost: ElementType[] | undefined | null, player: Player) => {
+    // Handle undefined, null, or empty energy costs
+    if (!energyCost || energyCost.length === 0) {
       return true; // No energy cost
     }
     
