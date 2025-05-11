@@ -10,6 +10,7 @@ import {
 } from '../data/kobarBorahCards';
 import { allKujanaKuhakaCards } from '../data/kujanaKuhakaCards';
 import { redElementalSpellCards } from '../data/redElementalCards';
+import { allNeutralCards } from '../data/neutralCards';
 import { toast } from 'sonner';
 
 // Define the deck interface
@@ -395,16 +396,20 @@ export const useDeckStore = create<DeckStore>()(
       },
       
       getAvailableCards: () => {
-        // Simply use the combined array of all fire cards which includes the new ones
-        return allFireCards;
+        // Return all available cards including neutral cards
+        return [...allFireCards, ...allNeutralCards];
       },
       
       findCard: (id) => {
         // Find the base card by id (without copy number)
         const baseId = id.split('-')[0] + '-' + id.split('-')[1];
         
-        // Use our comprehensive allFireCards array that contains all cards
-        return allFireCards.find(card => card.id.startsWith(baseId));
+        // First check in fire cards
+        const fireCard = allFireCards.find(card => card.id.startsWith(baseId));
+        if (fireCard) return fireCard;
+        
+        // If not found, check in neutral cards
+        return allNeutralCards.find(card => card.id.startsWith(baseId));
       },
       
       getAvailableCardsByElement: (element) => {

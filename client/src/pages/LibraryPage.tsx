@@ -48,6 +48,8 @@ const LibraryPage: React.FC = () => {
             return card.type === 'spell';
           case 'quickSpell':
             return card.type === 'quickSpell';
+          case 'item':
+            return card.type === 'item';
           case 'fire':
             return card.element === 'fire';
           case 'water':
@@ -56,6 +58,8 @@ const LibraryPage: React.FC = () => {
             return card.element === 'earth';
           case 'air':
             return card.element === 'air';
+          case 'neutral':
+            return card.element === 'neutral';
           default:
             return true;
         }
