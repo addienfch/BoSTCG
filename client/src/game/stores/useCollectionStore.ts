@@ -188,12 +188,16 @@ export const useCollectionStore = create<CollectionState>()(
         const avatars = cardPool.filter(card => card.type === 'avatar');
         const spells = cardPool.filter(card => card.type !== 'avatar');
         
-        // Determine pack contents (3 cards: 1 avatar, 2 spells)
-        const randomAvatar = shuffleArray(avatars)[0];
-        const randomSpells = shuffleArray(spells).slice(0, 2);
+        // Determine pack contents (5 cards: at least 1 avatar, rest are random)
+        const randomAvatars = shuffleArray(avatars).slice(0, 2); // Get up to 2 random avatars
+        const randomSpells = shuffleArray(spells).slice(0, 4);   // Get up to 4 random spells
         
-        // Create the pack
-        const packCards = [randomAvatar, ...randomSpells];
+        // Take at least 1 avatar and fill the rest to make 5 cards total
+        const packCards = [
+          randomAvatars[0], // Guaranteed first avatar
+          ...randomAvatars.slice(1, 2), // Potentially a second avatar
+          ...randomSpells.slice(0, 5 - Math.min(2, randomAvatars.length)) // Fill the rest with spells
+        ];
         
         // Add the cards to the collection
         get().addCards(packCards);
