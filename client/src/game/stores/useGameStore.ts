@@ -382,22 +382,31 @@ export const useGameStore = create<GameState>((set, get) => ({
   playCard: (handIndex, target) => {
     const { player, currentPlayer, gamePhase } = get();
     
-    // Main phases for regular play, setup phase for avatar placement
-    const isMainPhase = gamePhase === 'main1' || gamePhase === 'main2';
-    const isSetupPhase = gamePhase === 'setup';
-    
-    // Can only play cards during your turn and in the right phases
-    if (currentPlayer !== 'player' || (!isMainPhase && !isSetupPhase)) {
-      toast.error("You can only play cards during your Main Phases or the Setup Phase!");
-      return;
-    }
-    
+    // Get the card being played
     if (handIndex < 0 || handIndex >= player.hand.length) {
       toast.error("Invalid card selection!");
       return;
     }
-    
     const card = player.hand[handIndex];
+    
+    // Quick spells can be played anytime as long as player has an active avatar and enough energy
+    const isQuickSpell = card.type === 'quickSpell';
+    
+    // Main phases for regular play, setup phase for avatar placement
+    const isMainPhase = gamePhase === 'main1' || gamePhase === 'main2';
+    const isSetupPhase = gamePhase === 'setup';
+    
+    // Regular cards can only be played during your turn and in the right phases
+    if (!isQuickSpell && (currentPlayer !== 'player' || (!isMainPhase && !isSetupPhase))) {
+      toast.error("You can only play regular cards during your Main Phases or the Setup Phase!");
+      return;
+    }
+    
+    // For quick spells, we need at least an active avatar
+    if (isQuickSpell && !player.activeAvatar) {
+      toast.error("You need an active avatar to play quick spells!");
+      return;
+    }
     
     // Special handling for setup phase
     if (isSetupPhase) {
@@ -1454,7 +1463,18 @@ export const useGameStore = create<GameState>((set, get) => ({
     // Main phases for regular play
     const isMainPhase = gamePhase === 'main1' || gamePhase === 'main2';
     
-    // Can only play cards in main phases on your turn
+    // Quick spells can be played anytime when player has enough energy
+    if (card.type === 'quickSpell') {
+      if (!player.activeAvatar) {
+        return false; // Need an active avatar to play quick spells
+      }
+      
+      // Check if we have enough energy
+      const energyCost = card.energyCost || [];
+      return get().hasEnoughEnergy(energyCost, 'player');
+    }
+    
+    // Regular cards can only be played in main phases on your turn
     if (currentPlayer !== 'player' || !isMainPhase) {
       return false;
     }
