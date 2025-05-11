@@ -6,6 +6,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate } from "r
 import GameBoard2D from "./game/components2D/GameBoard2D";
 import GameModePage from "./pages/GameModePage";
 import DeckBuilderPage from "./pages/DeckBuilderPage";
+import ShopPage from "./pages/ShopPage";
 import { useGameMode } from "./game/stores/useGameMode";
 
 // Define control keys for the game
@@ -88,6 +89,7 @@ const AppWithRouting = () => {
           <Route path="/" element={<HomeRoute />} />
           <Route path="/game" element={<Game />} />
           <Route path="/deck-builder" element={<DeckBuilderPage />} />
+          <Route path="/shop" element={<ShopPage />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </div>

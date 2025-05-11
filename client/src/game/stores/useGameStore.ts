@@ -694,9 +694,29 @@ export const useGameStore = create<GameState>((set, get) => ({
     // Calculate damage
     let damageAmount = skill.damage || 0;
     
-    // Apply special effects via skill trigger system
+    // Apply special effects for skills
     if (skill.effect) {
-      damageAmount = checkSkillTriggers(skill, damageAmount, playerState, targetAvatar);
+      // Handle Radja's skill: "If you has 1 or less card in hand, this Skill1Damage become 5"
+      if (skill.effect.includes("1 or less card in hand") && playerState.hand.length <= 1) {
+        damageAmount = 5; // Set to exact value 5 as per card text
+        toast.info(`Skill bonus: Damage set to 5 due to having 1 or fewer cards!`);
+      }
+      
+      // Effects that depend on target avatar
+      if (targetAvatar) {
+        // Handle air/wind type bonus effects
+        if ((skill.effect.includes("If opponent Active Avatar is wind Element Avatar") || 
+            skill.effect.includes("if opponent Active Avatar were Air type")) && 
+            targetAvatar.element === 'air') {
+          if (skill.effect.includes("become 111")) {
+            damageAmount = 111; // Set to ridiculous damage value for Radja's skill 2
+            toast.info(`Type bonus: Massive damage against Air/Wind type!`);
+          } else {
+            damageAmount += 2;
+            toast.info(`Type bonus: +2 damage against Air type!`);
+          }
+        }
+      }
     }
     
     console.log("Applying skill with damage:", damageAmount);

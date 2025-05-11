@@ -247,13 +247,13 @@ const GameModePage: React.FC<GameModePageProps> = ({ onStartGame }) => {
         <div className="bg-gray-800 rounded-lg p-6 shadow-lg mb-6">
           <h3 className="text-lg font-semibold mb-4">Marketplace</h3>
           <div className="grid grid-cols-2 gap-3">
-            <button 
-              onClick={() => toast.info("Booster Pack feature coming soon!")} 
+            <Link 
+              to="/shop" 
               className="bg-amber-600 hover:bg-amber-700 text-white py-3 px-4 rounded-md transition-colors flex flex-col items-center justify-center"
             >
               <span className="text-2xl mb-1">🎁</span>
               <span className="font-medium">Buy Booster Pack</span>
-            </button>
+            </Link>
             
             <button 
               onClick={() => toast.info("NFT Marketplace feature coming soon!")} 
