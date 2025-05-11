@@ -333,6 +333,13 @@ export const useDeckStore = create<DeckStore>()(
       activeDeckId: null,
       
       addDeck: (name, cards, tribe) => {
+        // Check if we've reached the maximum number of decks (5)
+        const currentDecks = get().decks;
+        if (currentDecks.length >= 5) {
+          toast.error("You can only have a maximum of 5 decks. Please delete one first.");
+          throw new Error("Maximum number of decks (5) reached");
+        }
+        
         // Validate the deck (must have at least 40 cards)
         if (cards.length < 40) {
           throw new Error("A deck must have at least 40 cards");
