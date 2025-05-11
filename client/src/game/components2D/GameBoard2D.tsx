@@ -121,6 +121,7 @@ const GameBoard2D: React.FC<GameBoard2DProps> = ({ onAction }) => {
   
   // State for preview card
   const [previewCard, setPreviewCard] = useState<Card | null>(null);
+  const [selectedCard, setSelectedCard] = useState<Card | null>(null);
   
   // Determine if a card is playable (can be placed on the field)
   const isCardPlayable = (card: Card) => {
@@ -895,6 +896,11 @@ const GameBoard2D: React.FC<GameBoard2DProps> = ({ onAction }) => {
       {/* Show card preview modal if a card is selected */}
       {previewCard && (
         <CardPreview card={previewCard} onClose={() => setPreviewCard(null)} />
+      )}
+      
+      {/* Show selected card preview modal (for opponent reserves) */}
+      {selectedCard && (
+        <CardPreview card={selectedCard} onClose={() => setSelectedCard(null)} />
       )}
       
       {/* Game header with phase and turn info */}

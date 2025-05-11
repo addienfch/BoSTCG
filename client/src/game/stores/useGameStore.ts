@@ -913,23 +913,31 @@ export const useGameStore = create<GameState>((set, get) => ({
       // Log the counters before evolution
       console.log("Evolution - Original avatar counters:", targetAvatarCard!.counters);
       
-      // Use deep clone to ensure we don't lose the counters
+      // Create safe default counters
+      const defaultCounters = { damage: 0, bleed: 0, shield: 0 };
+      
+      // Get the existing counters or default to zeros if none exist
       const existingCounters = targetAvatarCard!.counters 
         ? JSON.parse(JSON.stringify(targetAvatarCard!.counters))
-        : { damage: 0, bleed: 0, shield: 0 };
+        : defaultCounters;
         
       console.log("Evolution - Cloned counters:", existingCounters);
       
       // Make absolutely sure damage counter is preserved (this fixes the issue)
-      const damageCounter = existingCounters.damage || 0;
+      const damageCounter = (existingCounters && typeof existingCounters.damage === 'number') 
+        ? existingCounters.damage 
+        : (targetAvatarCard!.counters?.damage || 0);
+      
+      console.log("Evolution - Explicitly extracting damage counter:", damageCounter);
       
       // Preserve important properties from level 1 avatar, including damage counters
       const evolvedAvatar: AvatarCard = {
         ...level2Card,
         // Make sure we preserve existing counters from the level 1 avatar
         counters: {
-          ...existingCounters,
-          damage: damageCounter // Ensure damage counter is explicitly preserved
+          ...defaultCounters,  // Start with safe defaults
+          ...existingCounters, // Apply any existing counters
+          damage: damageCounter // Explicitly ensure damage counter is preserved
         },
         turnPlayed: state.turn,
         // Also preserve tapped state from the level 1 avatar
