@@ -3,6 +3,7 @@ import { toast } from 'sonner';
 import { ActionCard, AvatarCard, Card, ElementType, GamePhase, Player } from '../data/cardTypes';
 import { useDeckStore } from './useDeckStore';
 import { useGameMode } from './useGameMode';
+import { checkSkillTrigger, getModifiedDamage, applySkillTriggerEffects, SkillEffect } from '../utils/skillTriggerChecker';
 
 // Helper function to shuffle an array (Fisher-Yates algorithm)
 const shuffleArray = <T extends any>(array: T[]): T[] => {
@@ -691,37 +692,22 @@ export const useGameStore = create<GameState>((set, get) => ({
       return;
     }
     
-    // Calculate damage
-    let damageAmount = skill.damage || 0;
+    // Check for skill triggers using the new utility
+    const gameState = get();
+    const skillTriggerResult = checkSkillTrigger(
+      skill as SkillEffect,
+      avatar,
+      targetAvatar,
+      gameState,
+      player
+    );
     
-    // Apply special effects for skills
-    if (skill.effect) {
-      // Handle Radja's skill: "If you has 1 or less card in hand, this Skill1Damage become 5"
-      if (skill.effect.includes("1 or less card in hand") && playerState.hand.length <= 1) {
-        damageAmount = 5; // Set to exact value 5 as per card text
-        toast.info(`Skill bonus: Damage set to 5 due to having 1 or fewer cards!`);
-      }
-      
-      // Effects that depend on target avatar
-      if (targetAvatar) {
-        // Handle air/wind type bonus effects
-        if ((skill.effect.includes("If opponent Active Avatar is wind Element Avatar") || 
-            skill.effect.includes("if opponent Active Avatar were Air type")) && 
-            targetAvatar.element === 'air') {
-          if (skill.effect.includes("become 111")) {
-            damageAmount = 111; // Set to ridiculous damage value for Radja's skill 2
-            toast.info(`Type bonus: Massive damage against Air/Wind type!`);
-          } else {
-            damageAmount += 2;
-            toast.info(`Type bonus: +2 damage against Air type!`);
-          }
-        }
-      }
-    }
+    // Calculate damage with triggers
+    let damageAmount = getModifiedDamage(skill.damage || 0, skillTriggerResult);
     
     console.log("Applying skill with damage:", damageAmount);
     
-    // Apply damage to target
+    // Apply damage to target and any special effects
     set(state => {
       const opponent = player === 'player' ? 'opponent' : 'player';
       const opponentState = state[opponent];
@@ -732,6 +718,7 @@ export const useGameStore = create<GameState>((set, get) => ({
       // Mark avatar as tapped (with debug info)
       console.log("Marking avatar as tapped:", state[player].activeAvatar);
       
+      // Create updated player state with tapped avatar
       const updatePlayerState = {
         ...state[player],
         activeAvatar: {
@@ -740,8 +727,8 @@ export const useGameStore = create<GameState>((set, get) => ({
         }
       };
       
-      // Update target with damage
-      const updateOpponentState = {
+      // Create base opponent state with damage
+      const baseOpponentState = {
         ...opponentState,
         activeAvatar: {
           ...opponentAvatar,
@@ -752,15 +739,36 @@ export const useGameStore = create<GameState>((set, get) => ({
         }
       };
       
+      // Apply bleed if skill trigger requires it
+      if (skillTriggerResult.applyBleed && skillTriggerResult.applyBleed > 0) {
+        const currentBleed = opponentAvatar.counters?.bleed || 0;
+        baseOpponentState.activeAvatar.counters.bleed = currentBleed + skillTriggerResult.applyBleed;
+      }
+      
+      // Apply shield if skill trigger requires it
+      if (skillTriggerResult.applyShield && skillTriggerResult.applyShield > 0) {
+        const currentShield = updatePlayerState.activeAvatar.counters?.shield || 0;
+        updatePlayerState.activeAvatar.counters = {
+          ...updatePlayerState.activeAvatar.counters || { damage: 0, bleed: 0, shield: 0 },
+          shield: currentShield + skillTriggerResult.applyShield
+        };
+      }
+      
       return {
         [player]: updatePlayerState,
-        [opponent]: updateOpponentState
+        [opponent]: baseOpponentState
       };
     });
     
-    // Show effects
+    // Show effects and skill trigger messages
     toast.success(`${avatar.name} used ${skill.name} for ${damageAmount} damage!`);
     get().addLog(`${player === 'player' ? 'You' : 'Opponent'} used ${skill.name} for ${damageAmount} damage!`);
+    
+    // Show trigger message if available
+    if (skillTriggerResult.shouldTrigger && skillTriggerResult.message) {
+      toast.info(skillTriggerResult.message);
+      get().addLog(skillTriggerResult.message);
+    }
     
     // Check for defeated avatars
     setTimeout(() => get().checkDefeatedAvatars(), 500);
