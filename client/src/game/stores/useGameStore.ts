@@ -1526,8 +1526,10 @@ export const useGameStore = create<GameState>((set, get) => ({
       return get().hasEnoughEnergy(energyCost, 'player');
     }
     
-    // For quick spells, need an active avatar
-    if (card.type === 'quickSpell') {
+    // For quick spells, check type property with type guard
+    const actionCard = card as ActionCard;
+    if (actionCard.type === 'quickSpell' || actionCard.type === 'spell') {
+      // This code branch only executes for ActionCards, not AvatarCards
       if (!player.activeAvatar) {
         return false; // Need an active avatar to play quick spells
       }
@@ -1701,6 +1703,14 @@ export const useGameStore = create<GameState>((set, get) => ({
           const newHealth = Math.max(0, state.player.health - 1);
           updatedState.player.health = newHealth;
           
+          // Check if health is zero - game over
+          if (newHealth <= 0) {
+            updatedState.winner = 'opponent';
+            get().addLog('You have lost! Your health has reached zero.');
+            toast.error('Your health has reached zero. Game over!', { duration: 5000 });
+            return updatedState;
+          }
+          
           // Always lose a life card when an avatar is defeated
           if (state.player.lifeCards.length === 0) {
             // No life cards left - game over immediately
@@ -1774,6 +1784,14 @@ export const useGameStore = create<GameState>((set, get) => ({
           // Reduce health by 1 when avatar is defeated
           const newHealth = Math.max(0, state.opponent.health - 1);
           updatedState.opponent.health = newHealth;
+          
+          // Check if health is zero - game over
+          if (newHealth <= 0) {
+            updatedState.winner = 'player';
+            get().addLog('You are victorious! Your opponent\'s health has reached zero.');
+            toast.success('Opponent\'s health has reached zero. You win!', { duration: 5000 });
+            return updatedState;
+          }
           
           // Always lose a life card when an avatar is defeated
           if (state.opponent.lifeCards.length === 0) {
@@ -1981,9 +1999,9 @@ export const useGameStore = create<GameState>((set, get) => ({
           
           // Sort spells by priority (damage spells first, then utility)
           playableSpells.sort((a, b) => {
-            // Prefer direct damage spells
-            const aDamage = a.card.damage || 0;
-            const bDamage = b.card.damage || 0;
+            // Prefer direct damage spells (check if card has a damage property)
+            const aDamage = (a.card as any).damage || 0;
+            const bDamage = (b.card as any).damage || 0;
             
             if (aDamage > bDamage) return -1;
             if (aDamage < bDamage) return 1;
