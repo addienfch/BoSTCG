@@ -1792,7 +1792,7 @@ export const useGameStore = create<GameState>((set, get) => ({
       const usedEnergyPile = [...playerState.usedEnergyPile];
       
       // Count how many of each element we need
-      const elementCounts: Partial<Record<ElementType, number>> = {
+      const elementCounts: Record<ElementType, number> = {
         fire: 0,
         water: 0,
         earth: 0,
@@ -1802,10 +1802,14 @@ export const useGameStore = create<GameState>((set, get) => ({
         dark: 0
       };
       
-      // Count required elements
-      energyCost.forEach(element => {
-        elementCounts[element]++;
-      });
+      // Count required elements (with safety check)
+      if (Array.isArray(energyCost)) {
+        energyCost.forEach(element => {
+          if (element in elementCounts) {
+            elementCounts[element]++;
+          }
+        });
+      }
       
       console.log("Required elements:", elementCounts);
       
@@ -1815,7 +1819,7 @@ export const useGameStore = create<GameState>((set, get) => ({
       // First try to match specific elements
       const elements: ElementType[] = ['fire', 'water', 'earth', 'air'];
       elements.forEach(element => {
-        let required = elementCounts[element];
+        let required = elementCounts[element] || 0;
         if (required > 0) {
           for (let i = 0; i < energyPile.length && required > 0; i++) {
             if (!usedIndices.includes(i) && energyPile[i].element === element) {
@@ -1830,11 +1834,11 @@ export const useGameStore = create<GameState>((set, get) => ({
       
       // Then use any card for neutral and remaining specific elements
       let totalRemaining = 
-        elementCounts.fire + 
-        elementCounts.water + 
-        elementCounts.earth + 
-        elementCounts.air + 
-        elementCounts.neutral;
+        (elementCounts.fire || 0) + 
+        (elementCounts.water || 0) + 
+        (elementCounts.earth || 0) + 
+        (elementCounts.air || 0) + 
+        (elementCounts.neutral || 0);
       
       if (totalRemaining > 0) {
         // Use any remaining cards for neutral/unmatched elements
@@ -1846,8 +1850,8 @@ export const useGameStore = create<GameState>((set, get) => ({
         }
       }
       
-      // Double check we used the right number of cards
-      if (usedIndices.length !== energyCost.length) {
+      // Double check we used the right number of cards (with safety check)
+      if (Array.isArray(energyCost) && usedIndices.length !== energyCost.length) {
         console.error(`Energy mismatch: used ${usedIndices.length} cards for ${energyCost.length} cost`);
       }
       

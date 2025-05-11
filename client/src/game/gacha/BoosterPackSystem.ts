@@ -10,7 +10,8 @@ export enum BoosterPackType {
   RANDOM = 'random',
   FIRE = 'fire',
   KOBAR_BORAH = 'kobar_borah',
-  KUJANA_KUHAKA = 'kujana_kuhaka'
+  KUJANA_KUHAKA = 'kujana_kuhaka',
+  NEUTRAL = 'neutral'
 }
 
 // Define booster pack information
@@ -93,6 +94,8 @@ const getCardPoolByPackType = (packType: BoosterPackType): Card[] => {
       return allKobarBorahCards;
     case BoosterPackType.KUJANA_KUHAKA:
       return allKujanaKuhakaCards;
+    case BoosterPackType.NEUTRAL:
+      return allNeutralCards;
     case BoosterPackType.RANDOM:
     default:
       // Combine all card pools
