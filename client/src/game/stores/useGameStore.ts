@@ -2300,34 +2300,64 @@ export const useGameStore = create<GameState>((set, get) => ({
         
       case 'battle':
         // Implement battle phase AI actions
-        if (opponent.activeAvatar && !opponent.activeAvatar.isTapped) {
-          // Check if AI has enough energy for skills
-          const canUseSkill2 = opponent.activeAvatar.skill2 && 
-            get().hasEnoughEnergy(opponent.activeAvatar.skill2.energyCost, 'opponent');
-          
-          const canUseSkill1 = get().hasEnoughEnergy(opponent.activeAvatar.skill1.energyCost, 'opponent');
-          
-          if (canUseSkill2) {
-            // Use skill 2 if available (priority)
-            get().useAvatarSkill('opponent', 2);
+        try {
+          if (opponent.activeAvatar && !opponent.activeAvatar.isTapped) {
+            // Validate skill1 structure first
+            if (!opponent.activeAvatar.skill1 || 
+                !opponent.activeAvatar.skill1.energyCost || 
+                !Array.isArray(opponent.activeAvatar.skill1.energyCost)) {
+              console.error('AI avatar has invalid skill1:', opponent.activeAvatar.skill1);
+              throw new Error('Invalid skill1 structure');
+            }
             
-            // Log and notify
-            toast.info(`Opponent used ${opponent.activeAvatar.name}'s ${opponent.activeAvatar.skill2.name} skill!`);
+            // Verify the avatar has essential properties
+            if (!opponent.activeAvatar.name) {
+              console.error('AI avatar missing name:', opponent.activeAvatar);
+              throw new Error('Avatar missing name');
+            }
             
-            // Move to the next phase after some delay
-            setTimeout(() => get().nextPhase(), 1500);
-            return;
-          } else if (canUseSkill1) {
-            // Use skill 1 as fallback
-            get().useAvatarSkill('opponent', 1);
+            // Check if AI has enough energy for skill2 - with full validation
+            let canUseSkill2 = false;
+            if (opponent.activeAvatar.skill2 && 
+                opponent.activeAvatar.skill2.energyCost && 
+                Array.isArray(opponent.activeAvatar.skill2.energyCost) &&
+                opponent.activeAvatar.skill2.name) {
+              canUseSkill2 = get().hasEnoughEnergy(opponent.activeAvatar.skill2.energyCost, 'opponent');
+            }
             
-            // Log and notify
-            toast.info(`Opponent used ${opponent.activeAvatar.name}'s ${opponent.activeAvatar.skill1.name} skill!`);
+            // Check skill1 - we already validated its structure
+            const canUseSkill1 = get().hasEnoughEnergy(opponent.activeAvatar.skill1.energyCost, 'opponent');
             
-            // Move to the next phase after some delay
-            setTimeout(() => get().nextPhase(), 1500);
-            return;
+            if (canUseSkill2) {
+              // Use skill 2 if available (priority)
+              get().useAvatarSkill('opponent', 2);
+              
+              // Log and notify - with safety checks
+              const skillName = opponent.activeAvatar.skill2?.name || 'Skill 2';
+              toast.info(`Opponent used ${opponent.activeAvatar.name}'s ${skillName} skill!`);
+              
+              // Move to the next phase after some delay
+              setTimeout(() => get().nextPhase(), 1500);
+              return;
+            } else if (canUseSkill1) {
+              // Use skill 1 as fallback
+              get().useAvatarSkill('opponent', 1);
+              
+              // Log and notify - with safety checks
+              const skillName = opponent.activeAvatar.skill1?.name || 'Skill 1';
+              toast.info(`Opponent used ${opponent.activeAvatar.name}'s ${skillName} skill!`);
+              
+              // Move to the next phase after some delay
+              setTimeout(() => get().nextPhase(), 1500);
+              return;
+            }
           }
+        } catch (error) {
+          console.error('Error in AI battle phase:', error);
+          toast.error('AI encountered an error during battle');
+          // Move to next phase despite error
+          setTimeout(() => get().nextPhase(), 1000);
+          return;
         }
         
         // If no skills were used, just move to the next phase

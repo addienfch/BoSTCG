@@ -280,16 +280,24 @@ const ShopPage: React.FC = () => {
       setTimeout(() => {
         const cards = purchaseBoosterPack(selectedPackType, packInfo.price);
         
-        if (cards) {
+        if (cards && cards.length > 0) {
+          console.log('Cards received from pack:', cards.length, cards.map(c => c.name));
+          
           // Show the cards one by one
           setOpenedCards(cards);
           
-          // After all cards are revealed, set the state
+          // After all cards are revealed, set the state and show preview of first card
           setTimeout(() => {
             setAllCardsRevealed(true);
+            
+            // Automatically set the first card for preview
+            setPreviewCard(cards[0]);
+            console.log('Auto-showing first card preview:', cards[0].name);
           }, cards.length * 300 + 500);
         } else {
           // Failed to purchase pack
+          console.error('Failed to get cards from pack');
+          toast.error("Failed to open pack!");
           setIsOpeningPack(false);
           setSelectedPackType(null);
         }
