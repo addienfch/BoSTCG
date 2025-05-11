@@ -963,14 +963,14 @@ const GameBoard2D: React.FC<GameBoard2DProps> = ({ onAction }) => {
           {/* Opponent Hand Display */}
           <div className="bg-gray-800 bg-opacity-30 p-2 rounded mb-2 flex justify-center">
             <div className="flex relative">
-              {game.opponent.hand.map((_, index) => (
+              {game.opponent && game.opponent.hand ? game.opponent.hand.map((_, index) => (
                 <div 
                   key={`opponent-hand-${index}`}
                   className="w-10 h-14 bg-red-900 border border-red-700 rounded-md shadow-md transform transition-transform hover:translate-y-[-5px]"
                   style={{ marginLeft: index > 0 ? '-8px' : '0' }}
                 />
-              ))}
-              {game.opponent.hand.length === 0 && (
+              )) : null}
+              {(!game.opponent || !game.opponent.hand || game.opponent.hand.length === 0) && (
                 <div className="text-gray-400 text-xs">
                   No cards in hand
                 </div>
