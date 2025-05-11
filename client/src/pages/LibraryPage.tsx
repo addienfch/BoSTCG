@@ -15,9 +15,28 @@ const LibraryPage: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [selectedCard, setSelectedCard] = useState<Card | null>(null);
   
-  // Apply filters and sorting to the cards
+  // Get card counts for duplicates
+  const cardCounts = React.useMemo(() => {
+    const counts: Record<string, number> = {};
+    cards.forEach(card => {
+      const key = `${card.name}-${card.type}-${card.element}`;
+      counts[key] = (counts[key] || 0) + 1;
+    });
+    return counts;
+  }, [cards]);
+  
+  // Apply filters and sorting to the cards, and remove duplicates
   const filteredAndSortedCards = React.useMemo(() => {
-    let result = [...cards];
+    // First create a unique list of cards with their counts
+    const uniqueCards = new Map<string, Card>();
+    cards.forEach(card => {
+      const key = `${card.name}-${card.type}-${card.element}`;
+      if (!uniqueCards.has(key)) {
+        uniqueCards.set(key, card);
+      }
+    });
+    
+    let result = Array.from(uniqueCards.values());
     
     // Apply filter
     if (filter !== 'all') {
@@ -67,18 +86,26 @@ const LibraryPage: React.FC = () => {
             return (b as AvatarCard).health - (a as AvatarCard).health;
           }
           return a.type === 'avatar' ? -1 : 1;
+        case 'count':
+          const keyA = `${a.name}-${a.type}-${a.element}`;
+          const keyB = `${b.name}-${b.type}-${b.element}`;
+          return cardCounts[keyB] - cardCounts[keyA];
         default:
           return 0;
       }
     });
     
     return result;
-  }, [cards, filter, sortBy, searchTerm]);
+  }, [cards, filter, sortBy, searchTerm, cardCounts]);
   
   // Card component
   const CardItem: React.FC<{ card: Card }> = ({ card }) => {
     const avatarCard = card.type === 'avatar' ? card as AvatarCard : null;
     const actionCard = card.type !== 'avatar' ? card as ActionCard : null;
+    
+    // Get the count of this card type
+    const cardKey = `${card.name}-${card.type}-${card.element}`;
+    const count = cardCounts[cardKey] || 1;
     
     // Card background based on element
     const getCardBg = () => {
@@ -93,9 +120,15 @@ const LibraryPage: React.FC = () => {
     
     return (
       <div 
-        className={`w-40 h-56 rounded-lg overflow-hidden ${getCardBg()} shadow-lg cursor-pointer hover:shadow-xl transform hover:scale-105 transition-all`}
+        className={`w-40 h-56 rounded-lg overflow-hidden ${getCardBg()} shadow-lg cursor-pointer hover:shadow-xl transform hover:scale-105 transition-all relative`}
         onClick={() => setSelectedCard(card)}
       >
+        {/* Card count badge */}
+        {count > 1 && (
+          <div className="absolute top-1 right-1 bg-blue-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold shadow-md">
+            {count}
+          </div>
+        )}
         <div className="p-2 h-full flex flex-col">
           <div className="text-sm font-bold bg-black bg-opacity-50 px-2 py-1 rounded mb-1 text-white truncate">
             {card.name}
@@ -195,6 +228,13 @@ const LibraryPage: React.FC = () => {
                 <div className="mb-2">
                   <span className="text-gray-400">Element:</span>
                   <span className="ml-2 text-white font-medium capitalize">{selectedCard.element}</span>
+                </div>
+                
+                <div className="mb-2">
+                  <span className="text-gray-400">Owned:</span>
+                  <span className="ml-2 text-white font-medium">
+                    {cardCounts[`${selectedCard.name}-${selectedCard.type}-${selectedCard.element}`] || 1} copies
+                  </span>
                 </div>
                 
                 {avatarCard && (
@@ -328,6 +368,7 @@ const LibraryPage: React.FC = () => {
               <option value="type">Type</option>
               <option value="element">Element</option>
               <option value="health">Health (Avatars)</option>
+              <option value="count">Card Count</option>
             </select>
           </div>
           

@@ -35,8 +35,8 @@ const BoosterPackCard: React.FC<{
       </div>
       <h3 className="text-lg font-bold text-white mb-1">{name}</h3>
       <p className="text-xs text-gray-300 text-center mb-3">{description}</p>
-      <div className="flex items-center bg-yellow-600 px-3 py-1 rounded-full text-white font-bold">
-        <span className="mr-1">🪙</span>
+      <div className="flex items-center bg-green-600 px-3 py-1 rounded-full text-white font-bold">
+        <span className="mr-1">$</span>
         <span>{price}</span>
       </div>
     </div>
@@ -194,8 +194,8 @@ const ShopPage: React.FC = () => {
         >
           Back to Home
         </button>
-        <div className="flex items-center bg-yellow-700 px-4 py-2 rounded-md shadow-md">
-          <span className="mr-2">🪙</span>
+        <div className="flex items-center bg-green-700 px-4 py-2 rounded-md shadow-md">
+          <span className="mr-2">$</span>
           <span className="font-bold">{coins}</span>
         </div>
       </div>
