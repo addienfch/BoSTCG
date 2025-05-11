@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom';
 import { AvatarCard, ActionCard, Card as CardType, ElementType } from '../data/cardTypes';
 import { useAudio } from '../../lib/stores/useAudio';
 import { toast } from 'sonner';
+import PreviewButton from './PreviewButton';
 
 // Declare the gameStore property on window
 declare global {
@@ -456,31 +457,31 @@ const Card2D: React.FC<Card2DProps> = ({
           </div>
         )}
         
-        {/* Damage counter if any */}
-        {avatarCard.counters && avatarCard.counters.damage > 0 && (
-          <div className="absolute top-7 right-2 bg-red-600 text-white text-[10px] font-bold px-1 rounded-full">
-            {avatarCard.counters.damage}
+        {/* Damage counter - combined all sources */}
+        {((avatarCard.counters?.damage || 0) > 0 || (card as any).damageCounter > 0 || (counters?.damage || 0) > 0) && (
+          <div className="absolute top-7 right-2 bg-red-600 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full shadow-md flex items-center justify-center min-w-[20px]">
+            {avatarCard.counters?.damage || (card as any).damageCounter || counters?.damage || 0}
+          </div>
+        )}
+        
+        {/* Current HP indicator */}
+        {((avatarCard.counters?.damage || 0) > 0 || (card as any).damageCounter > 0 || (counters?.damage || 0) > 0) && (
+          <div className="absolute top-12 right-2 bg-green-700 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full shadow-md flex items-center justify-center min-w-[20px]">
+            {Math.max(0, avatarCard.health - (avatarCard.counters?.damage || (card as any).damageCounter || counters?.damage || 0))}
           </div>
         )}
         
         {/* Bleed counter if any */}
-        {avatarCard.counters && avatarCard.counters.bleed > 0 && (
-          <div className="absolute top-12 right-2 bg-purple-600 text-white text-[10px] font-bold px-1 rounded-full">
-            B{avatarCard.counters.bleed}
+        {(avatarCard.counters?.bleed || 0) > 0 && (
+          <div className="absolute top-17 right-2 bg-purple-600 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full shadow-md flex items-center justify-center min-w-[20px]">
+            B{avatarCard.counters?.bleed}
           </div>
         )}
         
         {/* Shield counter if any */}
-        {avatarCard.counters && avatarCard.counters.shield > 0 && (
-          <div className="absolute top-17 right-2 bg-blue-600 text-white text-[10px] font-bold px-1 rounded-full">
-            S{avatarCard.counters.shield}
-          </div>
-        )}
-        
-        {/* Handle damage counter for legacy card format */}
-        {(card as any).damageCounter > 0 && (
-          <div className="absolute top-7 right-2 bg-red-600 text-white text-[10px] font-bold px-1 rounded-full">
-            {(card as any).damageCounter}
+        {(avatarCard.counters?.shield || 0) > 0 && (
+          <div className="absolute top-22 right-2 bg-blue-600 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full shadow-md flex items-center justify-center min-w-[20px]">
+            S{avatarCard.counters?.shield}
           </div>
         )}
       </>
@@ -546,6 +547,13 @@ const Card2D: React.FC<Card2DProps> = ({
             {getElementIcon()}
             <span>{card.name}</span>
           </div>
+          
+          {/* Preview Button for reserve avatars */}
+          {!isInHand && card.type === 'avatar' && (
+            <div className="absolute top-1 right-1 z-10">
+              <PreviewButton onClick={() => setShowPreview(true)} />
+            </div>
+          )}
           
           {/* Card art */}
           <div 
