@@ -764,11 +764,15 @@ export const useGameStore = create<GameState>((set, get) => ({
     toast.success(`${avatar.name} used ${skill.name} for ${damageAmount} damage!`);
     get().addLog(`${player === 'player' ? 'You' : 'Opponent'} used ${skill.name} for ${damageAmount} damage!`);
     
-    // Show trigger message if available
-    if (skillTriggerResult.shouldTrigger && skillTriggerResult.message) {
-      toast.info(skillTriggerResult.message);
-      get().addLog(skillTriggerResult.message);
-    }
+    // Apply any additional effects from skill triggers (healing, etc.)
+    applySkillTriggerEffects(
+      skillTriggerResult,
+      avatar,
+      targetAvatar,
+      player,
+      (update) => set(state => ({ ...state, ...update })),
+      get()
+    );
     
     // Check for defeated avatars
     setTimeout(() => get().checkDefeatedAvatars(), 500);
