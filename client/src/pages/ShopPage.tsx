@@ -221,7 +221,7 @@ const CardPreview: React.FC<{
 // Shop page component
 const ShopPage: React.FC = () => {
   const navigate = useNavigate();
-  const { coins, purchaseBoosterPack } = useCollectionStore();
+  const { coins, purchaseBoosterPack, resetCoins } = useCollectionStore();
   
   // State for pack opening
   const [isOpeningPack, setIsOpeningPack] = useState(false);

@@ -48,6 +48,7 @@ interface CollectionState {
   
   // Dev actions (for testing)
   resetCollection: () => void;
+  resetCoins: () => void;
   fillCollection: () => void;
 }
 
@@ -244,7 +245,7 @@ export const useCollectionStore = create<CollectionState>()(
       resetCollection: () => {
         set({
           cards: [],
-          coins: 1000,
+          coins: 100000, // Updated coin amount for testing
           packHistory: [],
           stats: {
             totalCards: 0,
@@ -264,6 +265,15 @@ export const useCollectionStore = create<CollectionState>()(
         });
         
         toast.info('Collection reset to default state');
+      },
+      
+      // Reset coins to $100,000 (dev feature)
+      resetCoins: () => {
+        set((state) => ({
+          ...state,
+          coins: 100000,
+        }));
+        toast.success('Reset coins to $100,000!');
       },
       
       // Fill the collection with all cards (dev feature)
