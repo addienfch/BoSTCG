@@ -20,7 +20,7 @@ export const neutralCards: Record<string, Card> = {
     subType: "healing",
     element: "neutral",
     description: "Discard a card, then heal 5 damage from target avatar.",
-    art: "/attached_assets/Non Elemental - Spell_Merah.png",
+    art: "/textures/cards/merah.png",
     energyCost: ["neutral"],
   },
   
@@ -31,7 +31,7 @@ export const neutralCards: Record<string, Card> = {
     subType: "healing",
     element: "neutral",
     description: "Heal 3 damage from target Avatar.",
-    art: "/attached_assets/Non Elemental - Spell_Kencur.png",
+    art: "/textures/cards/kencur.png",
     energyCost: ["neutral"],
   },
   
@@ -41,7 +41,7 @@ export const neutralCards: Record<string, Card> = {
     type: "item",
     element: "neutral",
     description: "Discard Hand, and then draw 5 card from deck.",
-    art: "/attached_assets/Non Elemental (1)_Battle Preparation.png",
+    art: "/textures/cards/battle_preparation.png",
     energyCost: ["neutral", "neutral"],
   },
   
@@ -63,7 +63,7 @@ export const neutralCards: Record<string, Card> = {
     type: "spell",
     element: "neutral",
     description: "Draw 1 card.",
-    art: "/attached_assets/Non Elemental (1)_Prize.png",
+    art: "/textures/cards/prize.png",
     energyCost: ["neutral"],
   },
   
@@ -73,7 +73,7 @@ export const neutralCards: Record<string, Card> = {
     type: "spell",
     element: "neutral",
     description: "Draw 2 card.",
-    art: "/attached_assets/Non Elemental (1)_Golden Crates.png",
+    art: "/textures/cards/neutral_booster.png",
     energyCost: ["neutral", "neutral"],
   },
   
@@ -84,7 +84,7 @@ export const neutralCards: Record<string, Card> = {
     type: "quickSpell",
     element: "neutral",
     description: "Draw 1 card.",
-    art: "/attached_assets/Non Elemental (1)_Crates.png",
+    art: "/textures/cards/crates.png",
     energyCost: ["neutral", "neutral"],
   }
 };
