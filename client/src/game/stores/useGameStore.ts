@@ -685,8 +685,11 @@ export const useGameStore = create<GameState>((set, get) => ({
       return;
     }
     
-    // Use energy for the skill
-    state.useEnergy(skill.energyCost, player);
+    // Use energy for the skill - make sure we consume all the required energy
+    if (!state.useEnergy(skill.energyCost, player)) {
+      toast.error(`Failed to consume energy for skill! This is unexpected.`);
+      return;
+    }
     
     // Calculate damage
     let damageAmount = skill.damage || 0;
