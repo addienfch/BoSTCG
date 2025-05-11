@@ -696,17 +696,23 @@ export const useGameStore = create<GameState>((set, get) => ({
     
     // Apply special effects
     if (skill.effect) {
-      // Example effect: "If you have 1 card or less card in hand, this attack get +1"
-      if (skill.effect.includes("1 card or less") && playerState.hand.length <= 1) {
-        damageAmount += 1;
-        toast.info(`Skill bonus: +1 damage due to having 1 or fewer cards!`);
+      // Handle Radja's skill: "If you has 1 or less card in hand, this Skill1Damage become 5"
+      if (skill.effect.includes("1 or less card in hand") && playerState.hand.length <= 1) {
+        damageAmount = 5; // Set to exact value 5 as per card text
+        toast.info(`Skill bonus: Damage set to 5 due to having 1 or fewer cards!`);
       }
       
       // Example effect: "This attack does 2 more damage if opponent Active Avatar were Air type."
-      if (skill.effect.includes("if opponent Active Avatar were Air type") && 
+      if ((skill.effect.includes("If opponent Active Avatar is wind Element Avatar") || 
+          skill.effect.includes("if opponent Active Avatar were Air type")) && 
           targetAvatar.element === 'air') {
-        damageAmount += 2;
-        toast.info(`Type bonus: +2 damage against Air type!`);
+        if (skill.effect.includes("become 111")) {
+          damageAmount = 111; // Set to ridiculous damage value for Radja's skill 2
+          toast.info(`Type bonus: Massive damage against Air/Wind type!`);
+        } else {
+          damageAmount += 2;
+          toast.info(`Type bonus: +2 damage against Air type!`);
+        }
       }
     }
     
