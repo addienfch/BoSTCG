@@ -359,6 +359,9 @@ const Card2D: React.FC<Card2DProps> = ({
       setShowActions(!showActions);
     } else if (onClick) {
       onClick();
+    } else {
+      // Show card preview for any other case
+      setShowPreview(true);
     }
   };
   
@@ -498,6 +501,21 @@ const Card2D: React.FC<Card2DProps> = ({
   
   return (
     <>
+      {/* Card Preview Modal */}
+      {showPreview && createPortal(
+        <CardPreview 
+          card={card} 
+          onClose={() => setShowPreview(false)} 
+          damageCounter={
+            card.type === 'avatar' ? 
+              (card as AvatarCard).counters?.damage || 
+              (card as any).damageCounter || 
+              (counters?.damage || 0) : 0
+          }
+        />,
+        document.body
+      )}
+      
       <div 
         ref={cardRef}
         className="relative" 
