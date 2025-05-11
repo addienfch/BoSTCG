@@ -920,15 +920,23 @@ export const useGameStore = create<GameState>((set, get) => ({
         
       console.log("Evolution - Cloned counters:", existingCounters);
       
+      // Make absolutely sure damage counter is preserved (this fixes the issue)
+      const damageCounter = existingCounters.damage || 0;
+      
       // Preserve important properties from level 1 avatar, including damage counters
       const evolvedAvatar: AvatarCard = {
         ...level2Card,
         // Make sure we preserve existing counters from the level 1 avatar
-        counters: existingCounters,
+        counters: {
+          ...existingCounters,
+          damage: damageCounter // Ensure damage counter is explicitly preserved
+        },
         turnPlayed: state.turn,
         // Also preserve tapped state from the level 1 avatar
         isTapped: targetAvatarCard!.isTapped
       };
+      
+      console.log("Evolution - Damage counter explicitly preserved:", evolvedAvatar.counters.damage);
       
       console.log("Evolution - Final evolved avatar:", evolvedAvatar);
       
@@ -1680,7 +1688,7 @@ export const useGameStore = create<GameState>((set, get) => ({
   },
   
   // Use energy to play a card
-  useEnergy: (energyCost: ElementType[], player: Player) => {
+  useEnergy: (energyCost: ElementType[] | undefined | null, player: Player) => {
     if (!energyCost || energyCost.length === 0) {
       console.log("No energy cost to use");
       return true; // No energy cost, nothing to do
