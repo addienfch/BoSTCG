@@ -536,6 +536,7 @@ export const useGameStore = create<GameState>((set, get) => ({
       switch (card.type) {
         case 'spell':
         case 'quickSpell':
+        case 'item':
           // First check if we have enough energy
           if (get().hasEnoughEnergy(card.energyCost || [], 'player')) {
             // Use the energy
@@ -557,7 +558,21 @@ export const useGameStore = create<GameState>((set, get) => ({
             });
             
             // Apply spell effects based on the card
-            if (card.type === 'spell') {
+            if (card.type === 'item') {
+              // Mark that an item card has been played this turn
+              set(state => ({
+                player: {
+                  ...state.player,
+                  hasPlayedItemThisTurn: true
+                }
+              }));
+              
+              toast.success(`You used item: ${card.name}!`);
+              get().addLog(`You used item: ${card.name}`);
+              
+              // Item card effects are applied here
+              // For now, just showing toast about usage
+            } else if (card.type === 'spell') {
               toast.success(`You cast ${card.name}!`);
               
               // Apply damage if the opponent has an active avatar
