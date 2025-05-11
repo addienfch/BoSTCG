@@ -663,6 +663,16 @@ const Card2D: React.FC<Card2DProps> = ({
         </div>,
         document.body
       )}
+      
+      {/* Card Preview Modal */}
+      {showPreview && createPortal(
+        <CardPreview 
+          card={card} 
+          onClose={() => setShowPreview(false)}
+          damageCounter={(counters?.damage || 0)}
+        />,
+        document.body
+      )}
     </>
   );
 };
