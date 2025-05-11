@@ -95,9 +95,9 @@ const CardPreview = ({
                 
                 {(card as AvatarCard).skill2 && (
                   <div className="p-2 bg-gray-700 rounded">
-                    <h3 className="font-bold">Skill 2: {(card as AvatarCard).skill2.name}</h3>
-                    <p className="text-xs">{(card as AvatarCard).skill2.effect}</p>
-                    <div className="mt-1 text-sm">Damage: {(card as AvatarCard).skill2.damage}</div>
+                    <h3 className="font-bold">Skill 2: {(card as AvatarCard).skill2?.name || 'Unknown'}</h3>
+                    <p className="text-xs">{(card as AvatarCard).skill2?.effect || ''}</p>
+                    <div className="mt-1 text-sm">Damage: {(card as AvatarCard).skill2?.damage || 0}</div>
                   </div>
                 )}
               </div>
@@ -118,6 +118,9 @@ const GameBoard2D: React.FC<GameBoard2DProps> = ({ onAction }) => {
   const game = useGameStore();
   // Get the navigate function from react-router
   const navigate = useNavigate();
+  
+  // State for preview card
+  const [previewCard, setPreviewCard] = useState<Card | null>(null);
   
   // Determine if a card is playable (can be placed on the field)
   const isCardPlayable = (card: Card) => {
@@ -872,6 +875,11 @@ const GameBoard2D: React.FC<GameBoard2DProps> = ({ onAction }) => {
   
   return (
     <div className="w-full h-full bg-gray-900 text-white p-4 relative">
+      {/* Show card preview modal if a card is selected */}
+      {previewCard && (
+        <CardPreview card={previewCard} onClose={() => setPreviewCard(null)} />
+      )}
+      
       {/* Game header with phase and turn info */}
       <div className="mb-4 flex justify-between items-center bg-gray-800 p-2 rounded">
         <div>
@@ -1274,7 +1282,7 @@ const GameBoard2D: React.FC<GameBoard2DProps> = ({ onAction }) => {
                   className="text-xs mb-0.5 bg-blue-900 bg-opacity-50 px-1 py-0.5 rounded cursor-pointer hover:bg-blue-800"
                   onClick={() => {
                     // Add card preview functionality
-                    setShowPreviewCard(avatar);
+                    setPreviewCard(avatar);
                   }}
                 >
                   {avatar.name} (HP: {avatar.health - (avatar.counters?.damage || 0)})
@@ -1295,7 +1303,10 @@ const GameBoard2D: React.FC<GameBoard2DProps> = ({ onAction }) => {
                 card={card} 
                 isPlayable={isCardPlayable(card)}
                 isInHand={true}
-                onClick={() => onAction?.('selectCard', card)}
+                onClick={() => {
+                  // Show card preview when clicked directly
+                  setPreviewCard(card);
+                }}
                 onAction={(action) => handleCardAction(card, action)}
               />
             </div>
