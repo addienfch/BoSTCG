@@ -392,20 +392,29 @@ export const useGameStore = create<GameState>((set, get) => ({
     // Quick spells can be played anytime as long as player has an active avatar and enough energy
     const isQuickSpell = card.type === 'quickSpell';
     
-    // Main phases for regular play, setup phase for avatar placement
-    const isMainPhase = gamePhase === 'main1' || gamePhase === 'main2';
-    const isSetupPhase = gamePhase === 'setup';
-    
-    // Regular cards can only be played during your turn and in the right phases
-    if (!isQuickSpell && (currentPlayer !== 'player' || (!isMainPhase && !isSetupPhase))) {
-      toast.error("You can only play regular cards during your Main Phases or the Setup Phase!");
-      return;
-    }
-    
-    // For quick spells, we need at least an active avatar
-    if (isQuickSpell && !player.activeAvatar) {
-      toast.error("You need an active avatar to play quick spells!");
-      return;
+    // For quick spells, check if we have an active avatar and enough energy
+    if (isQuickSpell) {
+      if (!player.activeAvatar) {
+        toast.error("You need an active avatar to play quick spells!");
+        return;
+      }
+      
+      // Check energy for quick spells separately - we allow them anytime
+      if (!get().hasEnoughEnergy(card.energyCost || [], 'player')) {
+        toast.error("Not enough energy to play this quick spell!");
+        return;
+      }
+    } else {
+      // Other cards are restricted to proper phases and turn
+      // Main phases for regular play, setup phase for avatar placement
+      const isMainPhase = gamePhase === 'main1' || gamePhase === 'main2';
+      const isSetupPhase = gamePhase === 'setup';
+      
+      // Regular cards can only be played during your turn and in the right phases
+      if (currentPlayer !== 'player' || (!isMainPhase && !isSetupPhase)) {
+        toast.error("You can only play regular cards during your Main Phases or the Setup Phase!");
+        return;
+      }
     }
     
     // Special handling for setup phase
