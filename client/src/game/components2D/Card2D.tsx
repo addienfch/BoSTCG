@@ -59,7 +59,7 @@ const CardPreview = ({
             
             {card.energyCost && Array.isArray(card.energyCost) && (
               <div className="flex items-center gap-1">
-                {card.energyCost.map((energy, i) => (
+                {card.energyCost.map((energy: ElementType, i: number) => (
                   <div 
                     key={i}
                     className={`w-4 h-4 rounded-full ${
@@ -101,14 +101,14 @@ const CardPreview = ({
               
               {(card as AvatarCard).skill2 && (
                 <div className="mt-2 p-2 bg-gray-700 rounded">
-                  <div className="font-medium">{(card as AvatarCard).skill2.name}</div>
+                  <div className="font-medium">{(card as AvatarCard).skill2?.name || ''}</div>
                   <div className="text-xs text-gray-300 mb-1">
-                    Energy: {(card as AvatarCard).skill2.energyCost.map(e => 
+                    Energy: {(card as AvatarCard).skill2?.energyCost?.map(e => 
                       e.charAt(0).toUpperCase() + e.slice(1)
-                    ).join(', ')}
+                    ).join(', ') || ''}
                   </div>
-                  <div>Damage: {(card as AvatarCard).skill2.damage}</div>
-                  <div className="text-xs mt-1">{(card as AvatarCard).skill2.effect}</div>
+                  <div>Damage: {(card as AvatarCard).skill2?.damage || 0}</div>
+                  <div className="text-xs mt-1">{(card as AvatarCard).skill2?.effect || ''}</div>
                 </div>
               )}
             </div>

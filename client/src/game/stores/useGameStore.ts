@@ -1104,7 +1104,7 @@ export const useGameStore = create<GameState>((set, get) => ({
           // Reset player's reserve avatars if any exist
           if (updatedState.player.reserveAvatars.length > 0) {
             // Directly update the isTapped property for each avatar
-            updatedState.player.reserveAvatars.forEach(avatar => {
+            updatedState.player.reserveAvatars.forEach((avatar: AvatarCard) => {
               avatar.isTapped = false;
               console.log("AVATAR RESET - Player reserve avatar explicitly untapped:", avatar.name);
             });
@@ -1120,7 +1120,7 @@ export const useGameStore = create<GameState>((set, get) => ({
           // Reset opponent's reserve avatars if any exist
           if (updatedState.opponent.reserveAvatars.length > 0) {
             // Directly update the isTapped property for each avatar
-            updatedState.opponent.reserveAvatars.forEach(avatar => {
+            updatedState.opponent.reserveAvatars.forEach((avatar: AvatarCard) => {
               avatar.isTapped = false;
               console.log("AVATAR RESET - Opponent reserve avatar explicitly untapped:", avatar.name);
             });
