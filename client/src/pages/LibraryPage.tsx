@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useCollectionStore } from '../game/stores/useCollectionStore';
 import { Card, AvatarCard, ActionCard } from '../game/data/cardTypes';
 import { toast } from 'sonner';
+import { renderCardImage } from '../utils/cardImageUtils';
 
 // Card display component with filter options
 const LibraryPage: React.FC = () => {
@@ -25,6 +26,38 @@ const LibraryPage: React.FC = () => {
     return counts;
   }, [cards]);
   
+  // Render card image with fallback for missing images
+  const renderCardImage = (card: Card) => {
+    const handleImageError = (e: React.SyntheticEvent<HTMLImageElement>) => {
+      const target = e.target as HTMLImageElement;
+      target.onerror = null; // Prevent infinite loop
+      target.src = `https://placehold.co/200x280/1f2937/ffffff?text=${encodeURIComponent(card.name.substring(0, 10))}`;
+    };
+
+    // Try to load the image, fallback to placeholder if it fails
+    return (
+      <div className="w-full h-32 bg-gradient-to-br from-gray-800 to-gray-900 flex items-center justify-center">
+        {card.art ? (
+          <img 
+            src={card.art} 
+            alt={card.name}
+            className="w-full h-full object-cover"
+            onError={handleImageError}
+          />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center">
+            <span className="text-4xl">
+              {card.element === 'fire' ? '🔥' : 
+               card.element === 'water' ? '💧' : 
+               card.element === 'earth' ? '🌍' : 
+               card.element === 'air' ? '💨' : '✨'}
+            </span>
+          </div>
+        )}
+      </div>
+    );
+  };
+
   // Apply filters and sorting to the cards, and remove duplicates
   const filteredAndSortedCards = React.useMemo(() => {
     // First create a unique list of cards with their counts
@@ -124,58 +157,38 @@ const LibraryPage: React.FC = () => {
     
     return (
       <div 
-        className={`w-40 h-56 rounded-lg overflow-hidden ${getCardBg()} shadow-lg cursor-pointer hover:shadow-xl transform hover:scale-105 transition-all relative`}
+        className={`w-40 h-56 ${getCardBg()} cursor-pointer transform hover:scale-105 transition-all relative`}
         onClick={() => setSelectedCard(card)}
+        style={{ boxShadow: 'none' }}
       >
         {/* Card count badge */}
         {count > 1 && (
-          <div className="absolute top-1 right-1 bg-blue-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold shadow-md">
+          <div className="absolute top-1 right-1 bg-blue-600 text-white w-6 h-6 flex items-center justify-center text-xs font-bold" style={{ borderRadius: '50%' }}>
             {count}
           </div>
         )}
         <div className="p-2 h-full flex flex-col">
-          <div className="text-sm font-bold bg-black bg-opacity-50 px-2 py-1 rounded mb-1 text-white truncate">
+          <div className="text-sm font-bold bg-black bg-opacity-50 px-2 py-1 mb-1 text-white truncate">
             {card.name}
           </div>
-          
-          {card.art ? (
-            <div className="h-24 bg-black bg-opacity-30 rounded overflow-hidden mb-1">
-              <img 
-                src={card.art} 
-                alt={card.name} 
-                className="w-full h-full object-cover"
-                onError={(e) => {
-                  const target = e.target as HTMLImageElement;
-                  target.src = '/textures/cards/card_back.png'; // Fallback image
-                }}
-              />
-            </div>
-          ) : (
-            <div className="h-24 bg-black bg-opacity-30 rounded mb-1 flex items-center justify-center">
-              <span className="text-white text-opacity-50 text-sm">No image</span>
-            </div>
-          )}
-          
-          <div className="bg-black bg-opacity-50 p-2 rounded text-xs text-white flex-1 overflow-hidden">
+          {renderCardImage(card, "h-24 w-full")}
+          <div className="bg-black bg-opacity-50 p-2 text-xs text-white flex-1 overflow-hidden">
             {avatarCard && (
               <div>
-                <div className="flex justify-between">
+                <div className="flex justify-between mb-1">
                   <span>HP: {avatarCard.health}</span>
-                  <span>Lv: {avatarCard.level}</span>
+                  <span>Lv{avatarCard.level}</span>
                 </div>
-                <div className="mt-1 text-[10px] truncate">
-                  Tribe: {avatarCard.subType || 'None'}
-                </div>
-                <div className="mt-1 text-[10px] truncate">
-                  Skill: {avatarCard.skill1.name}
-                </div>
+                {avatarCard.subType && (
+                  <div className="text-gray-300 mb-1">
+                    Tribe: {avatarCard.subType.charAt(0).toUpperCase() + avatarCard.subType.slice(1)}
+                  </div>
+                )}
               </div>
             )}
             
-            {actionCard && (
-              <div className="text-[10px] line-clamp-4">
-                {actionCard.description}
-              </div>
+            {actionCard && actionCard.description && (
+              <div className="text-gray-300 text-xs">{actionCard.description}</div>
             )}
           </div>
         </div>
@@ -323,28 +336,17 @@ const LibraryPage: React.FC = () => {
   };
   
   return (
-    <div className="min-h-screen bg-gray-900 text-white p-4">
-      {/* Header with navigation and wallet */}
-      <div className="flex justify-between items-center mb-6">
-        <button 
-          onClick={() => navigate('/')}
-          className="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded shadow-md"
-        >
-          Back to Home
-        </button>
-        <div className="flex items-center bg-yellow-700 px-4 py-2 rounded-md shadow-md">
-          <span className="mr-2">🪙</span>
-          <span className="font-bold">{coins}</span>
-        </div>
+    <div className="min-h-screen p-2 sm:p-4 w-full max-w-screen-xl mx-auto" style={{ backgroundColor: '#DFE1DD', color: '#0D1A29' }}>
+      {/* Header */}
+      <div className="flex justify-center items-center mb-6">
+        <h1 className="text-xl sm:text-2xl font-bold text-center">Card Library</h1>
       </div>
       
-      <h1 className="text-2xl font-bold mb-6 text-center">Card Library</h1>
-      
       {/* Filters and search */}
-      <div className="bg-gray-800 p-4 rounded-lg shadow-md mb-6">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="bg-gray-800 p-3 sm:p-4 rounded-xl shadow-md mb-4 sm:mb-6 w-full">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4 w-full">
           <div>
-            <label className="block text-sm font-medium mb-1">Filter by Type</label>
+            <label className="block text-sm font-medium mb-1 text-white">Filter by Type</label>
             <select 
               value={filter}
               onChange={(e) => setFilter(e.target.value)}
@@ -364,7 +366,7 @@ const LibraryPage: React.FC = () => {
           </div>
           
           <div>
-            <label className="block text-sm font-medium mb-1">Sort by</label>
+            <label className="block text-sm font-medium mb-1 text-white">Sort by</label>
             <select 
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value)}
@@ -379,7 +381,7 @@ const LibraryPage: React.FC = () => {
           </div>
           
           <div>
-            <label className="block text-sm font-medium mb-1">Search Cards</label>
+            <label className="block text-sm font-medium mb-1 text-white">Search Cards</label>
             <input 
               type="text"
               value={searchTerm}
@@ -393,18 +395,18 @@ const LibraryPage: React.FC = () => {
       
       {/* Card Display */}
       <div className="mb-8">
-        <div className="text-sm text-gray-400 mb-2">
+        <div className="text-sm text-gray-600 mb-2">
           Showing {filteredAndSortedCards.length} of {cards.length} cards
         </div>
         
         {filteredAndSortedCards.length > 0 ? (
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2 sm:gap-4 w-full">
             {filteredAndSortedCards.map((card, index) => (
               <CardItem key={`${card.id}-${index}`} card={card} />
             ))}
           </div>
         ) : (
-          <div className="bg-gray-800 rounded-lg p-8 text-center">
+          <div className="bg-gray-800 rounded-xl p-8 text-center">
             <p className="text-gray-400 mb-2">No cards found matching your criteria</p>
             <button 
               onClick={() => {

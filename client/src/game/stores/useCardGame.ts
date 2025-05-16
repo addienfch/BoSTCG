@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { CardData } from '../components/Card';
 import { getInitialDeck, shuffleDeck } from '../data/cards';
 import { calculateDamage, checkWinner, handleSpellEffect } from '../utils/gameLogic';
+import { useGameStore } from './useGameStore';
 import { toast } from 'sonner';
 
 // Define the types for our game state
@@ -862,31 +863,8 @@ export const useCardGame = create<CardGameState>((set, get) => ({
   
   // Set a card from hand as energy
   setEnergyCard: (handIndex: number) => {
-    const { 
-      currentPlayer, 
-      gamePhase, 
-      playerHand 
-    } = get();
-    
-    // Can only set energy during main phases
-    if (currentPlayer !== 'player' || (gamePhase !== 'main1' && gamePhase !== 'main2')) {
-      toast.error('You can only set energy during your main phases.');
-      return;
-    }
-    
-    // Remove card from hand
-    const newHand = [...playerHand];
-    const energyCard = newHand.splice(handIndex, 1)[0];
-    
-    // Add to energy pile
-    set({
-      playerHand: newHand,
-      playerEnergyPile: [...get().playerEnergyPile, energyCard],
-      selectedCard: null,
-      selectedTarget: null
-    });
-    
-    toast.success(`Set ${energyCard.name} as energy.`);
+    const gameStore = useGameStore.getState();
+    gameStore.addToEnergyPile(handIndex);
   },
   
   // Switch to a different avatar from reserves

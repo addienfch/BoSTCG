@@ -32,69 +32,43 @@ export interface BoosterPack {
 // Define available booster packs
 export const availableBoosterPacks: BoosterPack[] = [
   {
-    id: 'starter-pack',
-    name: 'Starter Booster Pack',
+    id: 'normal-pack',
+    name: 'Normal Booster',
     description: 'A basic booster pack with mixed cards. Contains 5 cards with at least 1 avatar.',
     type: BoosterPackType.RANDOM,
-    price: 100,
+    price: 3, // USDC
     cardCount: 5,
     guaranteedRarity: {
       avatar: 1,
       spell: 0
     },
-    image: '/textures/cards/booster_pack.png'
+    image: '/textures/cards/normal_booster.png'
   },
   {
-    id: 'fire-elemental-pack',
-    name: 'Fire Elemental Pack',
-    description: 'A pack focused on fire element cards. Contains 5 cards with at least 1 avatar.',
+    id: 'intermediate-pack',
+    name: 'Intermediate Booster',
+    description: 'A more advanced booster pack. Contains 5 cards with at least 2 avatars.',
     type: BoosterPackType.FIRE,
-    price: 150,
+    price: 5, // USDC
     cardCount: 5,
     guaranteedRarity: {
-      avatar: 1,
-      spell: 1
+      avatar: 2,
+      spell: 0
     },
-    image: '/textures/cards/fire_booster.png'
+    image: '/textures/cards/intermediate_booster.png'
   },
   {
-    id: 'kobar-borah-pack',
-    name: 'Kobar-Borah Tribal Pack',
-    description: 'A specialized pack with Kobar-Borah tribal cards. Contains 5 cards with at least 2 avatars.',
+    id: 'pro-pack',
+    name: 'Pro Booster',
+    description: 'A premium booster pack for serious players. Contains 5 cards with at least 3 avatars.',
     type: BoosterPackType.KOBAR_BORAH,
-    price: 200,
+    price: 7, // USDC
     cardCount: 5,
     guaranteedRarity: {
-      avatar: 2,
-      spell: 1
+      avatar: 3,
+      spell: 0
     },
-    image: '/textures/cards/kobar_booster.png'
-  },
-  {
-    id: 'kujana-kuhaka-pack',
-    name: 'Kujana-Kuhaka Tribal Pack',
-    description: 'A specialized pack with Kujana-Kuhaka tribal cards. Contains 5 cards with at least 2 avatars.',
-    type: BoosterPackType.KUJANA_KUHAKA,
-    price: 200,
-    cardCount: 5,
-    guaranteedRarity: {
-      avatar: 2,
-      spell: 1
-    },
-    image: '/textures/cards/kuhaka_booster.png'
-  },
-  {
-    id: 'neutral-item-pack',
-    name: 'Neutral Item Pack',
-    description: 'A specialized pack with neutral item cards. Contains 5 cards with a mix of valuable item cards.',
-    type: BoosterPackType.NEUTRAL,
-    price: 150,
-    cardCount: 5,
-    guaranteedRarity: {
-      avatar: 0,
-      spell: 5
-    },
-    image: '/textures/cards/neutral_booster.png'
+    image: '/textures/cards/pro_booster.png'
   }
 ];
 
@@ -199,11 +173,11 @@ export const purchaseBoosterPack = (
   
   // Check if player has enough coins
   if (playerCoins < pack.price) {
-    toast.error(`Not enough coins! You need ${pack.price} coins.`);
+    toast.error(`Not enough USDC! You need ${pack.price} USDC.`);
     return false;
   }
   
-  // Deduct coins
+  // Deduct USDC
   const newCoinAmount = playerCoins - pack.price;
   updatePlayerCoins(newCoinAmount);
   

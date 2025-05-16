@@ -892,7 +892,7 @@ const GameBoard2D: React.FC<GameBoard2DProps> = ({ onAction }) => {
   }, [game.currentPlayer, game.gamePhase, game.turn]);
   
   return (
-    <div className="w-full h-full bg-gray-900 text-white p-4 relative">
+    <div className="w-full h-full bg-gray-900 text-white p-2 sm:p-4 relative max-w-screen-xl mx-auto">
       {/* Show card preview modal if a card is selected */}
       {previewCard && (
         <CardPreview card={previewCard} onClose={() => setPreviewCard(null)} />
@@ -1080,7 +1080,7 @@ const GameBoard2D: React.FC<GameBoard2DProps> = ({ onAction }) => {
               {game.opponent && game.opponent.reserveAvatars && game.opponent.reserveAvatars.length > 0 ? (
                 game.opponent.reserveAvatars.map((avatar, index) => (
                   <div 
-                    key={index} 
+                    key={`opponent-reserve-${avatar.id}-${index}`} 
                     className="text-xs mb-0.5 bg-red-900 bg-opacity-50 px-1 py-0.5 rounded flex justify-between cursor-pointer hover:bg-red-800"
                     onClick={() => setSelectedCard(avatar)}
                   >
@@ -1097,22 +1097,16 @@ const GameBoard2D: React.FC<GameBoard2DProps> = ({ onAction }) => {
       </div>
       
       {/* Game field */}
-      <div className="mb-4">
+      <div className="mb-2">
         <h3 className="text-sm font-bold mb-1">Field</h3>
-        <div className="flex justify-center bg-gray-800 bg-opacity-30 p-4 rounded min-h-[100px]">
-          {/* Display field card if available - only show one placement */}
-          <div className="w-36 h-48 flex items-center justify-center">
-            {game.player.fieldCards.length > 0 ? (
-              <Card2D 
-                card={game.player.fieldCards[0]} 
-                isPlayable={false}
-              />
-            ) : (
-              <div className="border-2 border-dashed border-gray-600 rounded-lg p-2 w-full h-full flex items-center justify-center">
-                <span className="text-xs text-gray-400">Field Zone</span>
-              </div>
-            )}
-          </div>
+        <div className="flex justify-center bg-gray-800 bg-opacity-30 p-1 rounded min-h-[24px]">
+          {game.player.fieldCards.length > 0 ? (
+            <div className="text-xs bg-blue-900 bg-opacity-50 px-2 py-0.5 rounded flex items-center">
+              <span>{game.player.fieldCards[0].name}</span>
+            </div>
+          ) : (
+            <span className="text-xs text-gray-400">Field Zone</span>
+          )}
         </div>
       </div>
       
@@ -1318,7 +1312,7 @@ const GameBoard2D: React.FC<GameBoard2DProps> = ({ onAction }) => {
                 <div className="text-xs text-yellow-300 font-bold mb-1">Select a reserve avatar:</div>
                 {game.player.reserveAvatars.map((avatar, index) => (
                   <div 
-                    key={index} 
+                    key={`player-reserve-select-${avatar.id}-${index}`} 
                     className="text-xs mb-0.5 bg-yellow-900 hover:bg-yellow-700 px-1 py-1 rounded cursor-pointer transition-colors"
                     onClick={() => handleSelectReserveAvatar(index)}
                   >
@@ -1330,7 +1324,7 @@ const GameBoard2D: React.FC<GameBoard2DProps> = ({ onAction }) => {
               // Normal display of reserve avatars
               game.player.reserveAvatars.map((avatar, index) => (
                 <div 
-                  key={index} 
+                  key={`player-reserve-${avatar.id}-${index}`} 
                   className="text-xs mb-0.5 bg-blue-900 bg-opacity-50 px-1 py-0.5 rounded cursor-pointer hover:bg-blue-800"
                   onClick={(e) => {
                     // Prevent action from triggering

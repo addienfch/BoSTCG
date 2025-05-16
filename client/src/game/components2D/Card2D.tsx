@@ -441,52 +441,32 @@ const Card2D: React.FC<Card2DProps> = ({
     const avatarCard = card as AvatarCard;
     return (
       <>
-        {/* Level and Subtype */}
-        <div className="absolute top-2 right-2 flex gap-1">
-          <div className="bg-yellow-500 rounded-md px-1 text-[9px] font-bold text-white">
-            LVL {avatarCard.level}
-          </div>
-        </div>
-        
-        {/* Health */}
-        <div className="absolute bottom-2 right-2 bg-gray-700 rounded-md px-1 py-0.5 text-[10px] font-bold text-white">
-          HP {avatarCard.health || (card as any).health || 0}
-        </div>
+        {/* Level indicator removed */}
         
         {/* Skill 1 */}
         {avatarCard.skill1 && (
           <div className="absolute bottom-2 left-2 flex items-center gap-1">
             {renderEnergyCost(avatarCard.skill1.energyCost)}
-            <div className="bg-red-700 rounded-md px-1 py-0.5 text-[10px] font-bold text-white">
-              {avatarCard.skill1.damage}
-            </div>
-          </div>
-        )}
-        
-        {/* Damage counter - combined all sources */}
-        {((avatarCard.counters?.damage || 0) > 0 || (card as any).damageCounter > 0 || (counters?.damage || 0) > 0) && (
-          <div className="absolute top-7 right-2 bg-red-600 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full shadow-md flex items-center justify-center min-w-[20px]">
-            {avatarCard.counters?.damage || (card as any).damageCounter || counters?.damage || 0}
           </div>
         )}
         
         {/* Current HP indicator */}
         {((avatarCard.counters?.damage || 0) > 0 || (card as any).damageCounter > 0 || (counters?.damage || 0) > 0) && (
-          <div className="absolute top-12 right-2 bg-green-700 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full shadow-md flex items-center justify-center min-w-[20px]">
+          <div className="absolute top-1/3 right-2 text-white text-[11px] font-bold px-2 py-0.5 bg-green-700 bg-opacity-80 rounded-full flex items-center justify-center min-w-[20px]">
             {Math.max(0, avatarCard.health - (avatarCard.counters?.damage || (card as any).damageCounter || counters?.damage || 0))}
           </div>
         )}
         
         {/* Bleed counter if any */}
         {(avatarCard.counters?.bleed || 0) > 0 && (
-          <div className="absolute top-17 right-2 bg-purple-600 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full shadow-md flex items-center justify-center min-w-[20px]">
+          <div className="absolute top-1/2 right-2 text-white text-[11px] font-bold px-2 py-0.5 bg-purple-700 bg-opacity-80 rounded-full flex items-center justify-center min-w-[20px]">
             B{avatarCard.counters?.bleed}
           </div>
         )}
         
         {/* Shield counter if any */}
         {(avatarCard.counters?.shield || 0) > 0 && (
-          <div className="absolute top-22 right-2 bg-blue-600 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full shadow-md flex items-center justify-center min-w-[20px]">
+          <div className="absolute bottom-1/3 right-2 text-white text-[11px] font-bold px-2 py-0.5 bg-blue-700 bg-opacity-80 rounded-full flex items-center justify-center min-w-[20px]">
             S{avatarCard.counters?.shield}
           </div>
         )}
@@ -505,15 +485,7 @@ const Card2D: React.FC<Card2DProps> = ({
           {renderEnergyCost(actionCard.energyCost)}
         </div>
         
-        {/* Quick Spell Indicator */}
-        {isQuickSpell && (
-          <div className="absolute top-1 left-1 z-10">
-            <div className="bg-purple-700 text-white text-[6px] px-1.5 py-0.5 rounded shadow-lg" 
-                 title="Quick Spells can be played during any phase, including your opponent's turn!">
-              <span className="animate-pulse inline-block">⚡</span> QUICK SPELL
-            </div>
-          </div>
-        )}
+        {/* Removed Quick Spell Indicator */}
       </>
     );
   };
@@ -550,20 +522,16 @@ const Card2D: React.FC<Card2DProps> = ({
       >
         {/* Card base */}
         <div 
-          className={`absolute inset-0 rounded-lg shadow-lg cursor-pointer ${isDragging ? 'scale-105' : 'hover:scale-105'} transition-transform`}
+          className={`absolute inset-0 cursor-pointer ${isDragging ? 'scale-105' : 'hover:scale-105'} transition-transform`}
           style={{ 
-            backgroundColor: cardColor,
-            border: `3px solid ${borderColor}`,
+            backgroundColor: 'transparent',
             opacity: isPlayable ? 1 : 0.7
           }}
           onClick={handleClick}
         >
-          {/* Card name */}
-          <div 
-            className="absolute top-2 left-0 right-0 text-center font-bold text-white text-xs px-2 flex items-center justify-center gap-1"
-          >
-            {getElementIcon()}
-            <span>{card.name}</span>
+          {/* Card name with background for better readability */}
+          <div className="absolute top-2 left-0 right-0 text-center text-white text-sm font-bold px-2">
+            {card.name}
           </div>
           
           {/* Preview Button for reserve avatars */}
@@ -573,9 +541,9 @@ const Card2D: React.FC<Card2DProps> = ({
             </div>
           )}
           
-          {/* Card art */}
+          {/* Card art - full size */}
           <div 
-            className="absolute top-9 left-2 right-2 h-20 bg-black bg-opacity-30 rounded overflow-hidden"
+            className="absolute inset-0"
           >
             {card.art ? (
               <img 
@@ -591,37 +559,18 @@ const Card2D: React.FC<Card2DProps> = ({
             )}
           </div>
           
-          {/* Card type */}
-          <div className="absolute top-[116px] left-2 right-2 text-center bg-black bg-opacity-70 py-0.5 px-1 rounded text-white text-[9px]">
-            {card.type === 'avatar' 
-              ? `Avatar - ${(card as AvatarCard).subType ? 
-                ((card as AvatarCard).subType.charAt(0).toUpperCase() + (card as AvatarCard).subType.slice(1)) 
-                : 'Unknown'}`
-              : card.type.charAt(0).toUpperCase() + card.type.slice(1)}
+          {/* Card type with background for better readability */}
+          <div className="absolute bottom-12 left-0 right-0 text-center py-0.5 text-white text-[10px] font-bold">
+            <span className="bg-black bg-opacity-50 px-2 py-0.5 rounded">
+              {card.type === 'avatar' 
+                ? (card as AvatarCard).subType 
+                    ? (card as AvatarCard).subType.charAt(0).toUpperCase() + (card as AvatarCard).subType.slice(1)
+                    : 'Avatar'
+                : card.type.charAt(0).toUpperCase() + card.type.slice(1)}
+            </span>
           </div>
           
-          {/* Card description/skills */}
-          <div 
-            className="absolute top-[132px] left-2 right-2 text-white text-[8px] bg-black bg-opacity-50 p-1 rounded h-[28px] overflow-hidden"
-          >
-            {card.type === 'avatar' ? (
-              <>
-                {(card as AvatarCard).skill1?.name || ''} {(card as AvatarCard).skill1?.damage || ''} 
-                {(card as AvatarCard).skill1?.damage ? 'dmg' : ''}
-                {(card as AvatarCard).skill1?.effect && (
-                  <> | {((card as AvatarCard).skill1.effect?.length || 0) > 35 
-                    ? (card as AvatarCard).skill1.effect?.substring(0, 35) + '...' 
-                    : (card as AvatarCard).skill1.effect}</>
-                )}
-              </>
-            ) : (
-              <>
-                {card.description && card.description.length > 40
-                  ? card.description.substring(0, 40) + '...' 
-                  : card.description}
-              </>
-            )}
-          </div>
+          {/* Removed description/skills section */}
           
           {/* Render card type specific content */}
           {card.type === 'avatar' ? renderAvatarContent() : renderActionContent()}

@@ -71,6 +71,10 @@ export async function setupVite(app: Express, server: Server) {
 }
 
 export function serveStatic(app: Express) {
+  app.use(express.static(path.join(__dirname, "../client/dist")));
+  app.use('/attached_assets', express.static(path.join(__dirname, "../attached_assets")));
+  app.use('/textures', express.static(path.join(__dirname, "../client/src/assets/textures")));
+
   const distPath = path.resolve(__dirname, "public");
 
   if (!fs.existsSync(distPath)) {

@@ -33,6 +33,7 @@ interface GameState {
   gamePhase: GamePhase;
   turn: number;
   winner: Player | null;
+  hasDrawnThisTurn: boolean;
   
   // Player states
   player: PlayerState;
@@ -110,6 +111,7 @@ export const useGameStore = create<GameState>((set, get) => ({
   gamePhase: 'refresh',
   turn: 1,
   winner: null,
+  hasDrawnThisTurn: false,
   
   // Player states
   player: initPlayerState(true),
@@ -124,6 +126,9 @@ export const useGameStore = create<GameState>((set, get) => ({
   
   // Initialize game
   initGame: () => {
+    // Reset game state
+    set({ hasDrawnThisTurn: false });
+    
     // Get the active deck from useDeckStore
     const { decks, activeDeckId } = useDeckStore.getState();
     
@@ -348,7 +353,7 @@ export const useGameStore = create<GameState>((set, get) => ({
     get().addLog(`${player === 'player' ? 'Your' : 'Opponent\'s'} deck has been shuffled.`);
   },
   
-  // Draw cards
+  // Draw cards - simplified to just handle drawing without phase checks
   drawCard: (player, count = 1) => {
     set(state => {
       const targetState = player === 'player' ? state.player : state.opponent;
@@ -358,17 +363,26 @@ export const useGameStore = create<GameState>((set, get) => ({
       // Draw up to count cards
       for (let i = 0; i < count; i++) {
         if (updatedDeck.length === 0) {
-          get().addLog(`${player === 'player' ? 'You have' : 'Opponent has'} no cards left to draw!`);
+          // Use the store's addLog method to log the message
+          useGameStore.getState().addLog(`${player === 'player' ? 'You have' : 'Opponent has'} no cards left to draw!`);
           break;
         }
         
         const drawnCard = updatedDeck.shift();
         if (drawnCard) {
           updatedHand.push(drawnCard);
-          get().addLog(`${player === 'player' ? 'You draw' : 'Opponent draws'} ${drawnCard.name}.`);
+          useGameStore.getState().addLog(`${player === 'player' ? 'You draw' : 'Opponent draws'} ${drawnCard.name}.`);
         }
       }
       
+      // Return updated state
+      return { 
+        [player === 'player' ? 'player' : 'opponent']: { 
+          ...targetState, 
+          deck: updatedDeck, 
+          hand: updatedHand 
+        } 
+      };
       if (player === 'player') {
         return { player: { ...targetState, deck: updatedDeck, hand: updatedHand } };
       } else {
@@ -855,21 +869,46 @@ export const useGameStore = create<GameState>((set, get) => ({
           
           // Update the correct player
           if (currentPlayer === 'player') {
-            return { player: { ...state.player, ...updatedState } };
+            return { 
+              ...state,
+              player: { ...state.player, ...updatedState } 
+            };
           } else {
-            return { opponent: { ...state.opponent, ...updatedState } };
+            return { 
+              ...state,
+              opponent: { ...state.opponent, ...updatedState } 
+            };
           }
         });
         
         // Log the energy refresh
         get().addLog(`${currentPlayer === 'player' ? 'Your' : 'Opponent\'s'} used energy has been refreshed.`);
-        break;
+        
+        // Move to draw phase and automatically draw a card
+        set({ gamePhase: 'draw' });
+        get().addLog(`${currentPlayer === 'player' ? 'Your' : 'Opponent\'s'} Draw Phase`);
+        
+        // Draw a card and then move to main1 phase after a short delay
+        setTimeout(() => {
+          get().drawCard(currentPlayer, 1);
+          
+          // Move to main1 phase after drawing
+          setTimeout(() => {
+            set({ gamePhase: 'main1' });
+            get().addLog(`${currentPlayer === 'player' ? 'Your' : 'Opponent\'s'} Main Phase 1`);
+            
+            // If it's the opponent's turn, have the AI perform actions
+            if (currentPlayer === 'opponent') {
+              get().performAIActions();
+            }
+          }, 500);
+        }, 500);
+        
+        return; // Exit early to prevent phase change in the main switch
         
       case 'draw':
+        // This case should not be reached directly as we handle the draw in the refresh phase
         nextPhase = 'main1';
-        
-        // Draw 1 card for the active player
-        // This is now handled in the refresh => draw transition
         break;
         
       case 'main1':
@@ -918,10 +957,19 @@ export const useGameStore = create<GameState>((set, get) => ({
     // Log the phase change
     get().addLog(`${currentPlayer === 'player' ? 'Your' : 'Opponent\'s'} ${get().getPhaseText()}`);
     
-    // If it's the opponent's turn, have the AI perform actions after a delay
+    // If it's the opponent's turn, handle AI turn
     if (currentPlayer === 'opponent') {
+      // Start AI turn with refresh phase
       setTimeout(() => {
-        get().performAIActions();
+        const game = get();
+        
+        // Move energy from used pile back to energy pile for AI
+        game.nextPhase(); // This will trigger refresh -> draw -> main1
+        
+        // After refresh phase completes, AI will take actions in main1
+        setTimeout(() => {
+          game.performAIActions();
+        }, 1500);
       }, 1000);
     }
   },
@@ -935,11 +983,29 @@ export const useGameStore = create<GameState>((set, get) => ({
       // If wrapping around to player, increment turn counter
       const newTurn = newCurrentPlayer === 'player' ? state.turn + 1 : state.turn;
       
+      // Return the new state with updated player and turn
       return {
         currentPlayer: newCurrentPlayer,
         turn: newTurn,
         gamePhase: 'refresh' // Always start a turn with refresh phase
       };
+      
+      // If it's now the player's turn, set up the refresh phase
+      if (state.currentPlayer === 'opponent') {
+        return {
+          currentPlayer: 'player',
+          turn: state.turn + 1,
+          gamePhase: 'refresh',
+          logs: [...state.logs, `Turn ${state.turn + 1} - Your turn begins!`]
+        };
+      } else {
+        return {
+          currentPlayer: 'opponent',
+          turn: state.turn,
+          gamePhase: 'refresh',
+          logs: [...state.logs, "Opponent's turn begins!"]
+        };
+      }
     });
     
     const newCurrentPlayer = get().currentPlayer;

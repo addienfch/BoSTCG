@@ -897,6 +897,8 @@ export const useGameStore = create<GameState>((set, get) => ({
       toast.error("You can only place one avatar card into energy per turn!");
       return;
     }
+
+
     
     // Move the card to energy pile
     set(state => {

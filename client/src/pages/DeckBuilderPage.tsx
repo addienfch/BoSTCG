@@ -3,6 +3,7 @@ import { useDeckStore, Deck } from '../game/stores/useDeckStore';
 import { Card, ElementType, AvatarCard } from '../game/data/cardTypes';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
+import { renderCardImage } from '../utils/cardImageUtils';
 
 const DeckBuilderPage: React.FC = () => {
   const { decks, activeDeckId, getAvailableCards, addDeck, updateDeck, deleteDeck, setActiveDeck } = useDeckStore();
@@ -406,118 +407,99 @@ const DeckBuilderPage: React.FC = () => {
             </div>
             
             {/* Card grid */}
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 max-h-[500px] overflow-y-auto p-2">
-              {filteredCards.map((card) => {
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 w-full">
+              {filteredCards.map((card, index) => {
                 const baseId = card.id.split('-')[0] + '-' + card.id.split('-')[1];
                 const count = cardCounts[baseId] || 0;
                 const isMaxed = hasReachedMaxCount(card);
                 
                 return (
                   <div 
-                    key={card.id} 
+                    key={`${card.id}-${index}`} 
                     className={`bg-gray-700 rounded-md overflow-hidden transition-transform hover:scale-105 ${
                       isMaxed ? 'opacity-50' : ''
                     }`}
                   >
                     <div className="relative group">
-                      <div 
-                        className={`h-36 flex items-center justify-center relative ${
-                          card.element === 'fire' ? 'bg-red-900' : 
-                          card.element === 'water' ? 'bg-blue-900' : 
-                          card.element === 'air' ? 'bg-cyan-900' :
-                          card.element === 'earth' ? 'bg-amber-900' : 'bg-gray-800'
-                        }`}
-                      >
-                        {card.art ? (
-                          <>
-                            <img src={card.art} alt={card.name} className="h-full w-full object-cover opacity-80" />
-                            <div className="absolute inset-0 flex flex-col justify-between p-1">
-                              <div className="flex justify-between">
-                                <div className="bg-black bg-opacity-60 text-white text-xs px-2 py-0.5 rounded font-bold">
-                                  {card.name}
-                                </div>
-                                {card.type === 'avatar' && (
-                                  <div className="bg-gray-800 bg-opacity-70 text-white text-xs px-1 py-0.5 rounded">
-                                    Lv{(card as AvatarCard).level}
-                                  </div>
-                                )}
-                              </div>
-                              <div className="bg-black bg-opacity-50 text-white text-xs px-1 py-0.5 rounded self-start">
-                                {card.type} 
-                                {card.type === 'avatar' && (card as AvatarCard).subType && 
-                                  ` • ${(card as AvatarCard).subType.charAt(0).toUpperCase() + (card as AvatarCard).subType.slice(1)}`
-                                }
-                              </div>
+                      <div className="h-36 relative">
+                        {renderCardImage(card, "h-36 w-full")}
+                        <div className="absolute inset-0 flex flex-col justify-between p-1">
+                          <div className="flex justify-between">
+                            <div className="bg-black bg-opacity-60 text-white text-xs px-2 py-0.5 rounded font-bold">
+                              {card.name}
                             </div>
-                            
-                            {/* Hover tooltip for card details */}
-                            <div className="absolute opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10 bg-gray-900 bg-opacity-90 border border-gray-600 rounded-md p-3 shadow-lg w-64 text-sm text-left left-0 mt-2 pointer-events-none" style={{ top: '100%' }}>
-                              <h3 className="font-bold text-lg mb-1">{card.name}</h3>
-                              <div className="flex justify-between mb-2">
-                                <div className="text-gray-300">
-                                  {card.type} • {card.element}
-                                  {card.type === 'avatar' && ` • Lv${(card as AvatarCard).level}`}
-                                </div>
-                                <div className="flex items-center gap-1">
-                                  {card.energyCost?.map((energy, i) => (
-                                    <div 
-                                      key={i}
-                                      className={`w-3 h-3 rounded-full ${
-                                        energy === 'fire' ? 'bg-red-500' : 
-                                        energy === 'water' ? 'bg-blue-500' : 
-                                        energy === 'air' ? 'bg-cyan-300' : 
-                                        energy === 'earth' ? 'bg-amber-700' : 
-                                        energy === 'neutral' ? 'bg-gray-400' : 'bg-gray-400'
-                                      }`}
-                                    />
-                                  ))}
-                                </div>
-                              </div>
-                              {card.type === 'avatar' && (
-                                <div className="mb-2">
-                                  <div>Health: {(card as AvatarCard).health}</div>
-                                  {(card as AvatarCard).skill1 && (
-                                    <div className="mt-2">
-                                      <div className="font-medium">{(card as AvatarCard).skill1.name}</div>
-                                      <div className="text-xs text-gray-300 mb-1">
-                                        Energy: {(card as AvatarCard).skill1.energyCost?.map(e => 
-                                          e.charAt(0).toUpperCase() + e.slice(1)
-                                        ).join(', ')}
-                                      </div>
-                                      <div>Damage: {(card as AvatarCard).skill1.damage}</div>
-                                      <div className="text-xs mt-1">{(card as AvatarCard).skill1.effect}</div>
-                                    </div>
-                                  )}
-                                  {(card as AvatarCard).skill2 && (
-                                    <div className="mt-2 border-t border-gray-700 pt-2">
-                                      <div className="font-medium">{(card as AvatarCard).skill2.name}</div>
-                                      <div className="text-xs text-gray-300 mb-1">
-                                        Energy: {(card as AvatarCard).skill2.energyCost?.map(e => 
-                                          e.charAt(0).toUpperCase() + e.slice(1)
-                                        ).join(', ')}
-                                      </div>
-                                      <div>Damage: {(card as AvatarCard).skill2.damage}</div>
-                                      <div className="text-xs mt-1">{(card as AvatarCard).skill2.effect}</div>
-                                    </div>
-                                  )}
-                                </div>
-                              )}
-                              {(card.type === 'spell' || card.type === 'quickSpell' || card.type === 'ritualArmor' || card.type === 'equipment') && (
-                                <div className="mb-2">
-                                  <div className="text-gray-100">{card.description}</div>
-                                </div>
-                              )}
-                            </div>
-                          </>
-                        ) : (
-                          <div className="text-center p-2">
-                            <div className="font-bold">{card.name}</div>
-                            <div className="text-xs">{card.type}</div>
                             {card.type === 'avatar' && (
-                              <div className="text-xs mt-1">Level: {(card as AvatarCard).level}</div>
+                              <div className="bg-gray-800 bg-opacity-70 text-white text-xs px-1 py-0.5 rounded">
+                                Lv{(card as AvatarCard).level}
+                              </div>
                             )}
                           </div>
-                        )}
+                          <div className="bg-black bg-opacity-50 text-white text-xs px-1 py-0.5 rounded self-start">
+                            {card.type} 
+                            {card.type === 'avatar' && (card as AvatarCard).subType && 
+                              ` • ${(card as AvatarCard).subType.charAt(0).toUpperCase() + (card as AvatarCard).subType.slice(1)}`
+                            }
+                          </div>
+                        </div>
+                        
+                        {/* Hover tooltip for card details */}
+                        <div className="absolute opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10 bg-gray-900 bg-opacity-90 border border-gray-600 rounded-md p-3 shadow-lg w-64 text-sm text-left left-0 mt-2 pointer-events-none" style={{ top: '100%' }}>
+                          <h3 className="font-bold text-lg mb-1">{card.name}</h3>
+                          <div className="flex justify-between mb-2">
+                            <div className="text-gray-300">
+                              {card.type} • {card.element}
+                              {card.type === 'avatar' && ` • Lv${(card as AvatarCard).level}`}
+                            </div>
+                            <div className="flex items-center gap-1">
+                              {card.energyCost?.map((energy, i) => (
+                                <div 
+                                  key={i}
+                                  className={`w-3 h-3 rounded-full ${
+                                    energy === 'fire' ? 'bg-red-500' : 
+                                    energy === 'water' ? 'bg-blue-500' : 
+                                    energy === 'air' ? 'bg-cyan-300' : 
+                                    energy === 'earth' ? 'bg-amber-700' : 
+                                    energy === 'neutral' ? 'bg-gray-400' : 'bg-gray-400'
+                                  }`}
+                                />
+                              ))}
+                            </div>
+                          </div>
+                          {card.type === 'avatar' && (
+                            <div className="mb-2">
+                              <div>Health: {(card as AvatarCard).health}</div>
+                              {(card as AvatarCard).skill1 && (
+                                <div className="mt-2">
+                                  <div className="font-medium">{(card as AvatarCard).skill1?.name || 'Unnamed Skill'}</div>
+                                  <div className="text-xs text-gray-300 mb-1">
+                                    Energy: {(card as AvatarCard).skill1?.energyCost?.map(e => 
+                                      e.charAt(0).toUpperCase() + e.slice(1)
+                                    ).join(', ') || 'None'}
+                                  </div>
+                                  <div>Damage: {(card as AvatarCard).skill1?.damage || 0}</div>
+                                  <div className="text-xs mt-1">{(card as AvatarCard).skill1?.effect || 'No effect'}</div>
+                                </div>
+                              )}
+                              {(card as AvatarCard).skill2 && (
+                                <div className="mt-2 border-t border-gray-700 pt-2">
+                                  <div className="font-medium">{(card as AvatarCard).skill2?.name || 'Unnamed Skill'}</div>
+                                  <div className="text-xs text-gray-300 mb-1">
+                                    Energy: {(card as AvatarCard).skill2?.energyCost?.map(e => 
+                                      e.charAt(0).toUpperCase() + e.slice(1)
+                                    ).join(', ') || 'None'}
+                                  </div>
+                                  <div>Damage: {(card as AvatarCard).skill2?.damage || 0}</div>
+                                  <div className="text-xs mt-1">{(card as AvatarCard).skill2?.effect || 'No effect'}</div>
+                                </div>
+                              )}
+                            </div>
+                          )}
+                          {(card.type === 'spell' || card.type === 'quickSpell' || card.type === 'ritualArmor' || card.type === 'equipment') && (
+                            <div className="mb-2">
+                              <div className="text-gray-100">{card.description || 'No description available'}</div>
+                            </div>
+                          )}
+                        </div>
                       </div>
                       
                       {/* Count badge */}

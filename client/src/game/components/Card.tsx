@@ -273,20 +273,27 @@ const Card = ({
   const handleAvatarAction = (action: 'active' | 'reserve' | 'energy') => {
     setShowPopup(false);
     
-    // Notify the action was taken (this would be replaced with actual game logic)
+    // Notify the action was taken
     switch(action) {
       case 'active':
         toast.success(`${card.name} will be played as active avatar`);
+        // This will be handled by the parent component via onClick
         break;
       case 'reserve':
         toast.success(`${card.name} will be played as reserve avatar`);
+        // This will be handled by the parent component via onClick
         break;
       case 'energy':
-        toast.success(`${card.name} will be used as energy`);
-        break;
+        // Directly call setEnergyCard from the parent component
+        if (onClick) {
+          // We'll use a custom event to indicate this is an energy action
+          const event = new CustomEvent('cardAction', { detail: { action: 'energy' } });
+          document.dispatchEvent(event);
+        }
+        return; // Skip the default onClick
     }
     
-    // Call the main click handler to handle the card action
+    // Call the main click handler for other actions
     if (onClick) {
       onClick();
     }

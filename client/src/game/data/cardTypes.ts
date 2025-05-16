@@ -29,6 +29,8 @@ export interface BaseCard {
   energyCost?: ElementType[];
   effect?: string;
   art: string;
+  image?: string;
+  rarity?: 'common' | 'rare' | 'epic' | 'legendary';
 }
 
 // Avatar Card interface

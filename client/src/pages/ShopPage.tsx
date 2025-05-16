@@ -1,233 +1,26 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { availableBoosterPacks, BoosterPackType } from '../game/gacha/BoosterPackSystem';
 import { useCollectionStore } from '../game/stores/useCollectionStore';
-import { Card } from '../game/data/cardTypes';
-import { AvatarCard, ActionCard } from '../game/data/cardTypes';
+import { useDeckStore } from '../game/stores/useDeckStore';
+import { Card, AvatarCard, ActionCard } from '../game/data/cardTypes';
+import { useSolanaWallet } from '../lib/solana/useSolanaWallet';
+import { redElementalCards } from '../game/data/redElementalCards';
+import { allKobarBorahCards } from '../game/data/kobarBorahCards';
+import { allKujanaKuhakaCards } from '../game/data/kujanaKuhakaCards';
+// Import deck creation functions from their respective files
+import { kobarBorahAvatarCards, kobarBorahActionCards } from '../game/data/kobarBorahCards';
+import { kujanaKuhakaAvatarCards } from '../game/data/kujanaKuhakaCards';
 
-// Component to display a booster pack
-const BoosterPackCard: React.FC<{
-  id: string;
-  name: string;
-  description: string;
-  price: number;
-  image?: string;
-  onClick: () => void;
-}> = ({ id, name, description, price, image, onClick }) => {
-  return (
-    <div 
-      className="bg-gray-800 rounded-lg p-4 flex flex-col items-center shadow-lg cursor-pointer hover:bg-gray-700 transition-colors"
-      onClick={onClick}
-    >
-      <div className="w-32 h-40 bg-gray-700 rounded overflow-hidden mb-3">
-        {image ? (
-          <img 
-            src={image} 
-            alt={name} 
-            className="w-full h-full object-cover"
-          />
-        ) : (
-          <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-purple-900 to-blue-900">
-            <span className="text-2xl font-bold">?</span>
-          </div>
-        )}
-      </div>
-      <h3 className="text-lg font-bold text-white mb-1">{name}</h3>
-      <p className="text-xs text-gray-300 text-center mb-3">{description}</p>
-      <div className="flex items-center bg-green-600 px-3 py-1 rounded-full text-white font-bold">
-        <span className="mr-1">$</span>
-        <span>{price}</span>
-      </div>
-    </div>
-  );
-};
-
-// Component to display a card from a booster pack opening
-const CardReveal: React.FC<{
-  card: Card;
-  index: number;
-  isRevealed: boolean;
-  onClick?: () => void;
-}> = ({ card, index, isRevealed, onClick }) => {
-  const avatarCard = card.type === 'avatar' ? card as AvatarCard : null;
-  const actionCard = card.type !== 'avatar' ? card as ActionCard : null;
-  
-  const getCardColor = () => {
-    if (card.element === 'fire') return 'from-red-700 to-orange-600';
-    if (card.element === 'water') return 'from-blue-700 to-cyan-600';
-    if (card.element === 'earth') return 'from-green-700 to-lime-600';
-    if (card.element === 'air') return 'from-sky-700 to-indigo-600';
-    return 'from-purple-700 to-pink-600';
-  };
-  
-  return (
-    <div 
-      className={`transition-all duration-500 ease-in-out transform ${
-        isRevealed 
-          ? 'scale-100 rotate-0 opacity-100' 
-          : 'scale-90 rotate-12 opacity-0'
-      } cursor-pointer hover:scale-110 hover:brightness-110 active:scale-95`}
-      style={{ transitionDelay: `${index * 300}ms` }}
-      onClick={() => {
-        console.log('Card clicked:', card.name);
-        // Show a temporary visual feedback
-        toast.info(`Viewing ${card.name} details`);
-        // Call the onClick handler to show the preview
-        if (onClick) onClick();
-      }}
-    >
-      <div className={`w-28 h-40 rounded-lg overflow-hidden bg-gradient-to-br ${getCardColor()} shadow-xl`}>
-        <div className="p-2 h-full flex flex-col">
-          <div className="text-xs font-bold bg-black bg-opacity-50 px-1 py-0.5 rounded mb-1 text-white truncate">
-            {card.name}
-          </div>
-          
-          {card.art ? (
-            <div className="h-16 bg-black bg-opacity-30 rounded overflow-hidden mb-1">
-              <img 
-                src={card.art} 
-                alt={card.name} 
-                className="w-full h-full object-cover"
-                onError={(e) => {
-                  // Fallback for broken images
-                  const target = e.target as HTMLImageElement;
-                  target.onerror = null;
-                  target.src = `/textures/cards/${card.type}-placeholder.png`;
-                }} 
-              />
-            </div>
-          ) : (
-            <div className="h-16 bg-black bg-opacity-30 rounded mb-1"></div>
-          )}
-          
-          <div className="bg-black bg-opacity-50 p-1 rounded text-xs text-white flex-1">
-            {avatarCard && (
-              <div>
-                <div className="flex justify-between">
-                  <span>HP: {avatarCard.health}</span>
-                  <span>Lv: {avatarCard.level}</span>
-                </div>
-                <div className="mt-1 text-[10px]">
-                  Skill: {avatarCard.skill1.name}
-                </div>
-              </div>
-            )}
-            
-            {actionCard && (
-              <div className="text-[10px]">
-                {actionCard.description || "Special card effect"}
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-// Card preview component
-const CardPreview: React.FC<{
-  card: Card;
-  onClose: () => void;
-}> = ({ card, onClose }) => {
-  const avatarCard = card.type === 'avatar' ? card as AvatarCard : null;
-  const actionCard = card.type !== 'avatar' ? card as ActionCard : null;
-  
-  return (
-    <div className="fixed inset-0 bg-black bg-opacity-80 z-50 flex items-center justify-center p-4" onClick={onClose}>
-      <div className="relative bg-gray-800 rounded-lg shadow-lg max-w-md w-full max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
-        <button 
-          className="absolute top-2 right-2 text-white bg-red-600 rounded-full w-8 h-8 flex items-center justify-center"
-          onClick={onClose}
-        >
-          ✕
-        </button>
-        
-        <div className="p-4">
-          <div className="mb-4 rounded-lg overflow-hidden">
-            {card.art && (
-              <img 
-                src={card.art} 
-                alt={card.name} 
-                className="w-full object-cover"
-                onError={(e) => {
-                  // Fallback for broken images
-                  const target = e.target as HTMLImageElement;
-                  target.onerror = null;
-                  target.src = `/textures/cards/${card.type}-placeholder.png`;
-                }}
-              />
-            )}
-          </div>
-          
-          <div className="text-white">
-            <h2 className="text-xl font-bold mb-2">{card.name}</h2>
-            <div className="mb-2">
-              <span className="inline-block bg-gray-700 px-2 py-1 rounded mr-2">
-                {card.type.charAt(0).toUpperCase() + card.type.slice(1)}
-              </span>
-              <span className="inline-block bg-gray-700 px-2 py-1 rounded">
-                {card.element.charAt(0).toUpperCase() + card.element.slice(1)}
-              </span>
-            </div>
-            
-            {avatarCard && (
-              <div className="mb-2">
-                <div className="flex justify-between items-center">
-                  <span>Level: {avatarCard.level}</span>
-                  <span className="text-green-500">
-                    HP: {avatarCard.health}
-                  </span>
-                </div>
-              </div>
-            )}
-            
-            {avatarCard && (
-              <div className="mt-4 space-y-2">
-                <div className="p-2 bg-gray-700 rounded">
-                  <h3 className="font-bold">Skill 1: {avatarCard.skill1.name}</h3>
-                  <p className="text-xs">{avatarCard.skill1.effect || "Basic attack"}</p>
-                  <div className="mt-1 text-sm">Damage: {avatarCard.skill1.damage}</div>
-                  <div className="mt-1 text-xs">
-                    Energy: {avatarCard.skill1.energyCost.map(e => e.charAt(0).toUpperCase() + e.slice(1)).join(', ')}
-                  </div>
-                </div>
-                
-                {avatarCard.skill2 && (
-                  <div className="p-2 bg-gray-700 rounded">
-                    <h3 className="font-bold">Skill 2: {avatarCard.skill2.name}</h3>
-                    <p className="text-xs">{avatarCard.skill2.effect || "Advanced attack"}</p>
-                    <div className="mt-1 text-sm">Damage: {avatarCard.skill2.damage}</div>
-                    <div className="mt-1 text-xs">
-                      Energy: {avatarCard.skill2.energyCost.map(e => e.charAt(0).toUpperCase() + e.slice(1)).join(', ')}
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
-            
-            {actionCard && (
-              <div className="mt-2">
-                <p className="text-sm text-gray-300">{actionCard.description || "Special effect card"}</p>
-                {actionCard.energyCost && (
-                  <div className="mt-1 text-xs">
-                    Energy: {actionCard.energyCost.map(e => e.charAt(0).toUpperCase() + e.slice(1)).join(', ')}
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-// Shop page component
+// Shop page component with tabs
 const ShopPage: React.FC = () => {
   const navigate = useNavigate();
   const { coins, purchaseBoosterPack, resetCoins } = useCollectionStore();
+  const { walletAddress, connected } = useSolanaWallet();
+  
+  // State for active tab
+  const [activeTab, setActiveTab] = useState<'boosters' | 'decks'>('decks');
   
   // State for pack opening
   const [isOpeningPack, setIsOpeningPack] = useState(false);
@@ -236,73 +29,102 @@ const ShopPage: React.FC = () => {
   
   // State for card preview
   const [previewCard, setPreviewCard] = useState<Card | null>(null);
+  const [showPreview, setShowPreview] = useState(false);
   
   // State for pack selection animation
   const [selectedPackType, setSelectedPackType] = useState<BoosterPackType | null>(null);
   const [packOptions, setPackOptions] = useState<number[]>([]);
   const [selectedPackIndex, setSelectedPackIndex] = useState<number | null>(null);
   
-  // Handle booster pack purchase - first step: select pack type
+  // NFT Marketplace state
+  const [connectingWallet, setConnectingWallet] = useState(false);
+  const [walletConnected, setWalletConnected] = useState(!!walletAddress);
+  
+  // Mock NFT data
+  const nfts = [
+    { id: 'nft1', name: 'Legendary Avatar', price: 10, rarity: 'Legendary', image: '/attached_assets/Red Elemental Avatar_Ava - Radja.png' },
+    { id: 'nft2', name: 'Epic Spell Card', price: 5, rarity: 'Epic', image: '/attached_assets/Red Elemental Avatar_Ava - Boar Witch.png' },
+    { id: 'nft3', name: 'Rare Equipment', price: 2.5, rarity: 'Rare', image: '/attached_assets/Red Elemental Avatar_Ava - Radja.png' },
+    { id: 'nft4', name: 'Common Item', price: 1, rarity: 'Common', image: '/attached_assets/Red Elemental Avatar_Ava - Boar Witch.png' },
+  ];
+  
+  // Deck type definition
+  interface Deck {
+    id: string;
+    name: string;
+    price: number;
+    description: string;
+    image: string;
+    cardCount: number;
+    avatarCount: number;
+    spellCount: number;
+    element: string;
+  }
+  
+  // Premade deck data
+  const premadeDecks: Deck[] = [
+    { 
+      id: 'deck1', 
+      name: 'Kobar-Borah Deck', 
+      price: 50, // USDC
+      description: 'A powerful fire-based deck featuring 16 level 1 avatar cards, 4 level 2 avatar cards, and supporting spell cards.',
+      image: 'https://placehold.co/400x600/ef4444/ffffff?text=Kobar-Borah',
+      cardCount: 40,
+      avatarCount: 20,
+      spellCount: 20,
+      element: 'Fire'
+    },
+    { 
+      id: 'deck2', 
+      name: 'Kuhaka-Kujana Deck', 
+      price: 50, // USDC
+      description: 'A strategic water-based deck featuring 16 level 1 avatar cards, 4 level 2 avatar cards, and supporting spell cards.',
+      image: 'https://placehold.co/400x600/3b82f6/ffffff?text=Kuhaka-Kujana',
+      cardCount: 40,
+      avatarCount: 20,
+      spellCount: 20,
+      element: 'Water'
+    }
+  ];
+  
+  // Get user's card collection and deck store
+  const { cards } = useCollectionStore();
+  const { purchaseDeck, isDeckOwned, claimStarterDeck, starterDeckClaimed } = useDeckStore();
+  
+  // State for available decks and starter deck status
+  const [availableDecks, setAvailableDecks] = useState<Deck[]>(premadeDecks.filter(deck => !isDeckOwned(deck.id)));
+  const [hasClaimedStarterDeck, setHasClaimedStarterDeck] = useState(starterDeckClaimed);
+  
+  // Update hasClaimedStarterDeck when starterDeckClaimed changes
+  useEffect(() => {
+    setHasClaimedStarterDeck(starterDeckClaimed);
+  }, [starterDeckClaimed]);
+  
+  // Update available decks when ownership changes
+  useEffect(() => {
+    setAvailableDecks(premadeDecks.filter(deck => !isDeckOwned(deck.id)));
+  }, [isDeckOwned]);
+  
+  // Handle booster pack purchase
   const handleSelectPackType = (packType: BoosterPackType, packPrice: number) => {
     // Check if player has enough coins
     if (coins < packPrice) {
-      toast.error(`Not enough coins! You need ${packPrice} coins.`);
+      toast.error(`Not enough USDC! You need ${packPrice} USDC.`);
       return;
     }
     
-    // Start the pack selection animation
-    setSelectedPackType(packType);
+    toast.success(`Purchased ${packType} pack for ${packPrice} USDC!`);
+    const cards = purchaseBoosterPack(packType, packPrice);
     
-    // Generate 10 random pack options
-    setPackOptions(Array.from({length: 10}, (_, i) => i + 1));
-    setSelectedPackIndex(null);
-  };
-  
-  // Handle pack selection from the grid
-  const handleSelectPackFromGrid = (index: number) => {
-    // Animate selection
-    setSelectedPackIndex(index);
-    
-    // Start the pack opening process after a delay
-    setTimeout(() => {
-      if (!selectedPackType) return;
-      
-      // Find the pack info
-      const packInfo = availableBoosterPacks.find(p => p.type === selectedPackType);
-      if (!packInfo) return;
-      
-      // Start the pack opening animation
+    if (cards && cards.length > 0) {
+      setOpenedCards(cards);
       setIsOpeningPack(true);
-      setAllCardsRevealed(false);
-      setOpenedCards([]);
       
-      // Purchase the pack
+      // After a delay, show all cards as revealed
       setTimeout(() => {
-        const cards = purchaseBoosterPack(selectedPackType, packInfo.price);
-        
-        if (cards && cards.length > 0) {
-          console.log('Cards received from pack:', cards.length, cards.map(c => c.name));
-          
-          // Show the cards one by one
-          setOpenedCards(cards);
-          
-          // After all cards are revealed, set the state and show preview of first card
-          setTimeout(() => {
-            setAllCardsRevealed(true);
-            
-            // Automatically set the first card for preview
-            setPreviewCard(cards[0]);
-            console.log('Auto-showing first card preview:', cards[0].name);
-          }, cards.length * 300 + 500);
-        } else {
-          // Failed to purchase pack
-          console.error('Failed to get cards from pack');
-          toast.error("Failed to open pack!");
-          setIsOpeningPack(false);
-          setSelectedPackType(null);
-        }
+        setAllCardsRevealed(true);
       }, 1000);
-    }, 1500);
+    }
   };
   
   // Handle closing the pack opening screen
@@ -311,191 +133,469 @@ const ShopPage: React.FC = () => {
     setOpenedCards([]);
     setAllCardsRevealed(false);
     setPreviewCard(null);
-    setSelectedPackType(null);
+    setShowPreview(false);
+  };
+  
+  // Handle card preview
+  const handleCardPreview = (card: Card) => {
+    setPreviewCard(card);
+    setShowPreview(true);
+  };
+  
+  // Handle wallet connection
+  const handleConnectWallet = () => {
+    setConnectingWallet(true);
     
-    // Stay on the shop page instead of navigating away
+    // Simulate wallet connection
+    setTimeout(() => {
+      setWalletConnected(true);
+      setConnectingWallet(false);
+      toast.success(`Wallet connected successfully!`);
+    }, 1500);
+  };
+  
+  // Handle NFT purchase
+  const handleNFTPurchase = (nftId: string, price: number) => {
+    if (!walletConnected) {
+      toast.error("Please connect your wallet first!");
+      return;
+    }
+    
+    toast.success(`NFT purchase initiated! Transaction pending...`);
+    
+    // Simulate transaction
+    setTimeout(() => {
+      toast.success(`Successfully purchased NFT! Transaction hash: 0x${Math.random().toString(16).substring(2, 10)}`);
+    }, 2000);
+  };
+  
+  // State for deck opening
+  const [isOpeningDeck, setIsOpeningDeck] = useState(false);
+  const [openedDeckCards, setOpenedDeckCards] = useState<Card[]>([]);
+  const [selectedDeckName, setSelectedDeckName] = useState('');
+  
+  // Function to create a Kobar-Borah deck
+  const createKobarBorahDeck = (): Card[] => {
+    const avatars = kobarBorahAvatarCards.filter(card => card.level === 1);
+    const level2Avatars = kobarBorahAvatarCards.filter(card => card.level === 2);
+    
+    const cards: Card[] = [];
+    
+    // Add copies of level 1 avatars (3 of each)
+    avatars.forEach(avatar => {
+      for (let i = 1; i <= 3; i++) {
+        cards.push({...avatar, id: `${avatar.id}-${i}`});
+      }
+    });
+    
+    // Add 3 copies of each action card
+    kobarBorahActionCards.forEach(action => {
+      for (let i = 0; i < 3; i++) {
+        cards.push({...action, id: `${action.id}-${i+1}`});
+      }
+    });
+    
+    // Also add 1 copy of each level 2 avatar for evolution possibilities
+    level2Avatars.forEach(avatar => {
+      cards.push({...avatar, id: `${avatar.id}-1`});
+    });
+    
+    return cards;
+  };
+  
+  // Function to create a Kujana-Kuhaka deck
+  const createKujanaKuhakaDeck = (): Card[] => {
+    const avatars = kujanaKuhakaAvatarCards.filter(card => card.level === 1);
+    const level2Avatars = kujanaKuhakaAvatarCards.filter(card => card.level === 2);
+    
+    const cards: Card[] = [];
+    
+    // Add copies of level 1 avatars (3 of each)
+    avatars.forEach(avatar => {
+      for (let i = 1; i <= 3; i++) {
+        cards.push({...avatar, id: `${avatar.id}-${i}`});
+      }
+    });
+    
+    // Add 3 copies of each action card (using kobarBorahActionCards as placeholder)
+    kobarBorahActionCards.forEach(action => {
+      for (let i = 0; i < 3; i++) {
+        cards.push({...action, id: `${action.id}-${i+1}`});
+      }
+    });
+    
+    // Also add 1 copy of each level 2 avatar for evolution possibilities
+    level2Avatars.forEach(avatar => {
+      cards.push({...avatar, id: `${avatar.id}-1`});
+    });
+    
+    return cards;
+  };
+  
+  // Handle deck purchase
+  const handleDeckPurchase = async (deck: Deck) => {
+    try {
+      // Check if wallet is connected
+      if (!connected) {
+        toast.error('Please connect your wallet to purchase decks');
+        return;
+      }
+      
+      // Get the deck cards based on the deck ID
+      let deckCards: Card[] = [];
+      
+      if (deck.id === 'deck1') {
+        // Kobar-Borah deck
+        deckCards = createKobarBorahDeck();
+      } else if (deck.id === 'deck2') {
+        // Kujana-Kuhaka deck
+        deckCards = createKujanaKuhakaDeck();
+      }
+      
+      // Purchase the deck
+      const success = purchaseDeck(deck.id, deckCards);
+      
+      if (success) {
+        toast.success(`Successfully purchased ${deck.name}!`);
+        // Update available decks by filtering out the purchased deck
+        setAvailableDecks((currentDecks: Deck[]) => 
+          currentDecks.filter((d: Deck) => d.id !== deck.id)
+        );
+      }
+    } catch (error) {
+      console.error('Error purchasing deck:', error);
+      toast.error('Failed to purchase deck. Please try again.');
+    }
+  };
+  
+  // Handle closing the deck opening screen
+  const handleCloseDeck = () => {
+    setIsOpeningDeck(false);
+    setOpenedDeckCards([]);
+    setSelectedDeckName('');
+    setPreviewCard(null);
+    setShowPreview(false);
+  };
+  
+  // Handle external NFT marketplace navigation
+  const handleNFTMarketplace = () => {
+    toast.info('Redirecting to Solana NFT marketplace...');
+    // In a real app, this would open a new window to Magic Eden or Tensor
+    window.open('https://magiceden.io/', '_blank');
   };
   
   return (
-    <div className="bg-gray-900 min-h-screen text-white p-4">
+    <div className="min-h-screen p-2 sm:p-4 w-full max-w-screen-xl mx-auto" style={{ backgroundColor: '#DFE1DD', color: '#0D1A29' }}>
       {/* Header */}
-      <div className="flex justify-between items-center mb-6">
-        <button 
-          onClick={() => navigate('/')}
-          className="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded shadow-md"
-        >
-          Back to Home
-        </button>
-        <div className="flex items-center space-x-2">
-          <div className="flex items-center bg-green-700 px-4 py-2 rounded-md shadow-md">
-            <span className="mr-2">$</span>
-            <span className="font-bold">{coins.toLocaleString()}</span>
-          </div>
+      <div className="flex justify-between items-center mb-4">
+        <div>
+          <h1 className="text-xl font-bold">Shop</h1>
+          <p className="text-sm">Your USDC: {coins}</p>
+        </div>
+        
+        {/* Debug buttons - only for development */}
+        <div className="flex gap-2">
           <button 
-            onClick={resetCoins}
-            className="bg-yellow-600 hover:bg-yellow-700 px-3 py-2 rounded-md shadow-md text-sm"
+            onClick={() => resetCoins()}
+            className="bg-blue-600 hover:bg-blue-700 text-white text-xs px-2 py-1 rounded"
           >
-            Reset Coins
+            Add Coins
           </button>
         </div>
       </div>
       
       <h1 className="text-2xl font-bold mb-6 text-center">Card Shop</h1>
       
-      {/* Card preview modal */}
-      {previewCard && (
-        <CardPreview card={previewCard} onClose={() => setPreviewCard(null)} />
-      )}
+      {/* Main Shop Navigation Buttons */}
+      <div className="mb-8 flex flex-col items-center space-y-4">
+        <div className="flex space-x-4">
+          <button
+            onClick={() => navigate('/shop')}
+            className="px-6 py-3 rounded-xl text-white bg-blue-600 hover:bg-blue-700 font-bold shadow-lg flex items-center"
+          >
+            <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+            </svg>
+            Shop
+          </button>
+          <button
+            onClick={handleNFTMarketplace}
+            className="px-6 py-3 rounded-xl text-white bg-purple-600 hover:bg-purple-700 font-bold shadow-lg flex items-center"
+          >
+            <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+            </svg>
+            NFT Marketplace
+          </button>
+        </div>
+      </div>
       
-      {/* Pack opening modal */}
-      {isOpeningPack && (
-        <div className="fixed inset-0 bg-black bg-opacity-80 z-50 flex items-center justify-center">
-          <div className="bg-gray-800 p-6 rounded-lg shadow-xl max-w-md w-full">
-            <h2 className="text-xl font-bold mb-4 text-center">Opening Booster Pack</h2>
-            
-            {openedCards.length > 0 ? (
-              <div className="flex flex-wrap justify-center gap-3 mb-6">
+      {/* Tabs */}
+      <div className="mb-6 flex justify-center">
+        <button
+          onClick={() => setActiveTab('boosters')}
+          className={`px-4 py-2 rounded-md text-white ${activeTab === 'boosters' ? 'bg-blue-600' : 'bg-gray-700'}`}
+        >
+          Booster Packs
+        </button>
+        <button
+          onClick={() => setActiveTab('decks')}
+          className={`px-4 py-2 rounded-md text-white ml-2 ${activeTab === 'decks' ? 'bg-blue-600' : 'bg-gray-700'}`}
+        >
+          Premade Decks
+        </button>
+      </div>
+      
+      {/* Tab Content */}
+      {activeTab === 'boosters' ? (
+        <div>
+          {isOpeningPack ? (
+            <div className="bg-gray-800 p-6 rounded-3xl shadow-xl max-w-md mx-auto">
+              <h2 className="text-xl font-bold mb-4 text-center text-white">Pack Opening</h2>
+              
+              {/* Cards display */}
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-4">
                 {openedCards.map((card, index) => (
-                  <CardReveal 
-                    key={index} 
-                    card={card} 
-                    index={index} 
-                    isRevealed={true}
-                    onClick={() => setPreviewCard(card)} 
-                  />
+                  <div 
+                    key={index}
+                    className={`bg-gray-700 rounded-lg p-2 text-center cursor-pointer transform transition-transform ${allCardsRevealed ? 'hover:scale-105' : 'hover:scale-102'}`}
+                    onClick={() => handleCardPreview(card)}
+                  >
+                    <div className="text-sm font-bold text-white mb-1">{card.name}</div>
+                    <div className="text-xs text-gray-300">{card.type}</div>
+                    <div className={`text-xs mt-1 ${
+                      card.rarity === 'legendary' ? 'text-yellow-400' :
+                      card.rarity === 'epic' ? 'text-purple-400' :
+                      card.rarity === 'rare' ? 'text-blue-400' :
+                      'text-gray-400'
+                    }`}>
+                      {card.rarity ? card.rarity.charAt(0).toUpperCase() + card.rarity.slice(1) : 'Common'}
+                    </div>
+                    {card.art && (
+                      <div className="mt-2 w-full h-24 overflow-hidden">
+                        <img src={card.art} alt={card.name} className="w-full h-full object-contain" />
+                      </div>
+                    )}
+                  </div>
                 ))}
               </div>
-            ) : (
-              <div className="flex justify-center mb-6">
-                <div className="animate-pulse bg-gray-700 w-32 h-40 rounded-lg"></div>
-              </div>
-            )}
-            
-            {allCardsRevealed && (
-              <div className="flex flex-col space-y-2">
-                <button
-                  onClick={handleClosePack}
-                  className="w-full bg-blue-600 hover:bg-blue-700 py-2 rounded font-bold"
-                >
-                  Done
-                </button>
-                <button
-                  onClick={() => {
-                    // Just close the pack opening modal and reset states
-                    setIsOpeningPack(false);
-                    setOpenedCards([]);
-                    setAllCardsRevealed(false);
-                    setPreviewCard(null);
-                    setSelectedPackType(null); // Go back to pack selection screen
-                  }}
-                  className="w-full bg-green-600 hover:bg-green-700 py-2 rounded font-bold"
-                >
-                  Open Another Pack
-                </button>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
-      
-      {/* Pack type selection (initial view) */}
-      {!selectedPackType && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          {availableBoosterPacks.map((pack) => (
-            <BoosterPackCard
-              key={pack.id}
-              id={pack.id}
-              name={pack.name}
-              description={pack.description}
-              price={pack.price}
-              image={pack.image}
-              onClick={() => handleSelectPackType(pack.type, pack.price)}
-            />
-          ))}
-        </div>
-      )}
-      
-      {/* Pack selection grid (after selecting pack type) */}
-      {selectedPackType && !isOpeningPack && (
-        <div className="max-w-4xl mx-auto">
-          <div className="mb-6 text-center">
-            <h2 className="text-2xl font-bold mb-2">Choose Your Mystery Pack!</h2>
-            <p className="text-gray-300 mb-6">Select one of the packs below to reveal your cards</p>
-            
-            {/* Pack type info */}
-            {(() => {
-              const packInfo = availableBoosterPacks.find(p => p.type === selectedPackType);
-              return packInfo && (
-                <div className="bg-gray-800 p-3 rounded-lg inline-block mb-4">
-                  <div className="flex items-center">
-                    <div className="w-12 h-16 mr-3">
-                      <img src={packInfo.image} alt={packInfo.name} className="w-full h-full object-cover rounded" />
+              
+              {/* Card Preview Modal */}
+              {showPreview && previewCard && (
+                <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50">
+                  <div className="bg-gray-800 p-6 rounded-xl max-w-sm w-full relative">
+                    <button 
+                      onClick={() => setShowPreview(false)}
+                      className="absolute top-2 right-2 text-gray-400 hover:text-white"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    </button>
+                    
+                    <h3 className="text-xl font-bold text-white mb-4">{previewCard.name}</h3>
+                    
+                    {previewCard.art ? (
+                      <div className="w-full h-64 bg-gray-700 overflow-hidden mb-4">
+                        <img 
+                          src={previewCard.art} 
+                          alt={previewCard.name} 
+                          className="w-full h-full object-contain"
+                        />
+                      </div>
+                    ) : (
+                      <div className="w-full h-64 bg-gradient-to-br from-gray-700 to-gray-900 rounded-lg mb-4 flex items-center justify-center">
+                        <span className="text-2xl font-bold text-gray-500">{previewCard.name.charAt(0)}</span>
+                      </div>
+                    )}
+                    
+                    <div className="mb-4">
+                      <div className="flex justify-between mb-2">
+                        <span className="text-gray-400">Type:</span>
+                        <span className="text-white font-medium">{previewCard.type}</span>
+                      </div>
+                      
+                      <div className="flex justify-between mb-2">
+                        <span className="text-gray-400">Rarity:</span>
+                        <span className={`font-medium ${previewCard.rarity === 'legendary' ? 'text-yellow-400' : previewCard.rarity === 'epic' ? 'text-purple-400' : previewCard.rarity === 'rare' ? 'text-blue-400' : 'text-gray-400'}`}>
+                          {previewCard.rarity ? previewCard.rarity.charAt(0).toUpperCase() + previewCard.rarity.slice(1) : 'Common'}
+                        </span>
+                      </div>
+                      
+                      {previewCard.description && (
+                        <div className="mt-4">
+                          <p className="text-gray-300 text-sm">{previewCard.description}</p>
+                        </div>
+                      )}
                     </div>
-                    <div className="text-left">
-                      <h3 className="font-bold">{packInfo.name}</h3>
-                      <div className="text-sm text-gray-300">Price: <span className="text-yellow-500">{packInfo.price} 🪙</span></div>
-                    </div>
+                    
+                    <button
+                      onClick={() => setShowPreview(false)}
+                      className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg"
+                    >
+                      Close
+                    </button>
                   </div>
                 </div>
-              );
-            })()}
-          </div>
-          
-          <div className="grid grid-cols-5 grid-rows-2 gap-4 mb-8">
-            {packOptions.map((num, index) => {
-              const packInfo = availableBoosterPacks.find(p => p.type === selectedPackType);
-              return (
-                <div
-                  key={index}
-                  onClick={() => selectedPackIndex === null && handleSelectPackFromGrid(index)}
-                  className={`relative cursor-pointer transform transition-all duration-300 ${
-                    selectedPackIndex === index 
-                      ? 'scale-110 z-10' 
-                      : selectedPackIndex !== null 
-                        ? 'opacity-50 scale-95' 
-                        : 'hover:scale-105'
-                  }`}
+              )}
+              
+              {/* Close button */}
+              <div className="text-center">
+                <button
+                  onClick={handleClosePack}
+                  className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg"
                 >
-                  <div className="bg-gray-800 rounded-lg overflow-hidden shadow-lg h-40">
-                    <div 
-                      className="h-full bg-center bg-cover flex items-center justify-center"
-                      style={{ backgroundImage: `url(${packInfo?.image})` }}
-                    >
-                      <div className="bg-black bg-opacity-60 w-12 h-12 rounded-full flex items-center justify-center text-xl font-bold">
-                        {num}
+                  Close
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {availableBoosterPacks.map((pack) => (
+                <div 
+                  key={pack.type}
+                  className="bg-gray-800 rounded-3xl p-4 mb-4 flex flex-col items-center shadow-lg hover:shadow-xl transition-transform hover:scale-105 cursor-pointer"
+                  onClick={() => handleSelectPackType(pack.type, pack.price)}
+                >
+                  <div className="w-32 h-40 bg-gray-700 rounded-lg overflow-hidden mb-3">
+                    {pack.image ? (
+                      <img 
+                        src={pack.image} 
+                        alt={pack.type} 
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-indigo-900 to-purple-900">
+                        <span className="text-2xl font-bold text-white">{pack.type.charAt(0)}</span>
+                      </div>
+                    )}
+                  </div>
+                  <h3 className="text-lg font-bold text-white mb-1">{pack.name}</h3>
+                  <p className="text-sm text-gray-300 mb-3 text-center">{pack.description}</p>
+                  <div className="flex items-center bg-green-600 px-3 py-1 rounded-full text-white font-bold">
+                    <span className="mr-1">💰</span>
+                    <span>{pack.price} USDC</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+          
+          {/* Extra info section */}
+          <div className="mt-10 bg-gray-800 p-4 rounded-3xl">
+            <h2 className="text-xl font-bold mb-2 text-white">About Booster Packs</h2>
+            <p className="text-gray-300 text-sm">
+              Booster packs contain randomly selected cards from the corresponding card pool.
+              Each pack guarantees a certain number of avatar and spell cards.
+              Purchased cards are automatically added to your collection and can be used to build decks.
+            </p>
+          </div>
+        </div>
+      ) : activeTab === 'decks' && (
+        <div>
+          {isOpeningDeck ? (
+            <div className="bg-gray-800 p-6 rounded-3xl shadow-xl max-w-md mx-auto">
+              <h2 className="text-xl font-bold mb-4 text-center text-white">{selectedDeckName} Deck</h2>
+              <p className="text-gray-300 text-sm mb-4 text-center">Here are some of the cards in your new deck:</p>
+              
+              {/* Cards display */}
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-4">
+                {openedDeckCards.map((card, index) => (
+                  <div 
+                    key={index}
+                    className="bg-gray-700 rounded-lg p-2 text-center cursor-pointer transform transition-transform hover:scale-105"
+                    onClick={() => handleCardPreview(card)}
+                  >
+                    <div className="text-sm font-bold text-white mb-1">{card.name}</div>
+                    <div className="text-xs text-gray-300">{card.type}</div>
+                    <div className="text-xs mt-1 text-gray-400">
+                      {card.type === 'avatar' ? `Level ${(card as AvatarCard).level}` : 'Spell'}
+                    </div>
+                    {card.art && (
+                      <div className="mt-2 w-full h-24 overflow-hidden">
+                        <img src={card.art} alt={card.name} className="w-full h-full object-contain" />
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+              
+              <p className="text-gray-300 text-sm mb-4 text-center">...and {40 - openedDeckCards.length} more cards!</p>
+              
+              {/* Close button */}
+              <div className="text-center">
+                <button
+                  onClick={handleCloseDeck}
+                  className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg"
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className="max-w-4xl mx-auto">
+              <h2 className="text-2xl font-bold mb-6 text-center">Premade Decks</h2>
+              {availableDecks.length === 0 ? (
+                <div className="bg-gray-800 p-6 rounded-xl text-center">
+                  <p className="text-white mb-2">No decks available yet!</p>
+                  <p className="text-gray-400 text-sm">Purchase booster packs to unlock more cards and access premade decks.</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {availableDecks.map(deck => (
+              <div 
+                key={deck.id}
+                className="bg-gray-800 rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-all"
+              >
+                <div className="h-48 bg-gradient-to-r from-gray-900 to-gray-700 relative overflow-hidden">
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-800 to-gray-900">
+                      <div className="text-4xl font-bold text-white opacity-30">
+                        {deck.element === 'Fire' ? '🔥' : '💧'}
                       </div>
                     </div>
                   </div>
-                  
-                  {/* Animation effect for selected pack */}
-                  {selectedPackIndex === index && (
-                    <div className="absolute inset-0 bg-yellow-500 bg-opacity-20 rounded-lg animate-pulse"></div>
-                  )}
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <h3 className="text-2xl font-bold text-white text-center px-4 drop-shadow-lg">{deck.name}</h3>
+                  </div>
                 </div>
-              );
-            })}
-          </div>
-          
-          <div className="flex justify-center">
-            <button
-              onClick={() => setSelectedPackType(null)}
-              className="bg-gray-700 hover:bg-gray-600 text-white font-bold py-2 px-6 rounded transition-colors"
-            >
-              Go Back
-            </button>
-          </div>
+                
+                <div className="p-4">
+                  <div className="mb-4 text-gray-300 text-sm">{deck.description}</div>
+                  
+                  <div className="grid grid-cols-3 gap-2 mb-4">
+                    <div className="bg-gray-700 rounded p-2 text-center">
+                      <div className="text-xs text-gray-400">Cards</div>
+                      <div className="font-bold text-white">{deck.cardCount}</div>
+                    </div>
+                    <div className="bg-gray-700 rounded p-2 text-center">
+                      <div className="text-xs text-gray-400">Avatars</div>
+                      <div className="font-bold text-white">{deck.avatarCount}</div>
+                    </div>
+                    <div className="bg-gray-700 rounded p-2 text-center">
+                      <div className="text-xs text-gray-400">Spells</div>
+                      <div className="font-bold text-white">{deck.spellCount}</div>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-center justify-between">
+                    <div className="text-xl font-bold text-white">{deck.price} <span className="text-sm">USDC</span></div>
+                    <button
+                      onClick={() => handleDeckPurchase(deck)}
+                      className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg"
+                    >
+                      Buy Deck
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))}
+              </div>
+              )}
+            </div>
+          )}
         </div>
       )}
-      
-      {/* Extra info section */}
-      <div className="mt-10 bg-gray-800 p-4 rounded-lg">
-        <h2 className="text-xl font-bold mb-2">About Booster Packs</h2>
-        <p className="text-gray-300 text-sm">
-          Booster packs contain randomly selected cards from the corresponding card pool.
-          Each pack guarantees a certain number of avatar and spell cards.
-          Purchased cards are automatically added to your collection and can be used to build decks.
-        </p>
-      </div>
     </div>
   );
 };

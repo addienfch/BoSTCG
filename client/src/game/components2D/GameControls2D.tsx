@@ -13,49 +13,69 @@ const GameControls2D: React.FC = () => {
   } = useCardGame();
   
   const isPlayerTurn = currentPlayer === 'player';
+  const [isProcessing, setIsProcessing] = React.useState(false);
   
-  const handlePhaseAction = () => {
+  const handlePhaseAction = async () => {
     if (!isPlayerTurn) {
       toast.error("It's not your turn!");
       return;
     }
     
-    switch (gamePhase) {
-      case 'ready':
-        startGame();
-        toast.success("Game started!");
-        break;
-        
-      case 'refresh':
-        // Auto-proceed after refresh phase
-        endPhase();
-        toast.info("Entering Draw phase");
-        break;
-        
-      case 'draw':
-        drawCard();
-        toast.success("Card drawn!");
-        endPhase();
-        break;
-        
-      case 'main1':
-      case 'main2':
-        endPhase();
-        toast.info(`Entering ${gamePhase === 'main1' ? 'Battle' : 'End'} phase`);
-        break;
-        
-      case 'battle':
-        endPhase();
-        toast.info("Entering Main Phase 2");
-        break;
-        
-      case 'end':
-        endTurn();
-        toast.info("Turn ended");
-        break;
-        
-      default:
-        break;
+    // Prevent multiple clicks while processing
+    if (isProcessing) {
+      return;
+    }
+    
+    setIsProcessing(true);
+    
+    try {
+      switch (gamePhase) {
+        case 'ready':
+          startGame();
+          toast.success("Game started!");
+          break;
+          
+        case 'refresh':
+          // Auto-proceed after refresh phase
+          endPhase();
+          toast.info("Entering Draw phase");
+          break;
+          
+        case 'draw':
+          // Draw card and automatically end phase after a short delay
+          drawCard();
+          toast.success("Card drawn!");
+          // Add a small delay before ending phase to prevent rapid clicking
+          await new Promise(resolve => setTimeout(resolve, 500));
+          endPhase();
+          break;
+          
+        case 'main1':
+        case 'main2':
+          endPhase();
+          toast.info(`Entering ${gamePhase === 'main1' ? 'Battle' : 'End'} phase`);
+          break;
+          
+        case 'battle':
+          endPhase();
+          toast.info("Entering Main Phase 2");
+          break;
+          
+        case 'end':
+          endTurn();
+          toast.info("Turn ended");
+          break;
+          
+        default:
+          break;
+      }
+    } catch (error) {
+      console.error('Error in phase action:', error);
+    } finally {
+      // Add a small cooldown before allowing the next action
+      setTimeout(() => {
+        setIsProcessing(false);
+      }, 300);
     }
   };
   
@@ -122,12 +142,12 @@ const GameControls2D: React.FC = () => {
       <div className="flex flex-col gap-2">
         <button
           onClick={handlePhaseAction}
-          disabled={!isPlayerTurn}
-          className={`py-2 px-4 rounded-lg font-bold text-white ${
-            isPlayerTurn 
-              ? 'bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700' 
+          disabled={!isPlayerTurn || isProcessing}
+          className={`py-2 px-4 rounded-lg font-bold text-white transition-opacity ${
+            isPlayerTurn && !isProcessing
+              ? 'bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700'
               : 'bg-gray-700 cursor-not-allowed'
-          }`}
+          } ${isProcessing ? 'opacity-70' : ''}`}
         >
           {getActionButtonText()}
         </button>
