@@ -6,6 +6,7 @@ import NavigationBar from '../components/NavigationBar';
 const HomePage: React.FC = () => {
   const navigate = useNavigate();
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [imageLoadErrors, setImageLoadErrors] = useState<Set<number>>(new Set());
 
   // Rolling images for the carousel
   const rollingImages = [
@@ -87,10 +88,22 @@ const HomePage: React.FC = () => {
                   key={index}
                   className="w-full h-full flex-shrink-0 flex items-center justify-center bg-gray-800"
                 >
-                  <div className="text-center text-gray-400">
-                    <div className="text-4xl mb-2">🖼️</div>
-                    <p className="text-sm">Upload Image #{index + 1}</p>
-                  </div>
+                  {imageLoadErrors.has(index) ? (
+                    <div className="text-center text-gray-400">
+                      <div className="text-4xl mb-2">🃏</div>
+                      <p className="text-sm">Card {index + 1}</p>
+                    </div>
+                  ) : (
+                    <img 
+                      src={image}
+                      alt={`Card ${index + 1}`}
+                      className="w-full h-full object-cover"
+                      onError={() => {
+                        setImageLoadErrors(prev => new Set(prev.add(index)));
+                        console.warn(`Failed to load image: ${image}`);
+                      }}
+                    />
+                  )}
                 </div>
               ))}
             </div>
