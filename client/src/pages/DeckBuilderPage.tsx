@@ -19,6 +19,7 @@ const DeckBuilderPage: React.FC = () => {
   const [tribeFilter, setTribeFilter] = useState<string | 'all'>('all');
   const [allCards, setAllCards] = useState<Card[]>([]);
   const [isLoadingCards, setIsLoadingCards] = useState(true);
+  const [showCoverSelector, setShowCoverSelector] = useState(false);
 
   // Load all available cards including cNFTs on component mount
   useEffect(() => {
@@ -145,6 +146,18 @@ const DeckBuilderPage: React.FC = () => {
   const handleSetActiveDeck = (deck: Deck) => {
     setActiveDeck(deck.id);
     toast.success(`Deck "${deck.name}" set as active`);
+  };
+
+  // Handle deck cover selection
+  const handleSelectCover = (card: Card) => {
+    if (!selectedDeck) return;
+    
+    updateDeck(selectedDeck.id, {
+      ...selectedDeck,
+      coverCardId: card.id
+    });
+    setShowCoverSelector(false);
+    toast.success(`Deck cover updated to ${card.name}`);
   };
   
   // Add a card to the deck
@@ -354,12 +367,20 @@ const DeckBuilderPage: React.FC = () => {
               </button>
               
               {selectedDeck && (
-                <button 
-                  className="bg-red-600 hover:bg-red-700 px-4 py-2 rounded"
-                  onClick={handleDeleteDeck}
-                >
-                  Delete
-                </button>
+                <>
+                  <button 
+                    className="bg-amber-600 hover:bg-amber-700 px-4 py-2 rounded mr-2"
+                    onClick={() => setShowCoverSelector(true)}
+                  >
+                    Edit Cover
+                  </button>
+                  <button 
+                    className="bg-red-600 hover:bg-red-700 px-4 py-2 rounded"
+                    onClick={handleDeleteDeck}
+                  >
+                    Delete
+                  </button>
+                </>
               )}
             </div>
           </div>
@@ -596,6 +617,59 @@ const DeckBuilderPage: React.FC = () => {
         </div>
       )}
       </div>
+      
+      {/* Cover Selector Modal */}
+      {showCoverSelector && selectedDeck && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-gray-800 rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-4 border-b border-gray-700">
+              <h2 className="text-xl font-semibold">Select Deck Cover</h2>
+              <p className="text-sm text-gray-300">Choose a card from your deck to use as the cover</p>
+            </div>
+            
+            <div className="p-4">
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                {selectedCards.map((card, index) => (
+                  <div
+                    key={`cover-${card.id}-${index}`}
+                    className="cursor-pointer hover:scale-105 transition-transform"
+                    onClick={() => handleSelectCover(card)}
+                  >
+                    <div className="bg-gray-700 rounded-lg p-2 hover:bg-gray-600">
+                      <div className="w-full h-32 bg-gray-600 rounded mb-2 flex items-center justify-center overflow-hidden">
+                        {card.art ? (
+                          <img 
+                            src={card.art} 
+                            alt={card.name} 
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <div className="text-xs text-center p-1">
+                            {card.name}
+                          </div>
+                        )}
+                      </div>
+                      <div className="text-xs text-center">
+                        <div className="font-medium truncate">{card.name}</div>
+                        <div className="text-gray-400">{card.type}</div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+            
+            <div className="p-4 border-t border-gray-700 flex justify-end">
+              <button
+                className="bg-gray-600 hover:bg-gray-700 px-4 py-2 rounded"
+                onClick={() => setShowCoverSelector(false)}
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       
       <NavigationBar />
     </div>
