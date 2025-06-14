@@ -1,21 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
-// Removed Solana wallet adapter imports - using custom implementation
-import { useSolanaWallet } from '../lib/solana/useSolanaWallet';
+// Temporarily disabled Solana wallet functionality
 
 const StartPage: React.FC = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   
-  // Use our custom Solana wallet hook
-  const { 
-    walletAddress, 
-    connecting, 
-    connected,
-    connectWallet, 
-    disconnectWallet 
-  } = useSolanaWallet();
+  // Temporarily disabled wallet functionality
+  const walletAddress = null;
+  const connecting = false;
+  const connected = false;
 
   // Check if wallet is already connected on mount
   useEffect(() => {
@@ -88,14 +83,14 @@ const StartPage: React.FC = () => {
           </button>
           
           <button
-            onClick={disconnectWallet}
+            onClick={() => toast.info('Wallet functionality temporarily disabled')}
             className="flex items-center justify-center bg-gray-700 hover:bg-gray-800 text-white py-3 px-6 rounded-full font-medium transition-colors"
           >
             <svg className="mr-2" width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
               <rect x="4" y="4" width="16" height="16" rx="2" stroke="white" strokeWidth="2"/>
               <path d="M16 8H8V16H16V8Z" fill="white"/>
             </svg>
-            Change Wallet
+            Settings
           </button>
         </div>
       ) : (
@@ -105,9 +100,12 @@ const StartPage: React.FC = () => {
             <span className="text-gray-700 font-bold">Connect Wallet to Play</span>
           </div>
           <div className="w-full flex justify-center">
-            <div className="mx-auto">
-              <WalletMultiButton className="bg-gray-900 hover:bg-black text-white py-3 px-6 rounded-full font-medium transition-colors" />
-            </div>
+            <button 
+              onClick={() => navigate('/home')}
+              className="bg-gray-900 hover:bg-black text-white py-3 px-6 rounded-full font-medium transition-colors"
+            >
+              Start Playing
+            </button>
           </div>
           {/* Skip button removed */}
         </div>

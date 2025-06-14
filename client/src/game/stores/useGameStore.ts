@@ -1016,7 +1016,7 @@ export const useGameStore = create<GameState>((set, get) => ({
         isTapped: targetAvatarCard!.isTapped
       };
       
-      console.log("Evolution - Damage counter explicitly preserved:", evolvedAvatar.counters.damage);
+      console.log("Evolution - Damage counter explicitly preserved:", evolvedAvatar.counters?.damage);
       
       console.log("Evolution - Final evolved avatar:", evolvedAvatar);
       
@@ -1283,7 +1283,7 @@ export const useGameStore = create<GameState>((set, get) => ({
         // Player's active avatar
         if (get().player.activeAvatar) {
           // Direct modification with native JavaScript
-          get().player.activeAvatar.isTapped = false;
+          get().player.activeAvatar!.isTapped = false;
           console.log("FORCE UNTAPPED player active avatar");
         }
         
@@ -1296,7 +1296,7 @@ export const useGameStore = create<GameState>((set, get) => ({
         // Opponent's active avatar
         if (get().opponent.activeAvatar) {
           // Direct modification with native JavaScript
-          get().opponent.activeAvatar.isTapped = false;
+          get().opponent.activeAvatar!.isTapped = false;
           console.log("FORCE UNTAPPED opponent active avatar");
         }
         
