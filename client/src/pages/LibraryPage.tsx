@@ -243,15 +243,13 @@ const LibraryPage: React.FC = () => {
           </p>
         </div>
 
-        {/* Cards Grid - Landscape Scrollable */}
-        <div className="overflow-x-auto">
-          <div className="flex gap-4 pb-4" style={{ width: 'max-content' }}>
-            {filteredCards.map((card, index) => (
-              <div key={`${card.name}-${card.type}-${card.element}-${index}`} className="flex-shrink-0">
-                <CardItem card={card} />
-              </div>
-            ))}
-          </div>
+        {/* Cards Grid - Vertical Scrollable */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 max-h-[60vh] overflow-y-auto pr-2">
+          {filteredCards.map((card, index) => (
+            <div key={`${card.name}-${card.type}-${card.element}-${index}`}>
+              <CardItem card={card} />
+            </div>
+          ))}
         </div>
 
         {filteredCards.length === 0 && (

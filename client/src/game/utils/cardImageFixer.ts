@@ -59,17 +59,22 @@ export function getFixedCardImagePath(card: Card): string {
   // If no art field, provide a default based on type
   if (!card.art) {
     if (card.type === 'avatar') {
-      return IMAGE_CORRECTIONS['DEFAULT_AVATAR'] || '/textures/cards/card_back.png';
+      return '/textures/cards/default_avatar.png';
     } else if (card.type === 'quickSpell') {
-      return IMAGE_CORRECTIONS['DEFAULT_QUICK_SPELL'] || '/textures/cards/card_back.png';
+      return '/textures/cards/default_quick_spell.png';
     } else {
-      return IMAGE_CORRECTIONS['DEFAULT_SPELL'] || '/textures/cards/card_back.png';
+      return '/textures/cards/default_spell.png';
     }
   }
   
   // Check if the image path needs correction
   if (IMAGE_CORRECTIONS[card.art]) {
     return IMAGE_CORRECTIONS[card.art];
+  }
+  
+  // If art starts with /textures/cards/, use as-is
+  if (card.art.startsWith('/textures/cards/')) {
+    return card.art;
   }
   
   return card.art;

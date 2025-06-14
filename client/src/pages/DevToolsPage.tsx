@@ -295,14 +295,35 @@ const DevToolsPage: React.FC = () => {
             
             <div className="max-h-96 overflow-y-auto space-y-2">
               {cards.map(card => (
-                <div key={card.id} className="bg-gray-700 p-3 rounded flex justify-between items-center">
-                  <div>
+                <div key={card.id} className="bg-gray-700 p-3 rounded flex gap-3 items-center">
+                  {/* Card Image */}
+                  <div className="w-16 h-20 bg-gray-600 rounded border border-gray-500 flex-shrink-0 overflow-hidden">
+                    {card.art ? (
+                      <img 
+                        src={card.art} 
+                        alt={card.name}
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          e.currentTarget.src = '/textures/cards/default_avatar.png';
+                        }}
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-gray-400 text-xs">
+                        No Image
+                      </div>
+                    )}
+                  </div>
+                  
+                  {/* Card Info */}
+                  <div className="flex-1">
                     <div className="font-medium text-sm">{card.name}</div>
                     <div className="text-xs text-gray-400">
                       {card.type} - {card.element}
                       {card.type === 'avatar' && ` - Level ${(card as AvatarCard).level}`}
                     </div>
                   </div>
+                  
+                  {/* Action Buttons */}
                   <div className="flex gap-1">
                     <button
                       onClick={() => handleEditCard(card)}
