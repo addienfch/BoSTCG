@@ -124,6 +124,20 @@ const GameBoard2D: React.FC<GameBoard2DProps> = ({ onAction }) => {
   const [selectedCard, setSelectedCard] = useState<Card | null>(null);
   const [showDiscardModal, setShowDiscardModal] = useState(false);
   const [discardCard, setDiscardCard] = useState<Card | null>(null);
+  const [showEvolutionSelector, setShowEvolutionSelector] = useState(false);
+  const [evolutionCard, setEvolutionCard] = useState<Card | null>(null);
+  const [evolvableAvatars, setEvolvableAvatars] = useState<Array<{avatar: AvatarCard, location: 'active' | number}>>([]);
+  
+  // Handle evolution selection
+  const handleEvolutionSelection = (targetLocation: 'active' | number) => {
+    if (evolutionCard) {
+      const handIndex = game.player.hand.findIndex(c => c.id === evolutionCard.id);
+      game.evolveAvatar(handIndex, targetLocation);
+      setShowEvolutionSelector(false);
+      setEvolutionCard(null);
+      setEvolvableAvatars([]);
+    }
+  };
   
   // Determine if a card is playable (can be placed on the field)
   const isCardPlayable = (card: Card) => {
@@ -389,45 +403,26 @@ const GameBoard2D: React.FC<GameBoard2DProps> = ({ onAction }) => {
       
       // Check if trying to place a level 2 avatar in reserve
       if (avatarCard.level === 2) {
-        // Check if there's a matching level 1 avatar to upgrade
-        const matchingReserveIndex = game.player.reserveAvatars.findIndex(
-          a => a.subType === avatarCard.subType && a.level === 1
-        );
+        // Find all matching level 1 avatars that can be evolved
+        const evolvableReserveAvatars = game.player.reserveAvatars
+          .map((avatar, index) => ({ avatar, location: index as number }))
+          .filter(({ avatar }) => avatar.subType === avatarCard.subType && avatar.level === 1);
         
-        if (matchingReserveIndex === -1) {
+        if (evolvableReserveAvatars.length === 0) {
           toast.error(`You need a level 1 ${avatarCard.subType} avatar in reserve to upgrade to level 2!`);
           return;
         }
         
-        // Check if the reserve avatar to be upgraded is already level 2
-        const reserveToUpgrade = game.player.reserveAvatars[matchingReserveIndex];
-        if (reserveToUpgrade.level === 2) {
-          toast.error("You cannot replace a level 2 avatar with another level 2 avatar!");
-          return;
+        if (evolvableReserveAvatars.length === 1) {
+          // Only one option, evolve directly
+          const targetLocation = evolvableReserveAvatars[0].location;
+          game.evolveAvatar(index, targetLocation);
+        } else {
+          // Multiple options, show selector
+          setEvolutionCard(card);
+          setEvolvableAvatars(evolvableReserveAvatars);
+          setShowEvolutionSelector(true);
         }
-        
-        // Check if the avatar has been in play for at least one turn
-        if (reserveToUpgrade.turnPlayed !== undefined && 
-            game.turn <= reserveToUpgrade.turnPlayed) {
-          toast.error("You need to wait at least one turn before upgrading your reserve avatar!");
-          return;
-        }
-        
-        // Perform upgrade - move matching reserve avatar to graveyard
-        game.player.graveyard.push(reserveToUpgrade);
-        
-        // Remove the level 2 card from hand
-        const updatedHand = [...game.player.hand];
-        const cardIndex = updatedHand.findIndex(c => c.id === card.id);
-        updatedHand.splice(cardIndex, 1);
-        game.player.hand = updatedHand;
-        
-        // Replace the upgraded reserve avatar
-        avatarCard.turnPlayed = game.turn;
-        game.player.reserveAvatars[matchingReserveIndex] = avatarCard;
-        
-        game.addLog(`${reserveToUpgrade.name} in reserve upgraded to ${avatarCard.name}.`);
-        toast.success(`${avatarCard.name} placed in reserve!`);
       } else {
         // Normal level 1 avatar placement
         if (game.player.reserveAvatars.length >= 2) {
@@ -1543,6 +1538,65 @@ const GameBoard2D: React.FC<GameBoard2DProps> = ({ onAction }) => {
             >
               Return to Home
             </button>
+          </div>
+        </div>
+      )}
+      
+      {/* Evolution Selection Modal */}
+      {showEvolutionSelector && evolutionCard && evolvableAvatars.length > 0 && (
+        <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 p-4">
+          <div className="bg-gray-800 rounded-lg max-w-md w-full">
+            <div className="p-4 border-b border-gray-700">
+              <h2 className="text-xl font-semibold text-white">Choose Avatar to Evolve</h2>
+              <p className="text-sm text-gray-300">
+                Select which avatar you want to evolve with {evolutionCard.name}
+              </p>
+            </div>
+            
+            <div className="p-4">
+              <div className="space-y-3">
+                {evolvableAvatars.map(({ avatar, location }, index) => (
+                  <div
+                    key={`evolution-${avatar.id}-${location}`}
+                    className="bg-gray-700 rounded-lg p-3 cursor-pointer hover:bg-gray-600 transition-colors"
+                    onClick={() => handleEvolutionSelection(location)}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <div className="font-medium text-white">{avatar.name}</div>
+                        <div className="text-sm text-gray-300">
+                          Level {avatar.level} • HP: {avatar.health - (avatar.counters?.damage || 0)}/{avatar.health}
+                          {(avatar.counters?.damage || 0) > 0 && (
+                            <span className="text-red-400 ml-2">
+                              ({avatar.counters?.damage} damage)
+                            </span>
+                          )}
+                        </div>
+                        <div className="text-xs text-gray-400">
+                          {location === 'active' ? 'Active Avatar' : `Reserve Position ${(location as number) + 1}`}
+                        </div>
+                      </div>
+                      <div className="text-blue-400 text-sm">
+                        Click to Evolve
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+            
+            <div className="p-4 border-t border-gray-700 flex justify-end">
+              <button
+                className="bg-gray-600 hover:bg-gray-700 px-4 py-2 rounded text-white"
+                onClick={() => {
+                  setShowEvolutionSelector(false);
+                  setEvolutionCard(null);
+                  setEvolvableAvatars([]);
+                }}
+              >
+                Cancel
+              </button>
+            </div>
           </div>
         </div>
       )}
