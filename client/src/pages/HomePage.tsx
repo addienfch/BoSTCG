@@ -69,8 +69,14 @@ const HomePage: React.FC = () => {
   return (
     <div className="min-h-screen bg-spektrum-dark text-spektrum-light pb-20" style={{ fontFamily: 'Noto Sans, Inter, sans-serif' }}>
       <div className="max-w-md mx-auto p-4">
-        {/* Rolling Image Section */}
-        <div className="mb-6">
+        {/* Welcome section */}
+        <div className="text-center mb-6">
+          <h1 className="text-2xl font-bold text-spektrum-light mb-2">Welcome Back</h1>
+          <p className="text-spektrum-light opacity-80 text-sm mb-4">
+            Ready to battle in the world of Spektrum
+          </p>
+          
+          {/* Rolling Image Section */}
           <div className="relative h-48 bg-spektrum-light bg-opacity-10 rounded-lg overflow-hidden border border-spektrum-light border-opacity-20">
             <div 
               className="flex transition-transform duration-500 ease-in-out h-full"
@@ -107,26 +113,6 @@ const HomePage: React.FC = () => {
           <p className="text-center text-xs text-gray-400 mt-2">
             Rolling image placeholder - upload promotional images here
           </p>
-        </div>
-
-        {/* Welcome section */}
-        <div className="text-center mb-6">
-          <h1 className="text-2xl font-bold text-spektrum-light mb-2">Welcome Back</h1>
-          <p className="text-spektrum-light opacity-80 text-sm">
-            Ready to battle in the world of Spektrum
-          </p>
-        </div>
-
-        {/* Quick action cards */}
-        <div className="grid grid-cols-2 gap-3 mb-6">
-          <div className="bg-gray-800 rounded-lg p-3 text-center border border-gray-700">
-            <div className="text-xl text-spektrum-orange mb-1">⚔️</div>
-            <p className="text-xs text-gray-300">Quick Battle</p>
-          </div>
-          <div className="bg-gray-800 rounded-lg p-3 text-center border border-gray-700">
-            <div className="text-xl text-blue-400 mb-1">📚</div>
-            <p className="text-xs text-gray-300">Build Deck</p>
-          </div>
         </div>
 
         {/* Stats overview */}
