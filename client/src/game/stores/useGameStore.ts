@@ -1577,6 +1577,9 @@ export const useGameStore = create<GameState>((set, get) => ({
       };
     });
     
+    // Process bleed counters during refresh phase
+    get().processBleedCounters();
+    
     // Dispatch events for the UI to detect refresh phase
     console.log("Dispatching gamePhaseChanged and avatarReset events from endTurn function");
     document.dispatchEvent(new Event('gamePhaseChanged'));
@@ -1636,6 +1639,54 @@ export const useGameStore = create<GameState>((set, get) => ({
     }
   },
   
+  // Process bleed counters during refresh phase
+  processBleedCounters: () => {
+    const { currentPlayer } = get();
+    
+    // Process bleed counters for the current player (who owns the refresh phase)
+    set(state => {
+      const playerState = currentPlayer === 'player' ? state.player : state.opponent;
+      let damageDealt = false;
+      
+      // Process active avatar bleed counters
+      if (playerState.activeAvatar && playerState.activeAvatar.counters?.bleed && playerState.activeAvatar.counters.bleed > 0) {
+        const bleedDamage = playerState.activeAvatar.counters.bleed;
+        const currentDamage = playerState.activeAvatar.counters.damage || 0;
+        
+        playerState.activeAvatar.counters.damage = currentDamage + bleedDamage;
+        playerState.activeAvatar.counters.bleed = 0; // Remove bleed counters after dealing damage
+        
+        get().addLog(`${currentPlayer === 'player' ? 'Your' : 'Opponent\'s'} ${playerState.activeAvatar.name} takes ${bleedDamage} damage from bleed counters!`);
+        damageDealt = true;
+      }
+      
+      // Process reserve avatars bleed counters
+      playerState.reserveAvatars.forEach(avatar => {
+        if (avatar.counters?.bleed && avatar.counters.bleed > 0) {
+          const bleedDamage = avatar.counters.bleed;
+          const currentDamage = avatar.counters.damage || 0;
+          
+          avatar.counters.damage = currentDamage + bleedDamage;
+          avatar.counters.bleed = 0; // Remove bleed counters after dealing damage
+          
+          get().addLog(`${currentPlayer === 'player' ? 'Your' : 'Opponent\'s'} ${avatar.name} takes ${bleedDamage} damage from bleed counters!`);
+          damageDealt = true;
+        }
+      });
+      
+      if (currentPlayer === 'player') {
+        return { player: playerState };
+      } else {
+        return { opponent: playerState };
+      }
+    });
+    
+    // Check for defeated avatars after bleed damage
+    if (get().player.activeAvatar || get().opponent.activeAvatar) {
+      setTimeout(() => get().checkDefeatedAvatars(), 500);
+    }
+  },
+
   // Get a human-readable version of the current phase
   getPhaseText: () => {
     const { gamePhase } = get();

@@ -1167,20 +1167,30 @@ const GameBoard2D: React.FC<GameBoard2DProps> = ({ onAction }) => {
         </div>
       </div>
       
-      {/* Game field */}
+      {/* Game field - reduced size */}
       <div className="mb-4">
-        <h3 className="text-sm font-bold mb-1">Field</h3>
-        <div className="flex justify-center bg-gray-800 bg-opacity-30 p-4 rounded min-h-[100px]">
-          {/* Display field card if available - only show one placement */}
-          <div className="w-36 h-48 flex items-center justify-center">
+        <div className="flex items-center justify-between mb-1">
+          <h3 className="text-sm font-bold">Field</h3>
+          {game.player.fieldCards.length > 0 && (
+            <button 
+              className="bg-blue-600 hover:bg-blue-700 px-2 py-1 rounded text-xs"
+              onClick={() => setPreviewCard(game.player.fieldCards[0])}
+            >
+              Preview
+            </button>
+          )}
+        </div>
+        <div className="flex justify-center bg-gray-800 bg-opacity-30 p-2 rounded min-h-[60px]">
+          {/* Display field card if available - compact size */}
+          <div className="w-20 h-12 flex items-center justify-center">
             {game.player.fieldCards.length > 0 ? (
-              <Card2D 
-                card={game.player.fieldCards[0]} 
-                isPlayable={false}
-              />
+              <div className="text-xs text-center bg-purple-900 bg-opacity-70 p-1 rounded border border-purple-500">
+                <div className="font-bold truncate">{game.player.fieldCards[0].name}</div>
+                <div className="text-[10px] text-gray-300">{game.player.fieldCards[0].type}</div>
+              </div>
             ) : (
-              <div className="border-2 border-dashed border-gray-600 rounded-lg p-2 w-full h-full flex items-center justify-center">
-                <span className="text-xs text-gray-400">Field Zone</span>
+              <div className="border-2 border-dashed border-gray-600 rounded p-1 w-full h-full flex items-center justify-center">
+                <span className="text-[10px] text-gray-400">Field</span>
               </div>
             )}
           </div>
