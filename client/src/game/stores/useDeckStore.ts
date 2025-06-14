@@ -38,6 +38,7 @@ interface DeckStore {
   
   // Card management helpers
   getAvailableCards: () => Card[];
+  getAvailableCardsWithCNFTs: () => Promise<Card[]>;
   findCard: (id: string) => Card | undefined;
   getAvailableCardsByElement: (element: string) => Card[];
   getAvailableCardsByTribe: (tribe: string) => Card[];
@@ -399,6 +400,25 @@ export const useDeckStore = create<DeckStore>()(
       getAvailableCards: () => {
         // Return all available cards including neutral cards
         return [...allFireCards, ...allNeutralCards];
+      },
+
+      getAvailableCardsWithCNFTs: async () => {
+        try {
+          // Get cNFT cards from wallet
+          const walletStatus = await cardNftService.getWalletStatus();
+          let cNftCards: Card[] = [];
+          
+          if (walletStatus.connected) {
+            cNftCards = await cardNftService.getOwnedCards();
+          }
+          
+          // Return all available cards including cNFTs and neutral cards
+          return [...allFireCards, ...allNeutralCards, ...cNftCards];
+        } catch (error) {
+          console.error('Error loading cNFT cards in deck store:', error);
+          // Fallback to regular cards if cNFT loading fails
+          return [...allFireCards, ...allNeutralCards];
+        }
       },
       
       findCard: (id) => {

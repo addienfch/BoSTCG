@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useDeckStore, Deck } from '../game/stores/useDeckStore';
 import { Card, ElementType, AvatarCard } from '../game/data/cardTypes';
 import { toast } from 'sonner';
@@ -7,7 +7,7 @@ import BackButton from '../components/BackButton';
 import NavigationBar from '../components/NavigationBar';
 
 const DeckBuilderPage: React.FC = () => {
-  const { decks, activeDeckId, getAvailableCards, addDeck, updateDeck, deleteDeck, setActiveDeck } = useDeckStore();
+  const { decks, activeDeckId, getAvailableCards, getAvailableCardsWithCNFTs, addDeck, updateDeck, deleteDeck, setActiveDeck } = useDeckStore();
   const navigate = useNavigate();
   
   // Local state for the deck builder
@@ -17,9 +17,26 @@ const DeckBuilderPage: React.FC = () => {
   const [elementFilter, setElementFilter] = useState<ElementType | 'all'>('all');
   const [typeFilter, setTypeFilter] = useState<string | 'all'>('all');
   const [tribeFilter, setTribeFilter] = useState<string | 'all'>('all');
-  
-  // Get all available cards for deck building
-  const allCards = getAvailableCards();
+  const [allCards, setAllCards] = useState<Card[]>([]);
+  const [isLoadingCards, setIsLoadingCards] = useState(true);
+
+  // Load all available cards including cNFTs on component mount
+  useEffect(() => {
+    const loadCards = async () => {
+      try {
+        const cardsWithCNFTs = await getAvailableCardsWithCNFTs();
+        setAllCards(cardsWithCNFTs);
+      } catch (error) {
+        console.error('Error loading cards:', error);
+        // Fallback to regular cards
+        setAllCards(getAvailableCards());
+      } finally {
+        setIsLoadingCards(false);
+      }
+    };
+
+    loadCards();
+  }, [getAvailableCards, getAvailableCardsWithCNFTs]);
   
   // Filter cards based on selected filters
   const filteredCards = allCards.filter(card => {
@@ -152,11 +169,27 @@ const DeckBuilderPage: React.FC = () => {
     setSelectedCards(newSelectedCards);
   };
   
+  if (isLoadingCards) {
+    return (
+      <div className="min-h-screen bg-spektrum-dark text-spektrum-light pb-20 flex items-center justify-center" style={{ fontFamily: 'Noto Sans, Inter, sans-serif' }}>
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-spektrum-orange mx-auto mb-4"></div>
+          <p className="text-lg">Loading cards and cNFTs...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-spektrum-dark text-spektrum-light pb-20" style={{ fontFamily: 'Noto Sans, Inter, sans-serif' }}>
       <BackButton />
       <div className="max-w-6xl mx-auto p-4">
         <h1 className="text-2xl font-bold mb-4 text-center">Deck Builder</h1>
+        
+        {/* Show total cards available including cNFTs */}
+        <div className="text-center mb-4 text-sm text-gray-300">
+          {allCards.length} cards available (including cNFTs)
+        </div>
         
         {/* Deck selection and management */}
         <div className="mb-6 bg-gray-800 p-4 rounded-lg">
