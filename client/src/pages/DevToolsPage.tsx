@@ -294,8 +294,8 @@ const DevToolsPage: React.FC = () => {
             </div>
             
             <div className="max-h-96 overflow-y-auto space-y-2">
-              {cards.map(card => (
-                <div key={card.id} className="bg-gray-700 p-3 rounded flex gap-3 items-center">
+              {cards.map((card, index) => (
+                <div key={`${card.id}-${index}`} className="bg-gray-700 p-3 rounded flex gap-3 items-center">
                   {/* Card Image */}
                   <div className="w-16 h-20 bg-gray-600 rounded border border-gray-500 flex-shrink-0 overflow-hidden">
                     {card.art ? (

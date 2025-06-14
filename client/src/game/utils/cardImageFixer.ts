@@ -2,69 +2,63 @@ import { Card, AvatarCard, ActionCard } from '../data/cardTypes';
 
 // Map of broken image paths to corrected ones
 const IMAGE_CORRECTIONS: Record<string, string> = {
-  // Old paths to new organized structure
-  '/attached_assets/Red Elemental Avatar_Ava - Crimson.png': '/assets/expansions/base_set/cards/avatar/fire/Red Elemental Avatar_Ava - Crimson.png',
-  '/attached_assets/Red Elemental Avatar_Ava - Banaspati.png': '/assets/expansions/base_set/cards/avatar/fire/Red Elemental Avatar_Ava - Banaspati.png',
-  '/attached_assets/Red Elemental Avatar_Ava - Banaspati Fem.png': '/assets/expansions/base_set/cards/avatar/fire/Red Elemental Avatar_Ava - Banaspati Fem.png',
-  '/attached_assets/Red Elemental Avatar_Ava - Borah Trainee A.png': '/assets/expansions/base_set/cards/avatar/fire/Red Elemental Avatar_Ava - Borah Trainee A.png',
-  '/attached_assets/Red Elemental Avatar_Ava - Borah Trainee B.png': '/assets/expansions/base_set/cards/avatar/fire/Red Elemental Avatar_Ava - Borah Trainee B.png',
-  '/attached_assets/Red Elemental Avatar_Ava - Borah Trainee C.png': '/assets/expansions/base_set/cards/avatar/fire/Red Elemental Avatar_Ava - Borah Trainee C.png',
-  '/attached_assets/Red Elemental Avatar_Ava - Kobar Trainee A.png': '/assets/expansions/base_set/cards/avatar/fire/Red Elemental Avatar_Ava - Kobar Trainee A.png',
-  '/attached_assets/Red Elemental Avatar_Ava - Kobar Trainee B.png': '/assets/expansions/base_set/cards/avatar/fire/Red Elemental Avatar_Ava - Kobar Trainee B.png',
-  '/attached_assets/Red Elemental Avatar_Ava - Kobar Trainee C.png': '/assets/expansions/base_set/cards/avatar/fire/Red Elemental Avatar_Ava - Kobar Trainee C.png',
-  '/attached_assets/Red Elemental Avatar_Ava - Radja.png': '/assets/expansions/base_set/cards/avatar/fire/Red Elemental Avatar_Ava - Radja.png',
-  '/attached_assets/Red Elemental Avatar_Ava - Scarlet.png': '/assets/expansions/base_set/cards/avatar/fire/Red Elemental Avatar_Ava - Scarlet.png',
-  '/attached_assets/Red Elemental Avatar_Ava - Daisy.png': '/assets/expansions/base_set/cards/avatar/fire/Red Elemental Avatar_Ava - Daisy.png',
-  '/attached_assets/Red Elemental Avatar_Ava - Boar Berserker.png': '/assets/expansions/base_set/cards/avatar/fire/Red Elemental Avatar_Ava - Boar Berserker.png',
-  '/attached_assets/Red Elemental Avatar_Ava - Boar Witch.png': '/assets/expansions/base_set/cards/avatar/fire/Red Elemental Avatar_Ava - Boar Witch.png',
-  '/attached_assets/Red Elemental Avatar_Ava - Repo Girl.png': '/assets/expansions/base_set/cards/avatar/fire/Red Elemental Avatar_Ava - Repo Girl.png',
-  '/attached_assets/Red Elemental Avatar_Ava - Shaman A.png': '/assets/expansions/base_set/cards/avatar/fire/Red Elemental Avatar_Ava - Shaman A.png',
-  '/attached_assets/Red Elemental Avatar_Ava - Shaman B.png': '/assets/expansions/base_set/cards/avatar/fire/Red Elemental Avatar_Ava - Shaman B.png',
-  '/attached_assets/Red Elemental Avatar_Ava - Thug A.png': '/assets/expansions/base_set/cards/avatar/fire/Red Elemental Avatar_Ava - Thug A.png',
-  '/attached_assets/Red Elemental Avatar_Ava - Witch Trainee.png': '/assets/expansions/base_set/cards/avatar/fire/Red Elemental Avatar_Ava - Witch Trainee.png',
+  // Avatar cards - map to actual files in /textures/cards/
+  '/attached_assets/Red Elemental Avatar_Ava - Crimson.png': '/textures/cards/crimson.png',
+  '/attached_assets/Red Elemental Avatar_Ava - Banaspati.png': '/textures/cards/banaspati.png',
+  '/attached_assets/Red Elemental Avatar_Ava - Banaspati Fem.png': '/textures/cards/banaspati-fem.png',
+  '/attached_assets/Red Elemental Avatar_Ava - Borah Trainee A.png': '/textures/cards/borah-trainee-a.png',
+  '/attached_assets/Red Elemental Avatar_Ava - Borah Trainee B.png': '/textures/cards/borah-trainee-b.png',
+  '/attached_assets/Red Elemental Avatar_Ava - Borah Trainee C.png': '/textures/cards/borah-trainee.png',
+  '/attached_assets/Red Elemental Avatar_Ava - Kobar Trainee A.png': '/textures/cards/kobar-trainee-a.png',
+  '/attached_assets/Red Elemental Avatar_Ava - Kobar Trainee B.png': '/textures/cards/kobar-trainee-b.png',
+  '/attached_assets/Red Elemental Avatar_Ava - Kobar Trainee C.png': '/textures/cards/kobar-trainee-c.png',
+  '/attached_assets/Red Elemental Avatar_Ava - Radja.png': '/textures/cards/radja.png',
+  '/attached_assets/Red Elemental Avatar_Ava - Scarlet.png': '/textures/cards/scarlet.png',
+  '/attached_assets/Red Elemental Avatar_Ava - Daisy.png': '/textures/cards/daisy.png',
+  '/attached_assets/Red Elemental Avatar_Ava - Boar Berserker.png': '/textures/cards/boar-berserker.png',
+  '/attached_assets/Red Elemental Avatar_Ava - Boar Witch.png': '/textures/cards/boar-witch.png',
+  '/attached_assets/Red Elemental Avatar_Ava - Repo Girl.png': '/textures/cards/repo-girl.png',
+  '/attached_assets/Red Elemental Avatar_Ava - Shaman A.png': '/textures/cards/shaman-a.png',
+  '/attached_assets/Red Elemental Avatar_Ava - Shaman B.png': '/textures/cards/shaman-b.png',
+  '/attached_assets/Red Elemental Avatar_Ava - Thug A.png': '/textures/cards/thug.png',
+  '/attached_assets/Red Elemental Avatar_Ava - Witch Trainee.png': '/textures/cards/witch-trainee.png',
   
   // Fire spells
-  '/attached_assets/Red Elemental Spell_1 - Cracking Sword.png': '/assets/expansions/base_set/cards/spell/fire/Red Elemental Spell_1 - Cracking Sword.png',
-  '/attached_assets/Red Elemental Spell_1 - Spark.png': '/assets/expansions/base_set/cards/spell/fire/Red Elemental Spell_1 - Spark.png',
-  '/attached_assets/Red Elemental Spell_2 - After Burn.png': '/assets/expansions/base_set/cards/spell/fire/Red Elemental Spell_2 - After Burn.png',
-  '/attached_assets/Red Elemental Spell_2 - Burn Ball.png': '/assets/expansions/base_set/cards/spell/fire/Red Elemental Spell_2 - Burn Ball.png',
-  '/attached_assets/Red Elemental Spell_2 - Burning Sight.png': '/assets/expansions/base_set/cards/spell/fire/Red Elemental Spell_2 - Burning Sight.png',
-  '/attached_assets/Red Elemental Spell_3 - Burning Up!.png': '/assets/expansions/base_set/cards/spell/fire/Red Elemental Spell_3 - Burning Up!.png',
-  '/attached_assets/Red Elemental Spell_3 - Flaming Body.png': '/assets/expansions/base_set/cards/spell/fire/Red Elemental Spell_3 - Flaming Body.png',
-  '/attached_assets/Red Elemental Spell_3 - Lighting Spark.png': '/assets/expansions/base_set/cards/spell/fire/Red Elemental Spell_3 - Lighting Spark.png',
-  '/attached_assets/Red Elemental Spell_4 - Burning Armor.png': '/assets/expansions/base_set/cards/spell/fire/Red Elemental Spell_4 - Burning Armor.png',
-  '/attached_assets/Red Elemental Spell_4 - Double Bomb.png': '/assets/expansions/base_set/cards/spell/fire/Red Elemental Spell_4 - Double Bomb.png',
-  '/attached_assets/Red Elemental Spell_4 - Falling Fireballs.png': '/assets/expansions/base_set/cards/spell/fire/Red Elemental Spell_4 - Falling Fireballs.png',
+  '/attached_assets/Red Elemental Spell_1 - Cracking Sword.png': '/textures/cards/cracking-sword.png',
+  '/attached_assets/Red Elemental Spell_1 - Spark.png': '/textures/cards/spark.png',
+  '/attached_assets/Red Elemental Spell_2 - After Burn.png': '/textures/cards/after-burn.png',
+  '/attached_assets/Red Elemental Spell_2 - Burn Ball.png': '/textures/cards/burn-ball.png',
+  '/attached_assets/Red Elemental Spell_2 - Burning Sight.png': '/textures/cards/burning-sight.png',
+  '/attached_assets/Red Elemental Spell_3 - Burning Up!.png': '/textures/cards/burning-up.png',
+  '/attached_assets/Red Elemental Spell_3 - Flaming Body.png': '/textures/cards/flaming-body.png',
+  '/attached_assets/Red Elemental Spell_3 - Lighting Spark.png': '/textures/cards/lighting-spark.png',
+  '/attached_assets/Red Elemental Spell_4 - Burning Armor.png': '/textures/cards/burning-armor.png',
+  '/attached_assets/Red Elemental Spell_4 - Double Bomb.png': '/textures/cards/double-bomb.png',
+  '/attached_assets/Red Elemental Spell_4 - Falling Fireballs.png': '/textures/cards/falling-fireball.png',
   
   // Neutral spells
-  '/attached_assets/Non Elemental - Spell_Kencur.png': '/assets/expansions/base_set/cards/spell/neutral/Non Elemental - Spell_Kencur.png',
-  '/attached_assets/Non Elemental - Spell_Merah.png': '/assets/expansions/base_set/cards/spell/neutral/Non Elemental - Spell_Merah.png',
-  '/attached_assets/Non Elemental - Spell_Rec Scroll.png': '/assets/expansions/base_set/cards/spell/neutral/Non Elemental - Spell_Rec Scroll.png',
+  '/attached_assets/Non Elemental - Spell_Kencur.png': '/textures/cards/kencur.png',
+  '/attached_assets/Non Elemental - Spell_Merah.png': '/textures/cards/merah.png',
+  '/attached_assets/Non Elemental - Spell_Rec Scroll.png': '/textures/cards/rec_scroll.png',
   
   // UI assets
-  '/attached_assets/Non Elemental (1)-15.png': '/assets/expansions/base_set/cards/spell/neutral/Non Elemental (1)-15.png',
-  '/attached_assets/Non Elemental (1)_Battle Preparation.png': '/assets/expansions/base_set/cards/spell/neutral/Non Elemental (1)_Battle Preparation.png',
-  '/attached_assets/Non Elemental (1)_Crates.png': '/assets/expansions/base_set/cards/spell/neutral/Non Elemental (1)_Crates.png',
-  '/attached_assets/Non Elemental (1)_Golden Crates.png': '/assets/expansions/base_set/cards/spell/neutral/Non Elemental (1)_Golden Crates.png',
-  '/attached_assets/Non Elemental (1)_Prize.png': '/assets/expansions/base_set/cards/spell/neutral/Non Elemental (1)_Prize.png',
+  '/attached_assets/Non Elemental (1)-15.png': '/textures/cards/neutral/Non Elemental (1)-15.png',
+  '/attached_assets/Non Elemental (1)_Battle Preparation.png': '/textures/cards/battle_preparation.png',
+  '/attached_assets/Non Elemental (1)_Crates.png': '/textures/cards/crates.png',
+  '/attached_assets/Non Elemental (1)_Golden Crates.png': '/textures/cards/neutral/Non Elemental (1)_Golden Crates.png',
+  '/attached_assets/Non Elemental (1)_Prize.png': '/textures/cards/prize.png',
   
   // Default fallback images by card type
-  'DEFAULT_AVATAR': '/textures/cards/default_avatar.png',
-  'DEFAULT_SPELL': '/textures/cards/default_spell.png',
-  'DEFAULT_QUICK_SPELL': '/textures/cards/default_quick_spell.png'
+  'DEFAULT_AVATAR': '/textures/cards/default_avatar.svg',
+  'DEFAULT_SPELL': '/textures/cards/default_avatar.svg',
+  'DEFAULT_QUICK_SPELL': '/textures/cards/default_avatar.svg'
 };
 
 // Get the correct image path or a fallback
 export function getFixedCardImagePath(card: Card): string {
   // If no art field, provide a default based on type
   if (!card.art) {
-    if (card.type === 'avatar') {
-      return '/textures/cards/default_avatar.png';
-    } else if (card.type === 'quickSpell') {
-      return '/textures/cards/default_quick_spell.png';
-    } else {
-      return '/textures/cards/default_spell.png';
-    }
+    return '/textures/cards/default_avatar.svg';
   }
   
   // Check if the image path needs correction
