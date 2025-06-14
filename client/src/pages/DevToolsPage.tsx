@@ -13,6 +13,33 @@ interface Expansion {
   cardCount: number;
 }
 
+interface CardFormData {
+  name: string;
+  type: 'avatar' | 'spell' | 'quickSpell' | 'ritualArmor' | 'field' | 'equipment' | 'item';
+  element: ElementType;
+  level: number;
+  health: number;
+  subType: string;
+  art: string;
+  description: string;
+  expansion: string;
+  energyCost: ElementType[];
+  skill1Name: string;
+  skill1Effect: string;
+  skill1AdditionalEffect: string;
+  skill1EffectType: string;
+  skill1Damage: number;
+  skill1Type: string;
+  skill1EnergyCost: ElementType[];
+  skill2Name: string;
+  skill2Effect: string;
+  skill2AdditionalEffect: string;
+  skill2EffectType: string;
+  skill2Damage: number;
+  skill2Type: string;
+  skill2EnergyCost: ElementType[];
+}
+
 const DevToolsPage: React.FC = () => {
   const { getAvailableCards } = useDeckStore();
   const cards = getAvailableCards();
@@ -22,7 +49,7 @@ const DevToolsPage: React.FC = () => {
   const [selectedExpansion, setSelectedExpansion] = useState<Expansion | null>(null);
   const [isEditingExpansion, setIsEditingExpansion] = useState(false);
   
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<CardFormData>({
     name: '',
     type: 'avatar' as 'avatar' | 'spell' | 'quickSpell' | 'ritualArmor' | 'field' | 'equipment' | 'item',
     element: 'fire' as ElementType,
@@ -35,12 +62,14 @@ const DevToolsPage: React.FC = () => {
     energyCost: [] as ElementType[],
     skill1Name: '',
     skill1Effect: '',
+    skill1AdditionalEffect: '',
     skill1EffectType: 'basic_damage' as string,
     skill1Damage: 0,
     skill1Type: 'active' as 'active' | 'passive',
     skill1EnergyCost: [] as ElementType[],
     skill2Name: '',
     skill2Effect: '',
+    skill2AdditionalEffect: '',
     skill2EffectType: 'basic_damage' as string,
     skill2Damage: 0,
     skill2Type: 'active' as 'active' | 'passive',
