@@ -73,7 +73,7 @@ const CardPreview = ({
                       energy === 'fire' ? 'bg-red-500' : 
                       energy === 'water' ? 'bg-blue-500' : 
                       energy === 'air' ? 'bg-cyan-300' : 
-                      energy === 'earth' ? 'bg-amber-700' : 
+                      energy === 'ground' ? 'bg-amber-700' : 
                       energy === 'neutral' ? 'bg-gray-400' : 'bg-gray-400'
                     }`}
                   />
@@ -174,10 +174,8 @@ const Card2D: React.FC<Card2DProps> = ({
     const energyCount: Record<ElementType, number> = {
       fire: 0,
       water: 0,
-      earth: 0,
+      ground: 0,
       air: 0,
-      light: 0,
-      dark: 0,
       neutral: 0
     };
     
@@ -199,9 +197,9 @@ const Card2D: React.FC<Card2DProps> = ({
             {energyCount.water}
           </div>
         )}
-        {energyCount.earth > 0 && (
+        {energyCount.ground > 0 && (
           <div className="w-4 h-4 bg-amber-800 rounded-full flex items-center justify-center text-white text-[8px]">
-            {energyCount.earth}
+            {energyCount.ground}
           </div>
         )}
         {energyCount.air > 0 && (

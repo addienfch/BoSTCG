@@ -1288,7 +1288,7 @@ export const useGameStore = create<GameState>((set, get) => ({
         // Player's active avatar
         if (get().player.activeAvatar) {
           // Direct modification with native JavaScript
-          get().player.activeAvatar.isTapped = false;
+          get().player.activeAvatar!.isTapped = false;
           console.log("FORCE UNTAPPED player active avatar");
         }
         
@@ -1301,7 +1301,7 @@ export const useGameStore = create<GameState>((set, get) => ({
         // Opponent's active avatar
         if (get().opponent.activeAvatar) {
           // Direct modification with native JavaScript
-          get().opponent.activeAvatar.isTapped = false;
+          get().opponent.activeAvatar!.isTapped = false;
           console.log("FORCE UNTAPPED opponent active avatar");
         }
         
@@ -1932,7 +1932,7 @@ export const useGameStore = create<GameState>((set, get) => ({
       let totalRemaining = 
         (elementCounts.fire || 0) + 
         (elementCounts.water || 0) + 
-        (elementCounts.earth || 0) + 
+        (elementCounts.ground || 0) + 
         (elementCounts.air || 0) + 
         (elementCounts.neutral || 0);
       
