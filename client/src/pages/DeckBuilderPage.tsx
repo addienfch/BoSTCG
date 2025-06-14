@@ -44,7 +44,7 @@ const DeckBuilderPage: React.FC = () => {
     return acc;
   }, {});
   
-  // Check if we've reached the max count for a specific card (4 for spells, 3 for level 1 avatars, 1 for level 2)
+  // Check if we've reached the max count for a specific card (4 copies for all cards except level 2 avatars)
   const hasReachedMaxCount = (card: Card) => {
     const baseId = card.id.split('-')[0] + '-' + card.id.split('-')[1];
     const count = cardCounts[baseId] || 0;
@@ -55,12 +55,12 @@ const DeckBuilderPage: React.FC = () => {
         // Only 1 copy of level 2 avatars
         return count >= 1;
       } else {
-        // 3 copies of level 1 avatars
-        return count >= 3;
+        // 4 copies of level 1 avatars
+        return count >= 4;
       }
     } else {
-      // 3 copies of spells and other cards as requested
-      return count >= 3;
+      // 4 copies of spells and other cards
+      return count >= 4;
     }
   };
   

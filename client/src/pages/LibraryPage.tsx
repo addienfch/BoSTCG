@@ -1,6 +1,7 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useDeckStore } from '../game/stores/useDeckStore';
 import { Card, ElementType, AvatarCard } from '../game/data/cardTypes';
+import { cardNftService } from '../blockchain/solana/cardNftService';
 import BackButton from '../components/BackButton';
 import NavigationBar from '../components/NavigationBar';
 import { ChevronDown } from 'lucide-react';
@@ -15,27 +16,53 @@ const LibraryPage: React.FC = () => {
   const [selectedType, setSelectedType] = useState<string>('all');
   const [selectedRarity, setSelectedRarity] = useState<string>('all');
   const [selectedExpansion, setSelectedExpansion] = useState<string>('all');
+  const [cNftCards, setCNftCards] = useState<Card[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  // Create card counts for the library
+  // Load cNFT cards on component mount
+  useEffect(() => {
+    const loadCNftCards = async () => {
+      try {
+        const walletStatus = await cardNftService.getWalletStatus();
+        if (walletStatus.connected) {
+          const ownedCards = await cardNftService.getOwnedCards();
+          setCNftCards(ownedCards);
+        }
+      } catch (error) {
+        console.error('Error loading cNFT cards:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadCNftCards();
+  }, []);
+
+  // Combine regular cards and cNFT cards
+  const combinedCards = useMemo(() => {
+    return [...allCards, ...cNftCards];
+  }, [allCards, cNftCards]);
+
+  // Create card counts for the library (including cNFTs)
   const cardCounts = useMemo(() => {
     const counts: Record<string, number> = {};
-    allCards.forEach(card => {
+    combinedCards.forEach(card => {
       const key = `${card.name}-${card.type}-${card.element}`;
       counts[key] = (counts[key] || 0) + 1;
     });
     return counts;
-  }, [allCards]);
+  }, [combinedCards]);
 
   // Get unique cards for display
   const uniqueCards = useMemo(() => {
     const seen = new Set();
-    return allCards.filter(card => {
+    return combinedCards.filter(card => {
       const key = `${card.name}-${card.type}-${card.element}`;
       if (seen.has(key)) return false;
       seen.add(key);
       return true;
     });
-  }, [allCards]);
+  }, [combinedCards]);
 
   // Filter cards based on search and filter criteria
   const filteredCards = useMemo(() => {

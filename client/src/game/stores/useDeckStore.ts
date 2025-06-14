@@ -11,6 +11,7 @@ import {
 import { allKujanaKuhakaCards } from '../data/kujanaKuhakaCards';
 import { redElementalSpellCards } from '../data/redElementalCards';
 import { allNeutralCards } from '../data/neutralCards';
+import { cardNftService } from '../../blockchain/solana/cardNftService';
 import { toast } from 'sonner';
 
 // Define the deck interface

@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { Card, ElementType, AvatarCard } from '../game/data/cardTypes';
 import { useDeckStore } from '../game/stores/useDeckStore';
+import { cardNftService } from '../blockchain/solana/cardNftService';
 import BackButton from '../components/BackButton';
 import NavigationBar from '../components/NavigationBar';
 
@@ -143,21 +144,50 @@ const BoosterPacksPage: React.FC = () => {
 
     setIsOpening(true);
     
-    // Simulate opening animation delay
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    
-    const rewards: PackReward[] = selectedPacks.map(pack => ({
-      pack,
-      cards: generateRandomCards(pack)
-    }));
-    
-    setOpenedPacks(rewards);
-    setShowResults(true);
-    setIsOpening(false);
-    setSelectedPacks([]);
-    
-    const totalCards = rewards.reduce((sum, reward) => sum + reward.cards.length, 0);
-    toast.success(`Opened ${selectedPacks.length} packs and received ${totalCards} cards!`);
+    try {
+      // Check wallet connection
+      const walletStatus = await cardNftService.getWalletStatus();
+      if (!walletStatus.connected) {
+        toast.error('Please connect your wallet first');
+        setIsOpening(false);
+        return;
+      }
+
+      // Simulate opening animation delay
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      const rewards: PackReward[] = selectedPacks.map(pack => ({
+        pack,
+        cards: generateRandomCards(pack)
+      }));
+
+      // Create cNFTs for all cards obtained from packs
+      const allCards = rewards.flatMap(reward => reward.cards);
+      for (const card of allCards) {
+        try {
+          // Convert card to NFT metadata and create cNFT
+          const metadata = cardNftService.convertCardToNftMetadata(card);
+          // In a real implementation, this would mint the cNFT on-chain
+          await cardNftService.buyCard(`cnft-${card.id}`, 0); // Mock implementation for now
+          toast.success(`Created cNFT for ${card.name}`);
+        } catch (error) {
+          console.error('Failed to create cNFT for card:', card.name, error);
+          toast.error(`Failed to create cNFT for ${card.name}`);
+        }
+      }
+      
+      setOpenedPacks(rewards);
+      setShowResults(true);
+      setIsOpening(false);
+      setSelectedPacks([]);
+      
+      const totalCards = rewards.reduce((sum, reward) => sum + reward.cards.length, 0);
+      toast.success(`Opened ${selectedPacks.length} packs and received ${totalCards} cards as cNFTs!`);
+    } catch (error) {
+      console.error('Error opening packs:', error);
+      toast.error('Failed to open packs. Please try again.');
+      setIsOpening(false);
+    }
   };
 
   const getTotalPrice = () => {
