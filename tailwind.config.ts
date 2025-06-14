@@ -11,6 +11,12 @@ export default {
         sm: "calc(var(--radius) - 4px)",
       },
       colors: {
+        // Book of Spektrum brand colors
+        spektrum: {
+          light: "#DFE1DD",
+          dark: "#0D1A29",
+          orange: "#FF8C00",
+        },
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
         card: {

@@ -89,7 +89,7 @@ const Hand = ({ position = [0, 0, 0] }: HandProps) => {
     return (card.energyCost || 0) <= playerEnergyPile.length;
   };
   
-  // Set up touch/mouse move handler for dragging and card actions
+  // Set up touch/mouse move handler for dragging
   useEffect(() => {
     const handlePointerMove = (event: PointerEvent) => {
       if (!isDragging || draggedCard === null) return;
@@ -101,28 +101,14 @@ const Hand = ({ position = [0, 0, 0] }: HandProps) => {
       // Update drag position
       updateDragPosition(new Vector3(x * 5, 0.5, y * 4 - 1));
     };
-
-    // Handle card actions from the popup
-    const handleCardAction = (event: Event) => {
-      const customEvent = event as CustomEvent;
-      if (customEvent.detail?.action === 'energy' && draggedCard !== null) {
-        const card = playerHand[draggedCard];
-        if (card.type === 'avatar') {
-          setEnergyCard(draggedCard);
-          toast.success(`Using ${card.name} as energy`);
-        }
-      }
-    };
     
     // Add event listeners
     window.addEventListener('pointermove', handlePointerMove);
-    document.addEventListener('cardAction', handleCardAction as EventListener);
     
     return () => {
       window.removeEventListener('pointermove', handlePointerMove);
-      document.removeEventListener('cardAction', handleCardAction as EventListener);
     };
-  }, [isDragging, draggedCard, size, updateDragPosition, playerHand, setEnergyCard]);
+  }, [isDragging, draggedCard, size, updateDragPosition]);
   
   // Handle card actions based on drag position
   const handleDragEnd = () => {
@@ -131,11 +117,10 @@ const Hand = ({ position = [0, 0, 0] }: HandProps) => {
       
       // Determine action based on where the card was dragged
       if (dragPosition.z < -2) {
-        // Dragged backward (toward player) - show popup for avatar cards
+        // Dragged backward (toward player) - use as energy
         if (card.type === 'avatar') {
-          // Instead of directly setting as energy, select the card to show the popup
-          selectCard(draggedCard);
-          toast.info(`${card.name} selected. Choose an action from the popup.`);
+          setEnergyCard(draggedCard);
+          toast.success(`Using ${card.name} as energy`);
         } else {
           toast.error('Only Avatar cards can be used as energy');
         }

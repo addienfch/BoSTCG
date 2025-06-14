@@ -1,7 +1,7 @@
 // Define the types for the card game
 
-export type ElementType = 'fire' | 'water' | 'earth' | 'air' | 'light' | 'dark' | 'neutral';
-export type SubType = 'kobar' | 'borah' | 'kuhaka' | 'kujana';
+export type ElementType = 'fire' | 'water' | 'ground' | 'air' | 'neutral';
+export type SubType = 'kobar' | 'borah' | 'kuhaka' | 'kujana' | 'kuku';
 export type ActionSubType = 'equipment' | 'healing' | 'damage' | 'draw' | 'search';
 export type CardCategory = 'avatar' | 'spell' | 'quickSpell' | 'ritualArmor' | 'field' | 'equipment' | 'item';
 
@@ -29,8 +29,6 @@ export interface BaseCard {
   energyCost?: ElementType[];
   effect?: string;
   art: string;
-  image?: string;
-  rarity?: 'common' | 'rare' | 'epic' | 'legendary';
 }
 
 // Avatar Card interface
@@ -56,7 +54,7 @@ export interface ActionCard extends BaseCard {
 export type Card = AvatarCard | ActionCard;
 
 // Game phase type
-export type GamePhase = 'setup' | 'refresh' | 'draw' | 'main1' | 'battle' | 'damage' | 'main2' | 'end';
+export type GamePhase = 'setup' | 'refresh' | 'draw' | 'main1' | 'battle' | 'damage' | 'main2' | 'recheck' | 'end';
 
 // Player type
 export type Player = 'player' | 'opponent';

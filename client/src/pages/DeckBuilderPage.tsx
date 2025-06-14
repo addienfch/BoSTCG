@@ -3,7 +3,8 @@ import { useDeckStore, Deck } from '../game/stores/useDeckStore';
 import { Card, ElementType, AvatarCard } from '../game/data/cardTypes';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
-import { renderCardImage } from '../utils/cardImageUtils';
+import BackButton from '../components/BackButton';
+import NavigationBar from '../components/NavigationBar';
 
 const DeckBuilderPage: React.FC = () => {
   const { decks, activeDeckId, getAvailableCards, addDeck, updateDeck, deleteDeck, setActiveDeck } = useDeckStore();
@@ -152,22 +153,16 @@ const DeckBuilderPage: React.FC = () => {
   };
   
   return (
-    <div className="w-full h-full bg-gray-900 text-white p-4">
-      <div className="flex justify-between items-center mb-4">
-        <h1 className="text-2xl font-bold">Book of Spektrum - Deck Builder</h1>
-        <button 
-          onClick={() => navigate('/')}
-          className="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-md flex items-center"
-        >
-          <span className="mr-1">← Back</span>
-        </button>
-      </div>
-      
-      {/* Deck selection and management */}
-      <div className="mb-6 bg-gray-800 p-4 rounded-lg">
-        <h2 className="text-xl font-semibold mb-2">Your Decks</h2>
-        <div className="flex flex-wrap gap-4 mb-4">
-          {decks.map(deck => (
+    <div className="min-h-screen bg-spektrum-dark text-spektrum-light pb-20" style={{ fontFamily: 'Noto Sans, Inter, sans-serif' }}>
+      <BackButton />
+      <div className="max-w-6xl mx-auto p-4">
+        <h1 className="text-2xl font-bold mb-4 text-center">Deck Builder</h1>
+        
+        {/* Deck selection and management */}
+        <div className="mb-6 bg-gray-800 p-4 rounded-lg">
+          <h2 className="text-xl font-semibold mb-2">Your Decks</h2>
+          <div className="flex flex-wrap gap-4 mb-4">
+            {decks.map(deck => (
             <div 
               key={deck.id} 
               className={`p-3 rounded-lg cursor-pointer flex flex-col items-center transition-colors ${
@@ -235,18 +230,18 @@ const DeckBuilderPage: React.FC = () => {
               <span className="text-xs text-gray-300">{decks.length}/5 decks</span>
             </div>
           )}
+          </div>
         </div>
-      </div>
-      
-      {/* Deck editor */}
-      {(selectedDeck || selectedCards.length > 0 || deckName === 'New Custom Deck') && (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {/* Current deck */}
-          <div className="md:col-span-1 bg-gray-800 rounded-lg p-4">
-            <h2 className="text-xl font-semibold mb-2">
-              {selectedDeck ? "Edit Deck" : "Create New Deck"}
-            </h2>
-            <div className="mb-4">
+        
+        {/* Deck editor */}
+        {(selectedDeck || selectedCards.length > 0 || deckName === 'New Custom Deck') && (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* Current deck */}
+            <div className="md:col-span-1 bg-gray-800 rounded-lg p-4">
+              <h2 className="text-xl font-semibold mb-2">
+                {selectedDeck ? "Edit Deck" : "Create New Deck"}
+              </h2>
+              <div className="mb-4">
               <label className="block text-sm font-medium text-gray-300 mb-1">
                 Deck Name
               </label>
@@ -292,7 +287,7 @@ const DeckBuilderPage: React.FC = () => {
                                 card.element === 'fire' ? 'bg-red-500' : 
                                 card.element === 'water' ? 'bg-blue-500' : 
                                 card.element === 'air' ? 'bg-cyan-300' : 
-                                card.element === 'earth' ? 'bg-amber-700' : 'bg-gray-400'
+                                card.element === 'ground' ? 'bg-amber-700' : 'bg-gray-400'
                               }`}
                             />
                           )}
@@ -407,7 +402,7 @@ const DeckBuilderPage: React.FC = () => {
             </div>
             
             {/* Card grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 w-full">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 max-h-[500px] overflow-y-auto p-2">
               {filteredCards.map((card, index) => {
                 const baseId = card.id.split('-')[0] + '-' + card.id.split('-')[1];
                 const count = cardCounts[baseId] || 0;
@@ -421,85 +416,108 @@ const DeckBuilderPage: React.FC = () => {
                     }`}
                   >
                     <div className="relative group">
-                      <div className="h-36 relative">
-                        {renderCardImage(card, "h-36 w-full")}
-                        <div className="absolute inset-0 flex flex-col justify-between p-1">
-                          <div className="flex justify-between">
-                            <div className="bg-black bg-opacity-60 text-white text-xs px-2 py-0.5 rounded font-bold">
-                              {card.name}
-                            </div>
-                            {card.type === 'avatar' && (
-                              <div className="bg-gray-800 bg-opacity-70 text-white text-xs px-1 py-0.5 rounded">
-                                Lv{(card as AvatarCard).level}
+                      <div 
+                        className={`h-36 flex items-center justify-center relative ${
+                          card.element === 'fire' ? 'bg-red-900' : 
+                          card.element === 'water' ? 'bg-blue-900' : 
+                          card.element === 'air' ? 'bg-cyan-900' :
+                          card.element === 'ground' ? 'bg-amber-900' : 'bg-gray-800'
+                        }`}
+                      >
+                        {card.art ? (
+                          <>
+                            <img src={card.art} alt={card.name} className="h-full w-full object-cover opacity-80" />
+                            <div className="absolute inset-0 flex flex-col justify-between p-1">
+                              <div className="flex justify-between">
+                                <div className="bg-black bg-opacity-60 text-white text-xs px-2 py-0.5 rounded font-bold">
+                                  {card.name}
+                                </div>
+                                {card.type === 'avatar' && (
+                                  <div className="bg-gray-800 bg-opacity-70 text-white text-xs px-1 py-0.5 rounded">
+                                    Lv{(card as AvatarCard).level}
+                                  </div>
+                                )}
                               </div>
+                              <div className="bg-black bg-opacity-50 text-white text-xs px-1 py-0.5 rounded self-start">
+                                {card.type} 
+                                {card.type === 'avatar' && (card as AvatarCard).subType && 
+                                  ` • ${(card as AvatarCard).subType.charAt(0).toUpperCase() + (card as AvatarCard).subType.slice(1)}`
+                                }
+                              </div>
+                            </div>
+                            
+                            {/* Hover tooltip for card details */}
+                            <div className="absolute opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10 bg-gray-900 bg-opacity-90 border border-gray-600 rounded-md p-3 shadow-lg w-64 text-sm text-left left-0 mt-2 pointer-events-none" style={{ top: '100%' }}>
+                              <h3 className="font-bold text-lg mb-1">{card.name}</h3>
+                              <div className="flex justify-between mb-2">
+                                <div className="text-gray-300">
+                                  {card.type} • {card.element}
+                                  {card.type === 'avatar' && ` • Lv${(card as AvatarCard).level}`}
+                                </div>
+                                <div className="flex items-center gap-1">
+                                  {card.energyCost?.map((energy, i) => (
+                                    <div 
+                                      key={i}
+                                      className={`w-3 h-3 rounded-full ${
+                                        energy === 'fire' ? 'bg-red-500' : 
+                                        energy === 'water' ? 'bg-blue-500' : 
+                                        energy === 'air' ? 'bg-cyan-300' : 
+                                        energy === 'ground' ? 'bg-amber-700' : 
+                                        energy === 'neutral' ? 'bg-gray-400' : 'bg-gray-400'
+                                      }`}
+                                    />
+                                  ))}
+                                </div>
+                              </div>
+                              {card.type === 'avatar' && (
+                                <div className="mb-2">
+                                  <div>Health: {(card as AvatarCard).health}</div>
+                                  {(card as AvatarCard).skill1 && (
+                                    <div className="mt-2">
+                                      <div className="font-medium">{(card as AvatarCard).skill1.name}</div>
+                                      <div className="text-xs text-gray-300 mb-1">
+                                        Energy: {(card as AvatarCard).skill1.energyCost?.map(e => 
+                                          e.charAt(0).toUpperCase() + e.slice(1)
+                                        ).join(', ')}
+                                      </div>
+                                      <div>Damage: {(card as AvatarCard).skill1.damage}</div>
+                                      <div className="text-xs mt-1">{(card as AvatarCard).skill1.effect}</div>
+                                    </div>
+                                  )}
+                                  {(() => {
+                                    const skill2 = (card as AvatarCard).skill2;
+                                    if (!skill2) return null;
+                                    return (
+                                      <div className="mt-2 border-t border-gray-700 pt-2">
+                                        <div className="font-medium">{skill2.name}</div>
+                                        <div className="text-xs text-gray-300 mb-1">
+                                          Energy: {skill2.energyCost?.map(e => 
+                                            e.charAt(0).toUpperCase() + e.slice(1)
+                                          ).join(', ') || 'None'}
+                                        </div>
+                                        <div>Damage: {skill2.damage || 0}</div>
+                                        <div className="text-xs mt-1">{skill2.effect}</div>
+                                      </div>
+                                    );
+                                  })()}
+                                </div>
+                              )}
+                              {(card.type === 'spell' || card.type === 'quickSpell' || card.type === 'ritualArmor' || card.type === 'equipment') && (
+                                <div className="mb-2">
+                                  <div className="text-gray-100">{card.description}</div>
+                                </div>
+                              )}
+                            </div>
+                          </>
+                        ) : (
+                          <div className="text-center p-2">
+                            <div className="font-bold">{card.name}</div>
+                            <div className="text-xs">{card.type}</div>
+                            {card.type === 'avatar' && (
+                              <div className="text-xs mt-1">Level: {(card as AvatarCard).level}</div>
                             )}
                           </div>
-                          <div className="bg-black bg-opacity-50 text-white text-xs px-1 py-0.5 rounded self-start">
-                            {card.type} 
-                            {card.type === 'avatar' && (card as AvatarCard).subType && 
-                              ` • ${(card as AvatarCard).subType.charAt(0).toUpperCase() + (card as AvatarCard).subType.slice(1)}`
-                            }
-                          </div>
-                        </div>
-                        
-                        {/* Hover tooltip for card details */}
-                        <div className="absolute opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10 bg-gray-900 bg-opacity-90 border border-gray-600 rounded-md p-3 shadow-lg w-64 text-sm text-left left-0 mt-2 pointer-events-none" style={{ top: '100%' }}>
-                          <h3 className="font-bold text-lg mb-1">{card.name}</h3>
-                          <div className="flex justify-between mb-2">
-                            <div className="text-gray-300">
-                              {card.type} • {card.element}
-                              {card.type === 'avatar' && ` • Lv${(card as AvatarCard).level}`}
-                            </div>
-                            <div className="flex items-center gap-1">
-                              {card.energyCost?.map((energy, i) => (
-                                <div 
-                                  key={i}
-                                  className={`w-3 h-3 rounded-full ${
-                                    energy === 'fire' ? 'bg-red-500' : 
-                                    energy === 'water' ? 'bg-blue-500' : 
-                                    energy === 'air' ? 'bg-cyan-300' : 
-                                    energy === 'earth' ? 'bg-amber-700' : 
-                                    energy === 'neutral' ? 'bg-gray-400' : 'bg-gray-400'
-                                  }`}
-                                />
-                              ))}
-                            </div>
-                          </div>
-                          {card.type === 'avatar' && (
-                            <div className="mb-2">
-                              <div>Health: {(card as AvatarCard).health}</div>
-                              {(card as AvatarCard).skill1 && (
-                                <div className="mt-2">
-                                  <div className="font-medium">{(card as AvatarCard).skill1?.name || 'Unnamed Skill'}</div>
-                                  <div className="text-xs text-gray-300 mb-1">
-                                    Energy: {(card as AvatarCard).skill1?.energyCost?.map(e => 
-                                      e.charAt(0).toUpperCase() + e.slice(1)
-                                    ).join(', ') || 'None'}
-                                  </div>
-                                  <div>Damage: {(card as AvatarCard).skill1?.damage || 0}</div>
-                                  <div className="text-xs mt-1">{(card as AvatarCard).skill1?.effect || 'No effect'}</div>
-                                </div>
-                              )}
-                              {(card as AvatarCard).skill2 && (
-                                <div className="mt-2 border-t border-gray-700 pt-2">
-                                  <div className="font-medium">{(card as AvatarCard).skill2?.name || 'Unnamed Skill'}</div>
-                                  <div className="text-xs text-gray-300 mb-1">
-                                    Energy: {(card as AvatarCard).skill2?.energyCost?.map(e => 
-                                      e.charAt(0).toUpperCase() + e.slice(1)
-                                    ).join(', ') || 'None'}
-                                  </div>
-                                  <div>Damage: {(card as AvatarCard).skill2?.damage || 0}</div>
-                                  <div className="text-xs mt-1">{(card as AvatarCard).skill2?.effect || 'No effect'}</div>
-                                </div>
-                              )}
-                            </div>
-                          )}
-                          {(card.type === 'spell' || card.type === 'quickSpell' || card.type === 'ritualArmor' || card.type === 'equipment') && (
-                            <div className="mb-2">
-                              <div className="text-gray-100">{card.description || 'No description available'}</div>
-                            </div>
-                          )}
-                        </div>
+                        )}
                       </div>
                       
                       {/* Count badge */}
@@ -521,7 +539,7 @@ const DeckBuilderPage: React.FC = () => {
                                 energy === 'fire' ? 'bg-red-500' : 
                                 energy === 'water' ? 'bg-blue-500' : 
                                 energy === 'air' ? 'bg-cyan-300' : 
-                                energy === 'earth' ? 'bg-amber-700' : 
+                                energy === 'ground' ? 'bg-amber-700' : 
                                 energy === 'neutral' ? 'bg-gray-400' : 'bg-gray-400'
                               }`}
                             />
@@ -544,6 +562,9 @@ const DeckBuilderPage: React.FC = () => {
           </div>
         </div>
       )}
+      </div>
+      
+      <NavigationBar />
     </div>
   );
 };

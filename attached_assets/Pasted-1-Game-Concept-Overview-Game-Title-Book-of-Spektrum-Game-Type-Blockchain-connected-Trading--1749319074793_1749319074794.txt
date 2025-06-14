@@ -1,0 +1,275 @@
+1. Game Concept Overview
+Game Title: Book of Spektrum
+
+
+Game Type: Blockchain-connected Trading Card Game (TCG)
+
+
+Platform: Android (Unity)
+
+
+Blockchain: Solana (for wallet integration and NFTs)
+
+
+Target Audience: Crypto enthusiasts, trading card game players, mobile gamers
+
+
+Key Features:
+
+
+Card evolution
+Energy systems
+Turn-based gameplay
+Blockchain NFT integration for card ownership and trading
+Stable coin price mechanism for in-game purchases and currency
+cNFTs to resolve gas fee issues
+Booster selection for gacha-like experience
+Easy card input mechanics
+Focus on 2D visuals for easier development
+Game Phases: Detailed breakdown of the turn structure
+
+
+
+2. Game Phases
+The game is divided into phases for turn-based gameplay, guiding how players interact with their cards, energy, and actions.
+2.1. Preparation Phase
+State Transitions:
+Players draw 6 cards and place one Level 1 Avatar in the active Avatar area.
+Mulligan Rules:
+If the player does not have a Level 1 Avatar in their hand, they must reveal their hand and perform a mulligan.
+The first mulligan is free, subsequent ones reduce the number of drawn cards by one each time (e.g., 5, 4, 3 cards).
+Each player starts with 4 Life Cards, which are drawn from their deck during the Preparation Phase.
+
+
+2.2. Refresh Phase
+State Transitions:
+The Used Energy Pile is refreshed, and cards are moved back into the Energy Pile for the next turn.
+
+
+2.3. Draw Phase
+State Transitions:
+Players draw 1 card from their deck and add it to their hand.
+
+
+2.4. Main Phase 1
+State Transitions:
+Players can play Avatar cards, Action cards, and Energy cards from their hand.
+Quick Spells can be used at any time, while other Action cards like Spells, Ritual Armor, Field, Equipment, Item can only be used during this phase.
+
+
+2.5. Battle Phase
+State Transitions:
+Players declare attacks with their active Avatars, and damage is applied to the defending Avatar.
+Damage counters are updated based on the attack values.
+
+
+2.6. Damage Phase
+State Transitions:
+Damage counters are applied to the affected Avatar. If the Avatar’s HP reaches 0, it is sent to the graveyard.
+
+
+2.7. Main Phase 2
+State Transitions:
+Players can play any remaining cards or move Equipment to other Avatars if necessary.
+Players can adjust their board state before the turn ends.
+
+
+2.8. End Phase
+State Transitions:
+Players must discard excess cards if they have more than 8 cards in hand.
+End the turn, and the player’s state is prepared for the next turn.
+
+
+
+3. Main Menu
+3.1. Start Game
+Options:
+Vs AI: Play against a computer-controlled opponent with adjustable difficulty settings.
+Random Match: Automatically match with another player for a quick game.
+Create Room: Set up a custom match room where you can choose opponents and specific game settings.
+Enter Custom Room: Join a specific match room by entering a unique room code provided by the room creator.
+
+
+3.2. Deck Builder
+Features:
+Organize Cards: View and organize your card collection into decks.
+Create New Decks: Build custom decks by selecting Avatar and Action cards, ensuring deck legality (e.g., only 4 copies of a card).
+Card Filtering: Filter cards by element, subtype, level, and rarity to assist in creating the perfect deck.
+Deck Statistics: View deck stats, including total card count, average mana cost, and synergy between cards.
+
+
+3.3. Library
+Features:
+Card Collection: View all the cards in your possession, including owned NFTs.
+Card Details: Tap on any card to see detailed information, such as card level, abilities, health points, and card artwork.
+
+
+NFT Information: Cards represented as NFTs can be distinguished with a Solana wallet address, transaction history, and marketplace availability.
+
+
+3.4. Marketplace
+Features:
+Shop: Browse available card boosters, decks, and special edition cards available for purchase.
+NFT Marketplace Integration: Integrate with a Solana NFT marketplace (like Magic Eden) to allow players to buy, sell, and trade their NFT-based cards.
+Search & Filter: Search for cards by name, type, or rarity, and apply filters for price ranges or availability.
+Booster Packs: Purchase random booster packs to expand your card collection.
+Cosmetics: Purchase cosmetics for game.
+3.5. Settings
+Features:
+Game Settings:
+Adjust visual quality, game speed, and animations.
+Set language preferences (e.g., English, Indonesian).
+Toggle music and sound effects on/off.
+
+
+Wallet Settings:
+Solana Wallet Integration: Connect to your Solana wallet to log in and manage your game assets.
+Wallet Authentication: Use wallet apps like Phantom, Sollet, or Solflare to authenticate and sign in to the game.
+Transaction Settings: Enable or disable automatic confirmations for in-game transactions (e.g., NFT trades, booster pack purchases).
+
+
+
+4. In-Game UI/UX Elements
+4.1. Start Screen - Solana Wallet Connection
+Description: Upon launching the game, players are prompted to connect their Solana wallet.
+Options for Wallet Connection:
+Phantom
+Sollet
+Solflare
+
+
+UI Design: The background of the start screen will use the Dark color hex #0D1A29, with wallet connection buttons in contrasting Light color hex #DFE1DD.
+Wallet Authentication: Players must authorize the game to connect to their Solana wallet to access their NFTs and game progress.
+Instructions: The screen should display a brief, simple instruction on how to connect a wallet with a clear button for each wallet option.
+
+
+4.2. Energy System - Card Management
+Energy Piles (Visual Representation):
+Energy Pile: A section in the UI displaying all cards that are in the energy pile. Each Avatar in the energy pile is represented visually, with its corresponding element and level.
+Details: Show the number of cards in the energy pile and the specific cards that are present there.
+Example:
+Energy Pile:
+"Fire Avatar (Level 1)"
+"Water Avatar (Level 1)"
+"Air Avatar (Level 1)"
+
+
+Used Energy Pile: A section displaying all cards that have been used and moved into the used energy pile for the turn. These cards are no longer available for energy generation in the current turn.
+Details: Show the number of cards in the used energy pile and the specific cards that have been used up.
+Example:
+Used Energy Pile:
+"Fire Avatar (Level 1)"
+"Water Avatar (Level 1)"
+The used energy pile is refreshed at the start of each turn.
+
+
+4.3. Action Cards - Quick Spell and Usage Rules
+Quick Spell:
+Usage: Quick Spells can be played anytime during the game, including during the opponent's turn. This makes Quick Spells very versatile and strategic.
+
+
+Visual Indicators: Highlight Quick Spells with a distinct icon or border to differentiate them from other action cards.
+Effect: The effect resolves immediately when played, and the card is sent to the graveyard after use.
+Example: A Quick Spell that shields the active Avatar from damage during the opponent’s turn.
+
+
+Other Action Cards (Spell, Ritual Armor, Field, Equipment, Item):
+Usage: These cards can only be played during a player's Main Phase (Main Phase 1 or Main Phase 2).
+Visual Indicators: These cards should be visually distinct from Quick Spells, perhaps with a different color or design in the card's border or background.
+Effect: Players must wait for the appropriate phase to play these cards, limiting their flexibility in combat.
+
+
+
+5. Solana Wallet Integration (Login)
+User Login Process:
+Initial Screen: Upon launching the game, prompt users to log in with a Solana wallet.
+Wallet Selection: Support multiple Solana wallets (e.g., Phantom, Sollet, Solflare) for ease of access.
+Wallet Connection: Upon selecting a wallet, request permission for the game to connect to the wallet and read the user's assets.
+Login Confirmation: Once the wallet is connected, the user is authenticated, and they can access their card collection and NFT-based assets.
+
+
+In-Game Wallet Features:
+View Wallet Balance: Display the current balance of SOL (Solana) in the user's wallet.
+NFT Collection Display: Showcase all owned NFT cards (representing Avatars, Action Cards, and special editions).
+Transaction History: Users can view recent transactions, including card purchases, sales, and trades.
+
+6. Marketplace and Trading (NFT Integration)
+NFT Card Ownership:
+All Avatar and Action cards are tokenized as NFTs on the Solana blockchain.
+Players can buy, sell, and trade their cards in the marketplace, either in-game or through external marketplaces (Magic Eden, Solanart).
+
+
+Transactions and Confirmations:
+Purchases and Trades: Players will need to approve transactions using their Solana wallet.
+NFT Minting: Cards that are won or obtained from boosters are minted as NFTs and stored in the player's wallet.
+
+
+Solana Wallet Features:
+Allow players to deposit or withdraw Solana (SOL) from their in-game wallet to a Solana wallet.
+Enable smart contract interaction for in-game trades, purchases, and NFT minting.
+
+
+
+7. Minting Process: Randomized Cards and Blockchain Integration
+7.1. Randomization Logic (App-Side)
+Booster Pack or Card Purchase: When a player purchases a booster pack or a card, the app will handle the randomization of the cards.
+Randomized Card Generation: The app uses an internal random number generator to determine which cards are included in the pack or purchase.
+Card Assignment: The system assigns a unique identifier to each randomized card for minting.
+
+
+7.2. Minting Process (Blockchain-Side)
+Minting Trigger: Once the cards are randomized, the system triggers the minting process.
+Smart Contract Interaction: The app communicates with Claude-powered smart contracts to mint the corresponding card(s) as NFTs.
+Metadata Upload: Metadata (e.g., card attributes, artwork) is uploaded to Solana’s blockchain or external storage like IPFS/Arweave.
+
+
+7.3. Ownership and Blockchain Interaction
+Transaction Confirmation: Players approve the minting transaction via their Solana wallet.
+NFT Ownership: The minted NFT is recorded on the Solana blockchain, and ownership is assigned to the player's wallet address.
+Marketplace Trading: Players can trade their newly minted NFTs in the in-game marketplace or external platforms.
+
+
+
+8. New Features and Rules
+8.1. Hand Rule (End Phase)
+At the End Phase, players must have no more than 8 cards in their hand.
+If a player has more than 8 cards at the end of their turn, they must discard the excess cards until they have 8 cards remaining.
+
+
+8.2. Stable Coin Price Mechanism
+The game’s currency (used for purchases, trades, etc.) will be based on the stable coin price.
+This ensures stable pricing for in-game purchases and reduces volatility in transactions.
+8.3. Use of cNFTs (Crypto Non-Fungible Tokens)
+cNFTs will be used for all NFT-based cards also for the cosmetics in the game.
+cNFTs will allow for lower transaction fees, as the gas fees associated with minting, buying, and selling NFTs will be minimized.
+
+
+8.4. Booster Pack Selection Mechanic
+Players can choose multiple booster packs before opening to increase the gacha experience.
+Selection Mechanic:
+Players can select 2-3 booster packs from a range of available options (e.g., Fire Pack, Water Pack, Mixed Pack).
+Once selected, they can open all chosen packs at once to receive the randomized cards.
+This mechanic creates excitement and the feeling of a gacha pull, allowing for multiple chances to get rare cards.
+
+
+8.5. Easy Card Input Mechanic
+To input new cards into the game:
+
+
+Admin Tools: Use a backend management system where new card data can be uploaded via CSV or JSON files.
+Card Information: The card attributes (name, type, level, rarity, element, abilities, artwork) can be easily imported and automatically registered into the system.
+Metadata Update: Once the cards are added, they are automatically linked to their NFTs and ready for use in boosters or pre-made decks.
+Drag-and-Drop Interface: Provide a simple drag-and-drop interface for card artwork and asset uploads, allowing new cards to be easily managed and deployed.
+
+
+
+9. Visual Design and Colors
+9.1. UI Design:
+The main colors for the entire UI will be:
+Light Color: #DFE1DD (for primary backgrounds, buttons, and UI elements)
+Dark Color: #0D1A29 (for primary UI areas, headers, and dark backgrounds)
+Accent Color: Orange (for highlights, action buttons, and important icons)
+
+
+9.2. Font:
+Noto Sans will be used across all UI elements for clean, readable text.

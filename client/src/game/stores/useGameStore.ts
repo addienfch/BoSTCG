@@ -30,6 +30,7 @@ interface PlayerState {
   hasPlayedItemThisTurn: boolean; // Track if an item card has been played this turn
   isAI?: boolean; // Flag to identify AI-controlled player
   needsToSelectReserveAvatar?: boolean; // Flag to indicate player needs to select a reserve avatar to become active
+  needsToDiscardCards?: boolean; // Flag to indicate player needs to discard cards at end of turn
 }
 
 interface GameState {
@@ -74,6 +75,7 @@ interface GameState {
   // Card management
   moveCardToEnergy: (handIndex: number) => void; // Move a card from hand to energy pile
   discardCard: (handIndex: number, player: Player) => void; // Discard a card to graveyard
+  discardCardForHandLimit: (handIndex: number) => void; // Discard a card due to hand size limit
   
   // Selection helpers
   selectCard: (handIndex: number) => void;
@@ -369,7 +371,12 @@ export const useGameStore = create<GameState>((set, get) => ({
         const drawnCard = updatedDeck.shift();
         if (drawnCard) {
           updatedHand.push(drawnCard);
-          get().addLog(`${player === 'player' ? 'You draw' : 'Opponent draws'} ${drawnCard.name}.`);
+          // Hide opponent's drawn card names for strategy gameplay
+          if (player === 'player') {
+            get().addLog(`You draw ${drawnCard.name}.`);
+          } else {
+            get().addLog(`Opponent draws a card.`);
+          }
         }
       }
       
@@ -897,8 +904,6 @@ export const useGameStore = create<GameState>((set, get) => ({
       toast.error("You can only place one avatar card into energy per turn!");
       return;
     }
-
-
     
     // Move the card to energy pile
     set(state => {
@@ -1016,7 +1021,7 @@ export const useGameStore = create<GameState>((set, get) => ({
         isTapped: targetAvatarCard!.isTapped
       };
       
-      console.log("Evolution - Damage counter explicitly preserved:", evolvedAvatar.counters?.damage);
+      console.log("Evolution - Damage counter explicitly preserved:", evolvedAvatar.counters.damage);
       
       console.log("Evolution - Final evolved avatar:", evolvedAvatar);
       
@@ -1283,7 +1288,7 @@ export const useGameStore = create<GameState>((set, get) => ({
         // Player's active avatar
         if (get().player.activeAvatar) {
           // Direct modification with native JavaScript
-          get().player.activeAvatar!.isTapped = false;
+          get().player.activeAvatar.isTapped = false;
           console.log("FORCE UNTAPPED player active avatar");
         }
         
@@ -1296,7 +1301,7 @@ export const useGameStore = create<GameState>((set, get) => ({
         // Opponent's active avatar
         if (get().opponent.activeAvatar) {
           // Direct modification with native JavaScript
-          get().opponent.activeAvatar!.isTapped = false;
+          get().opponent.activeAvatar.isTapped = false;
           console.log("FORCE UNTAPPED opponent active avatar");
         }
         
@@ -1373,13 +1378,13 @@ export const useGameStore = create<GameState>((set, get) => ({
         break;
         
       case 'main2':
-        nextPhase = 'end';
+        nextPhase = 'recheck';
         break;
         
-      case 'end':
-        nextPhase = 'refresh';
+      case 'recheck':
+        nextPhase = 'end';
         
-        // Check for maximum hand size (8)
+        // Check for maximum hand size (8) - only for the current player
         const activePlayer = currentPlayer === 'player' ? player : opponent;
         if (activePlayer.hand.length > 8) {
           const excessCards = activePlayer.hand.length - 8;
@@ -1389,12 +1394,23 @@ export const useGameStore = create<GameState>((set, get) => ({
               // Discard the last card
               get().discardCard(activePlayer.hand.length - 1, 'opponent');
             }
+            get().addLog(`Opponent discarded ${excessCards} cards during recheck phase.`);
           } else {
-            // For player, prompt that they need to discard
-            toast.error(`You have ${activePlayer.hand.length} cards! You need to discard ${excessCards} to get to 8.`);
+            // For player, set the discard flag and show message
+            set(state => ({
+              player: {
+                ...state.player,
+                needsToDiscardCards: true
+              }
+            }));
+            toast.error(`Recheck Phase: You have ${activePlayer.hand.length} cards! You must discard ${excessCards} cards before ending your turn.`);
             return; // Don't progress until discarded
           }
         }
+        break;
+        
+      case 'end':
+        nextPhase = 'refresh';
         
         // End turn (switch players)
         get().endTurn();
@@ -1420,6 +1436,37 @@ export const useGameStore = create<GameState>((set, get) => ({
     // Get current player before switching
     const oldCurrentPlayer = get().currentPlayer;
     const gameState = get();
+    
+    // Check if current player needs to discard cards (more than 8 in hand)
+    const currentPlayerState = oldCurrentPlayer === 'player' ? gameState.player : gameState.opponent;
+    if (currentPlayerState.hand.length > 8) {
+      // Set flag to indicate player needs to discard cards
+      if (oldCurrentPlayer === 'player') {
+        set(state => ({
+          player: {
+            ...state.player,
+            needsToDiscardCards: true
+          }
+        }));
+        toast.error(`You have ${currentPlayerState.hand.length} cards! You must discard ${currentPlayerState.hand.length - 8} cards before ending your turn.`);
+        return; // Don't switch turns until cards are discarded
+      } else {
+        // For AI opponent, automatically discard excess cards
+        const excessCards = currentPlayerState.hand.length - 8;
+        const cardsToDiscard = currentPlayerState.hand.slice(-excessCards); // Take last cards
+        const remainingHand = currentPlayerState.hand.slice(0, 8); // Keep first 8 cards
+        
+        set(state => ({
+          opponent: {
+            ...state.opponent,
+            hand: remainingHand,
+            graveyard: [...state.opponent.graveyard, ...cardsToDiscard]
+          }
+        }));
+        
+        get().addLog(`Opponent discarded ${excessCards} cards to end their turn.`);
+      }
+    }
     
     // First, manually refresh the energy pile for the next player
     const nextPlayer = oldCurrentPlayer === 'player' ? 'opponent' : 'player';
@@ -1458,7 +1505,7 @@ export const useGameStore = create<GameState>((set, get) => ({
       // Also directly make isTapped false in any existing avatar objects
       console.log("TURN CHANGE - Directly untapping player avatars");
       if (get().player.activeAvatar) {
-        get().player.activeAvatar!.isTapped = false;
+        get().player.activeAvatar.isTapped = false;
       }
       get().player.reserveAvatars.forEach(avatar => {
         avatar.isTapped = false;
@@ -1503,7 +1550,7 @@ export const useGameStore = create<GameState>((set, get) => ({
       // Also directly make isTapped false in any existing avatar objects
       console.log("TURN CHANGE - Directly untapping opponent avatars");
       if (get().opponent.activeAvatar) {
-        get().opponent.activeAvatar!.isTapped = false;
+        get().opponent.activeAvatar.isTapped = false;
       }
       get().opponent.reserveAvatars.forEach(avatar => {
         avatar.isTapped = false;
@@ -1606,6 +1653,8 @@ export const useGameStore = create<GameState>((set, get) => ({
         return 'Battle Phase';
       case 'main2':
         return 'Main Phase 2';
+      case 'recheck':
+        return 'Recheck Phase';
       case 'end':
         return 'End Phase';
       default:
@@ -2090,6 +2139,50 @@ export const useGameStore = create<GameState>((set, get) => ({
         };
       }
     });
+  },
+  
+  // Discard a card due to hand size limit (end of turn)
+  discardCardForHandLimit: (handIndex) => {
+    const { player } = get();
+    
+    if (handIndex < 0 || handIndex >= player.hand.length) {
+      toast.error("Invalid card selection!");
+      return;
+    }
+    
+    const discardedCard = player.hand[handIndex];
+    
+    set(state => {
+      const updatedHand = [...state.player.hand];
+      updatedHand.splice(handIndex, 1);
+      
+      return {
+        player: {
+          ...state.player,
+          hand: updatedHand,
+          graveyard: [...state.player.graveyard, discardedCard],
+          needsToDiscardCards: state.player.hand.length > 9 // Still need to discard if more than 8 cards remain
+        }
+      };
+    });
+    
+    get().addLog(`You discarded ${discardedCard.name}.`);
+    toast.success(`Discarded ${discardedCard.name}`);
+    
+    // If hand size is now 8 or less, attempt to end turn
+    if (get().player.hand.length <= 8) {
+      set(state => ({
+        player: {
+          ...state.player,
+          needsToDiscardCards: false
+        }
+      }));
+      
+      // Now actually end the turn
+      setTimeout(() => {
+        get().endTurn();
+      }, 100);
+    }
   },
   
   // Selection helpers

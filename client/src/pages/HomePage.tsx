@@ -1,100 +1,151 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useSolanaWallet } from '../lib/solana/useSolanaWallet';
-import { useGameMode } from '../game/stores/useGameMode';
-import { useDeckStore } from '../game/stores/useDeckStore';
 import { toast } from 'sonner';
-
-interface HomePageProps {
-  onStartGame: () => void;
-}
+import NavigationBar from '../components/NavigationBar';
 
 const HomePage: React.FC = () => {
   const navigate = useNavigate();
-  const { walletAddress, disconnectWallet } = useSolanaWallet();
-  const gameMode = useGameMode();
-  const { decks, activeDeckId, setActiveDeck } = useDeckStore();
-  
-  const [selectedDeckId, setSelectedDeckId] = useState<string | null>(activeDeckId);
-  
-  // When the wallet is disconnected, navigate back to start page
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+
+  // Rolling images for the carousel
+  const rollingImages = [
+    '/textures/cards/radja.png',
+    '/textures/cards/crimson.png',
+    '/textures/cards/banaspati.png',
+    '/textures/cards/scarlet.png',
+    '/textures/cards/daisy.png',
+    '/textures/cards/boar-berserker.png',
+    '/textures/cards/banaspati-fem.png',
+    '/textures/cards/burning-armor.png'
+  ];
+
+  // Auto-advance carousel
   useEffect(() => {
-    if (!walletAddress) {
-      navigate('/start');
+    const interval = setInterval(() => {
+      setCurrentImageIndex((prev) => (prev + 1) % rollingImages.length);
+    }, 3000);
+
+    return () => clearInterval(interval);
+  }, [rollingImages.length]);
+
+  const menuItems = [
+    {
+      title: 'Start Game',
+      description: 'Play against AI or other players',
+      icon: '⚔️',
+      action: () => navigate('/game-mode'),
+      color: 'bg-spektrum-orange hover:bg-orange-600'
+    },
+    {
+      title: 'Deck Builder',
+      description: 'Create and customize your decks',
+      icon: '📋',
+      action: () => navigate('/deck-builder'),
+      color: 'bg-spektrum-light hover:bg-gray-200'
+    },
+    {
+      title: 'Library',
+      description: 'View your card collection',
+      icon: '📚',
+      action: () => navigate('/library'),
+      color: 'bg-spektrum-light hover:bg-gray-200'
+    },
+    {
+      title: 'Marketplace',
+      description: 'Buy booster packs and trade NFTs',
+      icon: '🛒',
+      action: () => navigate('/shop'),
+      color: 'bg-spektrum-orange hover:bg-orange-600'
+    },
+    {
+      title: 'Settings',
+      description: 'Game preferences and wallet settings',
+      icon: '⚙️',
+      action: () => navigate('/settings'),
+      color: 'bg-spektrum-light hover:bg-gray-200'
     }
-  }, [walletAddress, navigate]);
-  
-  // Set the selected deck as active
-  const updateActiveDeck = () => {
-    if (!selectedDeckId) {
-      toast.error("Please select a deck first.");
-      return false;
-    }
-    
-    setActiveDeck(selectedDeckId);
-    return true;
-  };
-  
-  // Navigate to arena page instead of directly to game
-  const navigateToArena = () => {
-    if (!updateActiveDeck()) return;
-    navigate('/arena');
-  };
-  
-  // We use the disconnectWallet function from useSolanaWallet hook
+  ];
 
   return (
-    <div className="min-h-screen p-4" style={{ backgroundColor: '#DFE1DD', color: '#0D1A29' }}>
-      {/* Main Content */}
-      <div className="flex flex-col items-center justify-center h-[70vh]">
-        <div className="text-center mb-6">
-          {/* Logo */}
-          <div className="relative">
-            <img 
-              src="/textures/logo/spektrum_logo.png" 
-              alt="Book of Spektrum" 
-              className="h-40 mb-4"
-              onError={(e) => {
-                const target = e.target as HTMLImageElement;
-                target.style.display = 'none';
-              }}
-            />
-          </div>
-          
-          {/* Wallet info moved under tagline */}
-          {walletAddress ? (
-            <div className="flex items-center bg-gray-800 rounded-lg p-3 mt-4 inline-flex text-white shadow-lg">
-              <div className="mr-2">
-                <div className="text-xs text-gray-400">Wallet</div>
-                <div className="font-mono text-sm">
-                  {walletAddress.substring(0, 6)}...{walletAddress.substring(38)}
-                </div>
-              </div>
-              <button 
-                onClick={disconnectWallet}
-                className="bg-red-600 hover:bg-red-700 text-white text-xs px-2 py-1 rounded"
-              >
-                Disconnect
-              </button>
-            </div>
-          ) : (
-            <button
-              onClick={() => navigate('/start')}
-              className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded flex items-center mt-4 mx-auto"
+    <div className="min-h-screen bg-spektrum-dark text-spektrum-light pb-20" style={{ fontFamily: 'Noto Sans, Inter, sans-serif' }}>
+      <div className="max-w-md mx-auto p-4">
+        {/* Rolling Image Section */}
+        <div className="mb-6">
+          <div className="relative h-48 bg-spektrum-light bg-opacity-10 rounded-lg overflow-hidden border border-spektrum-light border-opacity-20">
+            <div 
+              className="flex transition-transform duration-500 ease-in-out h-full"
+              style={{ transform: `translateX(-${currentImageIndex * 100}%)` }}
             >
-              <span className="mr-1">🔐</span>
-              Connect Wallet
-            </button>
-          )}
+              {rollingImages.map((image, index) => (
+                <div
+                  key={index}
+                  className="w-full h-full flex-shrink-0 flex items-center justify-center bg-gray-800"
+                >
+                  <div className="text-center text-gray-400">
+                    <div className="text-4xl mb-2">🖼️</div>
+                    <p className="text-sm">Upload Image #{index + 1}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+            
+            {/* Image indicators */}
+            <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2">
+              {rollingImages.map((_, index) => (
+                <button
+                  key={index}
+                  onClick={() => setCurrentImageIndex(index)}
+                  className={`w-2 h-2 rounded-full transition-colors ${
+                    index === currentImageIndex 
+                      ? 'bg-spektrum-orange' 
+                      : 'bg-spektrum-light bg-opacity-50'
+                  }`}
+                />
+              ))}
+            </div>
+          </div>
+          <p className="text-center text-xs text-gray-400 mt-2">
+            Rolling image placeholder - upload promotional images here
+          </p>
         </div>
-        
-        {/* Main content area */}
-        <div className="max-w-md w-full mb-8 overflow-hidden rounded-lg">
-          {/* Image removed */}
+
+        {/* Welcome section */}
+        <div className="text-center mb-6">
+          <h1 className="text-2xl font-bold text-spektrum-light mb-2">Welcome Back</h1>
+          <p className="text-spektrum-light opacity-80 text-sm">
+            Ready to battle in the world of Spektrum
+          </p>
         </div>
-        
-        {/* Removed Navigation Buttons as requested */}
+
+        {/* Quick action cards */}
+        <div className="grid grid-cols-2 gap-3 mb-6">
+          <div className="bg-gray-800 rounded-lg p-3 text-center border border-gray-700">
+            <div className="text-xl text-spektrum-orange mb-1">⚔️</div>
+            <p className="text-xs text-gray-300">Quick Battle</p>
+          </div>
+          <div className="bg-gray-800 rounded-lg p-3 text-center border border-gray-700">
+            <div className="text-xl text-blue-400 mb-1">📚</div>
+            <p className="text-xs text-gray-300">Build Deck</p>
+          </div>
+        </div>
+
+        {/* Stats overview */}
+        <div className="bg-gray-800 rounded-lg p-4 border border-gray-700">
+          <h3 className="font-bold text-spektrum-orange mb-3 text-sm">Your Progress</h3>
+          <div className="grid grid-cols-2 gap-4 text-center">
+            <div>
+              <div className="text-lg font-bold text-spektrum-light">0</div>
+              <div className="text-xs text-gray-400">NFT Cards</div>
+            </div>
+            <div>
+              <div className="text-lg font-bold text-spektrum-light">3</div>
+              <div className="text-xs text-gray-400">Decks</div>
+            </div>
+          </div>
+        </div>
       </div>
+
+      <NavigationBar />
     </div>
   );
 };

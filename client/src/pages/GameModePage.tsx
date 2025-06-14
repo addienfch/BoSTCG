@@ -4,6 +4,8 @@ import { useDeckStore } from '../game/stores/useDeckStore';
 import SolanaWalletConnect from '../components/SolanaWalletConnect';
 import { toast } from 'sonner';
 import { Link } from 'react-router-dom';
+import BackButton from '../components/BackButton';
+import NavigationBar from '../components/NavigationBar';
 
 interface GameModePageProps {
   onStartGame: () => void;
@@ -85,12 +87,13 @@ const GameModePage: React.FC<GameModePageProps> = ({ onStartGame }) => {
   };
   
   return (
-    <div className="min-h-screen bg-gray-900 text-white flex flex-col items-center justify-center p-4">
-      <div className="max-w-md w-full">
-        <h1 className="text-3xl font-bold text-center mb-8">Book of Spektrum</h1>
+    <div className="min-h-screen bg-spektrum-dark text-spektrum-light pb-20" style={{ fontFamily: 'Noto Sans, Inter, sans-serif' }}>
+      <BackButton />
+      <div className="max-w-md mx-auto p-4">
+        <h1 className="text-3xl font-bold text-center mb-8 text-spektrum-light">Book of Spektrum</h1>
         
-        <div className="bg-gray-800 rounded-lg p-6 shadow-lg mb-6">
-          <h2 className="text-xl font-bold mb-4">Player Setup</h2>
+        <div className="bg-spektrum-light bg-opacity-10 border border-spektrum-light border-opacity-20 rounded-lg p-6 shadow-lg mb-6">
+          <h2 className="text-xl font-bold mb-4 text-spektrum-light">Player Setup</h2>
           
           <div className="mb-4">
             <label htmlFor="playerName" className="block text-sm font-medium mb-1">
@@ -199,80 +202,55 @@ const GameModePage: React.FC<GameModePageProps> = ({ onStartGame }) => {
           <div className="space-y-4">
             <h3 className="text-lg font-semibold">Game Modes</h3>
             
-            <div className="grid grid-cols-1 gap-3">
-              <button
-                onClick={handleStartSinglePlayer}
-                className="bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded-md transition-colors"
-                disabled={decks.length === 0 || !selectedDeckId}
-              >
-                Practice Mode
-              </button>
-              
+            <div className="grid grid-cols-2 gap-3">
               <button
                 onClick={handleStartAIGame}
-                className="bg-red-600 hover:bg-red-700 text-white py-2 px-4 rounded-md transition-colors"
+                className="bg-spektrum-orange hover:bg-orange-600 text-spektrum-dark py-3 px-4 rounded-md transition-colors font-medium"
                 disabled={decks.length === 0 || !selectedDeckId}
               >
-                Play Against AI
+                Vs AI
               </button>
-            </div>
-            
-            <div className="pt-4 border-t border-gray-700">
-              <h3 className="text-lg font-semibold mb-3">Online Play</h3>
-              
-              <form onSubmit={handleJoinRoom} className="mb-3">
-                <div className="flex gap-2">
-                  <input
-                    type="text"
-                    value={roomCode}
-                    onChange={(e) => setRoomCode(e.target.value.toUpperCase())}
-                    className="flex-1 px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    placeholder="Enter room code"
-                    maxLength={6}
-                  />
-                  <button
-                    type="submit"
-                    className="bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-md transition-colors"
-                    disabled={decks.length === 0 || !selectedDeckId}
-                  >
-                    Join Room
-                  </button>
-                </div>
-              </form>
               
               <button
-                onClick={handleCreateRoom}
-                className="w-full bg-purple-600 hover:bg-purple-700 text-white py-2 px-4 rounded-md transition-colors"
+                onClick={handleStartSinglePlayer}
+                className="bg-spektrum-light hover:bg-gray-200 text-spektrum-dark py-3 px-4 rounded-md transition-colors font-medium"
                 disabled={decks.length === 0 || !selectedDeckId}
               >
-                Create New Room
+                Random Match
               </button>
             </div>
-          </div>
-        </div>
-        
-        {/* Marketplace Buttons */}
-        <div className="bg-gray-800 rounded-lg p-6 shadow-lg mb-6">
-          <h3 className="text-lg font-semibold mb-4">Marketplace</h3>
-          <div className="grid grid-cols-2 gap-3">
-            <Link 
-              to="/shop" 
-              className="bg-amber-600 hover:bg-amber-700 text-white py-3 px-4 rounded-md transition-colors flex flex-col items-center justify-center"
-            >
-              <span className="text-2xl mb-1">🎁</span>
-              <span className="font-medium">Buy Booster Pack</span>
-            </Link>
             
-            <button 
-              onClick={() => toast.info("NFT Marketplace feature coming soon!")} 
-              className="bg-indigo-600 hover:bg-indigo-700 text-white py-3 px-4 rounded-md transition-colors flex flex-col items-center justify-center"
-            >
-              <span className="text-2xl mb-1">🛒</span>
-              <span className="font-medium">NFT Marketplace</span>
-            </button>
-          </div>
-          <div className="mt-3 text-xs text-center text-gray-400">
-            Connect your Solana wallet to access these features
+            <div className="pt-4 border-t border-spektrum-light border-opacity-20">
+              <h3 className="text-lg font-semibold mb-3 text-spektrum-light">Multiplayer</h3>
+              
+              <div className="grid grid-cols-1 gap-3 mb-3">
+                <button
+                  onClick={handleCreateRoom}
+                  className="bg-spektrum-orange hover:bg-orange-600 text-spektrum-dark py-3 px-4 rounded-md transition-colors font-medium"
+                  disabled={decks.length === 0 || !selectedDeckId}
+                >
+                  Create Room
+                </button>
+              </div>
+              
+              <form onSubmit={handleJoinRoom} className="space-y-3">
+                <input
+                  type="text"
+                  value={roomCode}
+                  onChange={(e) => setRoomCode(e.target.value.toUpperCase())}
+                  className="w-full px-3 py-2 bg-spektrum-dark border border-spektrum-light border-opacity-30 rounded-md text-spektrum-light focus:outline-none focus:ring-2 focus:ring-spektrum-orange"
+                  placeholder="Enter room code"
+                  maxLength={6}
+                />
+                <button
+                  type="submit"
+                  className="w-full bg-spektrum-light hover:bg-gray-200 text-spektrum-dark py-3 px-4 rounded-md transition-colors font-medium"
+                  disabled={decks.length === 0 || !selectedDeckId}
+                >
+                  Enter Custom Room
+                </button>
+              </form>
+            </div>
           </div>
         </div>
         
@@ -299,6 +277,8 @@ const GameModePage: React.FC<GameModePageProps> = ({ onStartGame }) => {
           </div>
         )}
       </div>
+      
+      <NavigationBar />
     </div>
   );
 };

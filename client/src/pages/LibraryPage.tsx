@@ -1,429 +1,279 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useCollectionStore } from '../game/stores/useCollectionStore';
-import { Card, AvatarCard, ActionCard } from '../game/data/cardTypes';
-import { toast } from 'sonner';
-import { renderCardImage } from '../utils/cardImageUtils';
+import React, { useState, useMemo } from 'react';
+import { useDeckStore } from '../game/stores/useDeckStore';
+import { Card, ElementType, AvatarCard } from '../game/data/cardTypes';
+import BackButton from '../components/BackButton';
+import NavigationBar from '../components/NavigationBar';
 
-// Card display component with filter options
 const LibraryPage: React.FC = () => {
-  const navigate = useNavigate();
-  const { cards, coins } = useCollectionStore();
+  const { getAvailableCards } = useDeckStore();
+  const allCards = getAvailableCards();
   
-  // State for filters and sorting
-  const [filter, setFilter] = useState<string>('all');
-  const [sortBy, setSortBy] = useState<string>('name');
-  const [searchTerm, setSearchTerm] = useState<string>('');
   const [selectedCard, setSelectedCard] = useState<Card | null>(null);
-  
-  // Get card counts for duplicates
-  const cardCounts = React.useMemo(() => {
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedElement, setSelectedElement] = useState<ElementType | 'all'>('all');
+  const [selectedType, setSelectedType] = useState<string>('all');
+  const [selectedRarity, setSelectedRarity] = useState<string>('all');
+  const [selectedExpansion, setSelectedExpansion] = useState<string>('all');
+
+  // Create card counts for the library
+  const cardCounts = useMemo(() => {
     const counts: Record<string, number> = {};
-    cards.forEach(card => {
+    allCards.forEach(card => {
       const key = `${card.name}-${card.type}-${card.element}`;
       counts[key] = (counts[key] || 0) + 1;
     });
     return counts;
-  }, [cards]);
-  
-  // Render card image with fallback for missing images
-  const renderCardImage = (card: Card) => {
-    const handleImageError = (e: React.SyntheticEvent<HTMLImageElement>) => {
-      const target = e.target as HTMLImageElement;
-      target.onerror = null; // Prevent infinite loop
-      target.src = `https://placehold.co/200x280/1f2937/ffffff?text=${encodeURIComponent(card.name.substring(0, 10))}`;
-    };
+  }, [allCards]);
 
-    // Try to load the image, fallback to placeholder if it fails
-    return (
-      <div className="w-full h-32 bg-gradient-to-br from-gray-800 to-gray-900 flex items-center justify-center">
-        {card.art ? (
-          <img 
-            src={card.art} 
-            alt={card.name}
-            className="w-full h-full object-cover"
-            onError={handleImageError}
-          />
-        ) : (
-          <div className="w-full h-full flex items-center justify-center">
-            <span className="text-4xl">
-              {card.element === 'fire' ? '🔥' : 
-               card.element === 'water' ? '💧' : 
-               card.element === 'earth' ? '🌍' : 
-               card.element === 'air' ? '💨' : '✨'}
-            </span>
-          </div>
-        )}
-      </div>
-    );
+  // Get unique cards for display
+  const uniqueCards = useMemo(() => {
+    const seen = new Set();
+    return allCards.filter(card => {
+      const key = `${card.name}-${card.type}-${card.element}`;
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+  }, [allCards]);
+
+  // Filter cards based on search and filter criteria
+  const filteredCards = useMemo(() => {
+    return uniqueCards.filter(card => {
+      const matchesSearch = card.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                          (card.description && card.description.toLowerCase().includes(searchTerm.toLowerCase()));
+      const matchesElement = selectedElement === 'all' || card.element === selectedElement;
+      const matchesType = selectedType === 'all' || card.type === selectedType;
+      const matchesRarity = selectedRarity === 'all'; // All cards shown for now
+      const matchesExpansion = selectedExpansion === 'all'; // All expansions shown for now
+      
+      return matchesSearch && matchesElement && matchesType && matchesRarity && matchesExpansion;
+    });
+  }, [uniqueCards, searchTerm, selectedElement, selectedType, selectedRarity, selectedExpansion]);
+
+  const clearFilters = () => {
+    setSearchTerm('');
+    setSelectedElement('all');
+    setSelectedType('all');
+    setSelectedRarity('all');
+    setSelectedExpansion('all');
   };
 
-  // Apply filters and sorting to the cards, and remove duplicates
-  const filteredAndSortedCards = React.useMemo(() => {
-    // First create a unique list of cards with their counts
-    const uniqueCards = new Map<string, Card>();
-    cards.forEach(card => {
-      const key = `${card.name}-${card.type}-${card.element}`;
-      if (!uniqueCards.has(key)) {
-        uniqueCards.set(key, card);
-      }
-    });
-    
-    let result = Array.from(uniqueCards.values());
-    
-    // Apply filter
-    if (filter !== 'all') {
-      result = result.filter(card => {
-        switch (filter) {
-          case 'avatar':
-            return card.type === 'avatar';
-          case 'spell':
-            return card.type === 'spell';
-          case 'quickSpell':
-            return card.type === 'quickSpell';
-          case 'item':
-            return card.type === 'item';
-          case 'fire':
-            return card.element === 'fire';
-          case 'water':
-            return card.element === 'water';
-          case 'earth':
-            return card.element === 'earth';
-          case 'air':
-            return card.element === 'air';
-          case 'neutral':
-            return card.element === 'neutral';
-          default:
-            return true;
-        }
-      });
-    }
-    
-    // Apply search term
-    if (searchTerm) {
-      const term = searchTerm.toLowerCase();
-      result = result.filter(card => 
-        card.name.toLowerCase().includes(term) || 
-        (card.type === 'avatar' && (card as AvatarCard).subType?.toLowerCase().includes(term)) ||
-        (card.type !== 'avatar' && (card as ActionCard).description?.toLowerCase().includes(term))
-      );
-    }
-    
-    // Apply sorting
-    result.sort((a, b) => {
-      switch (sortBy) {
-        case 'name':
-          return a.name.localeCompare(b.name);
-        case 'type':
-          return a.type.localeCompare(b.type);
-        case 'element':
-          return a.element.localeCompare(b.element);
-        case 'health':
-          if (a.type === 'avatar' && b.type === 'avatar') {
-            return (b as AvatarCard).health - (a as AvatarCard).health;
-          }
-          return a.type === 'avatar' ? -1 : 1;
-        case 'count':
-          const keyA = `${a.name}-${a.type}-${a.element}`;
-          const keyB = `${b.name}-${b.type}-${b.element}`;
-          return cardCounts[keyB] - cardCounts[keyA];
-        default:
-          return 0;
-      }
-    });
-    
-    return result;
-  }, [cards, filter, sortBy, searchTerm, cardCounts]);
-  
-  // Card component
   const CardItem: React.FC<{ card: Card }> = ({ card }) => {
-    const avatarCard = card.type === 'avatar' ? card as AvatarCard : null;
-    const actionCard = card.type !== 'avatar' ? card as ActionCard : null;
-    
-    // Get the count of this card type
     const cardKey = `${card.name}-${card.type}-${card.element}`;
-    const count = cardCounts[cardKey] || 1;
+    const count = cardCounts[cardKey] || 0;
     
-    // Card background based on element
-    const getCardBg = () => {
-      switch (card.element) {
-        case 'fire': return 'bg-gradient-to-br from-red-800 to-orange-600';
-        case 'water': return 'bg-gradient-to-br from-blue-800 to-cyan-600';
-        case 'earth': return 'bg-gradient-to-br from-green-800 to-lime-600';
-        case 'air': return 'bg-gradient-to-br from-sky-800 to-indigo-600';
-        default: return 'bg-gradient-to-br from-purple-800 to-pink-600';
-      }
-    };
+    // Get element styling
+    const elementColor = {
+      fire: 'border-red-500 bg-red-900',
+      water: 'border-blue-500 bg-blue-900', 
+      ground: 'border-yellow-500 bg-yellow-900',
+      air: 'border-green-500 bg-green-900',
+      neutral: 'border-gray-500 bg-gray-900'
+    }[card.element] || 'border-gray-500 bg-gray-900';
     
     return (
       <div 
-        className={`w-40 h-56 ${getCardBg()} cursor-pointer transform hover:scale-105 transition-all relative`}
+        className={`${elementColor} border-2 rounded-lg p-3 cursor-pointer hover:opacity-80 transition-opacity`}
         onClick={() => setSelectedCard(card)}
-        style={{ boxShadow: 'none' }}
       >
-        {/* Card count badge */}
-        {count > 1 && (
-          <div className="absolute top-1 right-1 bg-blue-600 text-white w-6 h-6 flex items-center justify-center text-xs font-bold" style={{ borderRadius: '50%' }}>
-            {count}
+        <div className="flex justify-between items-start mb-2">
+          <h3 className="font-bold text-sm">{card.name}</h3>
+          <span className="bg-gray-700 px-2 py-1 rounded text-xs">x{count}</span>
+        </div>
+        
+        <div className="flex justify-between items-center mb-1">
+          <span className="text-xs text-gray-300 capitalize">{card.type}</span>
+          <span className="text-xs text-gray-400">{card.type === 'avatar' ? `HP: ${(card as AvatarCard).health}` : ''}</span>
+        </div>
+        
+        <div className="flex justify-between items-center">
+          <span className="text-xs text-gray-400 capitalize">{card.element}</span>
+          {card.type === 'avatar' && (
+            <span className="text-xs text-gray-400">Lv. {(card as AvatarCard).level}</span>
+          )}
+        </div>
+        
+        {card.art && (
+          <div className="mt-2">
+            <img 
+              src={card.art} 
+              alt={card.name}
+              className="w-full h-24 object-cover rounded"
+              onError={(e) => {
+                const target = e.target as HTMLImageElement;
+                target.style.display = 'none';
+              }}
+            />
           </div>
         )}
-        <div className="p-2 h-full flex flex-col">
-          <div className="text-sm font-bold bg-black bg-opacity-50 px-2 py-1 mb-1 text-white truncate">
-            {card.name}
-          </div>
-          {renderCardImage(card, "h-24 w-full")}
-          <div className="bg-black bg-opacity-50 p-2 text-xs text-white flex-1 overflow-hidden">
-            {avatarCard && (
-              <div>
-                <div className="flex justify-between mb-1">
-                  <span>HP: {avatarCard.health}</span>
-                  <span>Lv{avatarCard.level}</span>
-                </div>
-                {avatarCard.subType && (
-                  <div className="text-gray-300 mb-1">
-                    Tribe: {avatarCard.subType.charAt(0).toUpperCase() + avatarCard.subType.slice(1)}
-                  </div>
-                )}
-              </div>
-            )}
-            
-            {actionCard && actionCard.description && (
-              <div className="text-gray-300 text-xs">{actionCard.description}</div>
-            )}
-          </div>
-        </div>
       </div>
     );
   };
-  
-  // Card detail modal
-  const CardDetailModal: React.FC = () => {
-    if (!selectedCard) return null;
-    
-    const avatarCard = selectedCard.type === 'avatar' ? selectedCard as AvatarCard : null;
-    const actionCard = selectedCard.type !== 'avatar' ? selectedCard as ActionCard : null;
-    
-    return (
-      <div className="fixed inset-0 bg-black bg-opacity-80 z-50 flex items-center justify-center p-4">
-        <div className="bg-gray-800 rounded-lg overflow-hidden shadow-2xl max-w-md w-full">
-          <div className="p-6">
+
+  return (
+    <div className="min-h-screen bg-spektrum-dark text-spektrum-light pb-20" style={{ fontFamily: 'Noto Sans, Inter, sans-serif' }}>
+      <BackButton />
+      <div className="max-w-md mx-auto p-4">
+        <h1 className="text-xl font-bold mb-4 text-center">Card Library</h1>
+        
+        {/* Search and Filters */}
+        <div className="bg-gray-800 rounded-lg p-3 mb-4">
+          {/* Search Bar */}
+          <div className="mb-3">
+            <input
+              type="text"
+              placeholder="Search cards..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded text-white placeholder-gray-400"
+            />
+          </div>
+
+          {/* Element Filter */}
+          <div className="mb-3">
+            <label className="block text-sm font-medium mb-1">Element</label>
+            <div className="grid grid-cols-3 gap-2">
+              {[
+                { value: 'all', label: 'All', color: 'bg-gray-600' },
+                { value: 'fire', label: 'Fire', color: 'bg-red-600' },
+                { value: 'water', label: 'Water', color: 'bg-blue-600' },
+                { value: 'ground', label: 'Ground', color: 'bg-yellow-600' },
+                { value: 'air', label: 'Air', color: 'bg-green-600' },
+                { value: 'neutral', label: 'Neutral', color: 'bg-gray-600' }
+              ].map(element => (
+                <button
+                  key={element.value}
+                  onClick={() => setSelectedElement(element.value as ElementType | 'all')}
+                  className={`px-2 py-1 rounded text-xs font-medium transition-colors ${
+                    selectedElement === element.value 
+                      ? `${element.color} text-white` 
+                      : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                  }`}
+                >
+                  {element.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Type Filter */}
+          <div className="mb-3">
+            <label className="block text-sm font-medium mb-1">Card Type</label>
+            <div className="grid grid-cols-2 gap-2">
+              {[
+                { value: 'all', label: 'All' },
+                { value: 'avatar', label: 'Avatar' },
+                { value: 'spell', label: 'Spell' },
+                { value: 'quickSpell', label: 'Quick Spell' },
+                { value: 'ritualArmor', label: 'Ritual Armor' },
+                { value: 'field', label: 'Field' },
+                { value: 'equipment', label: 'Equipment' },
+                { value: 'item', label: 'Item' }
+              ].map(type => (
+                <button
+                  key={type.value}
+                  onClick={() => setSelectedType(type.value)}
+                  className={`px-2 py-1 rounded text-xs font-medium transition-colors ${
+                    selectedType === type.value 
+                      ? 'bg-spektrum-orange text-spektrum-dark' 
+                      : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                  }`}
+                >
+                  {type.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Clear Filters */}
+          <button
+            onClick={clearFilters}
+            className="w-full bg-gray-600 hover:bg-gray-500 text-white py-2 px-4 rounded text-sm font-medium transition-colors"
+          >
+            Clear All Filters
+          </button>
+        </div>
+
+        {/* Cards Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
+          {filteredCards.map(card => (
+            <CardItem key={`${card.id}-${card.name}-${card.element}`} card={card} />
+          ))}
+        </div>
+
+        {filteredCards.length === 0 && (
+          <div className="text-center text-gray-400 py-8">
+            <p>No cards found matching your filters.</p>
+            <button
+              onClick={clearFilters}
+              className="mt-2 text-spektrum-orange hover:underline"
+            >
+              Clear filters to see all cards
+            </button>
+          </div>
+        )}
+      </div>
+
+      {/* Card Detail Modal */}
+      {selectedCard && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-spektrum-dark border border-gray-600 rounded-lg p-4 max-w-md w-full max-h-[80vh] overflow-y-auto">
             <div className="flex justify-between items-start mb-4">
-              <h2 className="text-xl font-bold text-white">{selectedCard.name}</h2>
-              <button 
+              <h2 className="text-xl font-bold">{selectedCard.name}</h2>
+              <button
                 onClick={() => setSelectedCard(null)}
-                className="text-gray-400 hover:text-white transition-colors"
+                className="text-gray-400 hover:text-white text-2xl"
               >
-                ✕
+                ×
               </button>
             </div>
             
-            <div className="flex mb-6">
-              <div className="w-1/3">
-                {selectedCard.art ? (
-                  <img 
-                    src={selectedCard.art} 
-                    alt={selectedCard.name} 
-                    className="w-full rounded shadow"
-                    onError={(e) => {
-                      const target = e.target as HTMLImageElement;
-                      target.src = '/textures/cards/card_back.png'; // Fallback
-                    }}
-                  />
-                ) : (
-                  <div className="w-full h-40 bg-gray-700 rounded flex items-center justify-center">
-                    <span className="text-gray-400">No image</span>
-                  </div>
-                )}
-              </div>
+            {selectedCard.art && (
+              <img 
+                src={selectedCard.art} 
+                alt={selectedCard.name}
+                className="w-full h-48 object-cover rounded mb-4"
+                onError={(e) => {
+                  const target = e.target as HTMLImageElement;
+                  target.style.display = 'none';
+                }}
+              />
+            )}
+            
+            <div className="space-y-2 text-sm">
+              <div><span className="font-medium">Type:</span> {selectedCard.type}</div>
+              <div><span className="font-medium">Element:</span> {selectedCard.element}</div>
               
-              <div className="w-2/3 pl-4">
-                <div className="mb-2">
-                  <span className="text-gray-400">Type:</span>
-                  <span className="ml-2 text-white font-medium capitalize">{selectedCard.type}</span>
-                </div>
-                
-                <div className="mb-2">
-                  <span className="text-gray-400">Element:</span>
-                  <span className="ml-2 text-white font-medium capitalize">{selectedCard.element}</span>
-                </div>
-                
-                <div className="mb-2">
-                  <span className="text-gray-400">Owned:</span>
-                  <span className="ml-2 text-white font-medium">
-                    {cardCounts[`${selectedCard.name}-${selectedCard.type}-${selectedCard.element}`] || 1} copies
-                  </span>
-                </div>
-                
-                {avatarCard && (
-                  <>
-                    <div className="mb-2">
-                      <span className="text-gray-400">Health:</span>
-                      <span className="ml-2 text-white font-medium">{avatarCard.health}</span>
+              {selectedCard.type === 'avatar' && (
+                <>
+                  <div><span className="font-medium">Level:</span> {(selectedCard as AvatarCard).level}</div>
+                  <div><span className="font-medium">Health:</span> {(selectedCard as AvatarCard).health}</div>
+                  <div><span className="font-medium">Sub Type:</span> {(selectedCard as AvatarCard).subType}</div>
+                  
+                  {(selectedCard as AvatarCard).skill1 && (
+                    <div>
+                      <span className="font-medium">Skill 1:</span> {(selectedCard as AvatarCard).skill1?.name}
+                      <p className="text-gray-300 ml-2">{(selectedCard as AvatarCard).skill1?.effect}</p>
                     </div>
-                    
-                    <div className="mb-2">
-                      <span className="text-gray-400">Level:</span>
-                      <span className="ml-2 text-white font-medium">{avatarCard.level}</span>
+                  )}
+                  
+                  {(selectedCard as AvatarCard).skill2 && (
+                    <div>
+                      <span className="font-medium">Skill 2:</span> {(selectedCard as AvatarCard).skill2?.name}
+                      <p className="text-gray-300 ml-2">{(selectedCard as AvatarCard).skill2?.effect}</p>
                     </div>
-                    
-                    {avatarCard.subType && (
-                      <div className="mb-2">
-                        <span className="text-gray-400">Tribe:</span>
-                        <span className="ml-2 text-white font-medium capitalize">{avatarCard.subType}</span>
-                      </div>
-                    )}
-                  </>
-                )}
-              </div>
+                  )}
+                </>
+              )}
+              
+              <div><span className="font-medium">Description:</span></div>
+              <p className="text-gray-300">{selectedCard.description}</p>
             </div>
-            
-            {avatarCard && (
-              <div className="mb-6">
-                <h3 className="text-white font-bold mb-2">Skills</h3>
-                
-                <div className="bg-gray-700 rounded p-3 mb-3">
-                  <div className="flex justify-between mb-1">
-                    <h4 className="font-medium text-white">{avatarCard.skill1.name}</h4>
-                    <div className="text-xs">
-                      Energy: {avatarCard.skill1.energyCost.map(e => e.charAt(0).toUpperCase() + e.slice(1)).join(', ')}
-                    </div>
-                  </div>
-                  <div className="text-sm text-gray-300 mb-1">Damage: {avatarCard.skill1.damage}</div>
-                  <div className="text-sm text-gray-300">{avatarCard.skill1.effect}</div>
-                </div>
-                
-                {avatarCard.skill2 && (
-                  <div className="bg-gray-700 rounded p-3">
-                    <div className="flex justify-between mb-1">
-                      <h4 className="font-medium text-white">{avatarCard.skill2.name}</h4>
-                      <div className="text-xs">
-                        Energy: {avatarCard.skill2.energyCost.map(e => e.charAt(0).toUpperCase() + e.slice(1)).join(', ')}
-                      </div>
-                    </div>
-                    <div className="text-sm text-gray-300 mb-1">Damage: {avatarCard.skill2.damage}</div>
-                    <div className="text-sm text-gray-300">{avatarCard.skill2.effect}</div>
-                  </div>
-                )}
-              </div>
-            )}
-            
-            {actionCard && (
-              <div className="bg-gray-700 rounded p-3 mb-6">
-                <h3 className="text-white font-bold mb-2">Description</h3>
-                <div className="text-gray-300">{actionCard.description}</div>
-                
-                {actionCard.energyCost && actionCard.energyCost.length > 0 && (
-                  <div className="mt-2">
-                    <span className="text-gray-400">Energy Cost:</span>
-                    <span className="ml-2 text-white">
-                      {actionCard.energyCost.map(e => e.charAt(0).toUpperCase() + e.slice(1)).join(', ')}
-                    </span>
-                  </div>
-                )}
-              </div>
-            )}
-            
-            <button 
-              onClick={() => setSelectedCard(null)}
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded font-medium transition-colors"
-            >
-              Close
-            </button>
           </div>
         </div>
-      </div>
-    );
-  };
-  
-  return (
-    <div className="min-h-screen p-2 sm:p-4 w-full max-w-screen-xl mx-auto" style={{ backgroundColor: '#DFE1DD', color: '#0D1A29' }}>
-      {/* Header */}
-      <div className="flex justify-center items-center mb-6">
-        <h1 className="text-xl sm:text-2xl font-bold text-center">Card Library</h1>
-      </div>
-      
-      {/* Filters and search */}
-      <div className="bg-gray-800 p-3 sm:p-4 rounded-xl shadow-md mb-4 sm:mb-6 w-full">
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4 w-full">
-          <div>
-            <label className="block text-sm font-medium mb-1 text-white">Filter by Type</label>
-            <select 
-              value={filter}
-              onChange={(e) => setFilter(e.target.value)}
-              className="w-full bg-gray-700 border border-gray-600 rounded-md px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="all">All Cards</option>
-              <option value="avatar">Avatars</option>
-              <option value="spell">Spells</option>
-              <option value="quickSpell">Quick Spells</option>
-              <option value="item">Items</option>
-              <option value="fire">Fire Element</option>
-              <option value="water">Water Element</option>
-              <option value="earth">Earth Element</option>
-              <option value="air">Air Element</option>
-              <option value="neutral">Neutral Element</option>
-            </select>
-          </div>
-          
-          <div>
-            <label className="block text-sm font-medium mb-1 text-white">Sort by</label>
-            <select 
-              value={sortBy}
-              onChange={(e) => setSortBy(e.target.value)}
-              className="w-full bg-gray-700 border border-gray-600 rounded-md px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="name">Name</option>
-              <option value="type">Type</option>
-              <option value="element">Element</option>
-              <option value="health">Health (Avatars)</option>
-              <option value="count">Card Count</option>
-            </select>
-          </div>
-          
-          <div>
-            <label className="block text-sm font-medium mb-1 text-white">Search Cards</label>
-            <input 
-              type="text"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              placeholder="Search by name or description..."
-              className="w-full bg-gray-700 border border-gray-600 rounded-md px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-        </div>
-      </div>
-      
-      {/* Card Display */}
-      <div className="mb-8">
-        <div className="text-sm text-gray-600 mb-2">
-          Showing {filteredAndSortedCards.length} of {cards.length} cards
-        </div>
-        
-        {filteredAndSortedCards.length > 0 ? (
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2 sm:gap-4 w-full">
-            {filteredAndSortedCards.map((card, index) => (
-              <CardItem key={`${card.id}-${index}`} card={card} />
-            ))}
-          </div>
-        ) : (
-          <div className="bg-gray-800 rounded-xl p-8 text-center">
-            <p className="text-gray-400 mb-2">No cards found matching your criteria</p>
-            <button 
-              onClick={() => {
-                setFilter('all');
-                setSortBy('name');
-                setSearchTerm('');
-              }}
-              className="text-blue-400 hover:text-blue-300 underline"
-            >
-              Clear filters
-            </button>
-          </div>
-        )}
-      </div>
-      
-      {/* Card detail modal */}
-      {selectedCard && <CardDetailModal />}
+      )}
+
+      <NavigationBar />
     </div>
   );
 };

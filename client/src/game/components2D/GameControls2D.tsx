@@ -13,69 +13,54 @@ const GameControls2D: React.FC = () => {
   } = useCardGame();
   
   const isPlayerTurn = currentPlayer === 'player';
-  const [isProcessing, setIsProcessing] = React.useState(false);
   
-  const handlePhaseAction = async () => {
+  const handlePhaseAction = () => {
     if (!isPlayerTurn) {
       toast.error("It's not your turn!");
       return;
     }
     
-    // Prevent multiple clicks while processing
-    if (isProcessing) {
-      return;
-    }
-    
-    setIsProcessing(true);
-    
-    try {
-      switch (gamePhase) {
-        case 'ready':
-          startGame();
-          toast.success("Game started!");
-          break;
-          
-        case 'refresh':
-          // Auto-proceed after refresh phase
-          endPhase();
-          toast.info("Entering Draw phase");
-          break;
-          
-        case 'draw':
-          // Draw card and automatically end phase after a short delay
-          drawCard();
-          toast.success("Card drawn!");
-          // Add a small delay before ending phase to prevent rapid clicking
-          await new Promise(resolve => setTimeout(resolve, 500));
-          endPhase();
-          break;
-          
-        case 'main1':
-        case 'main2':
-          endPhase();
-          toast.info(`Entering ${gamePhase === 'main1' ? 'Battle' : 'End'} phase`);
-          break;
-          
-        case 'battle':
-          endPhase();
-          toast.info("Entering Main Phase 2");
-          break;
-          
-        case 'end':
-          endTurn();
-          toast.info("Turn ended");
-          break;
-          
-        default:
-          break;
-      }
-    } catch (error) {
-      console.error('Error in phase action:', error);
-    } finally {
-      // Add a small cooldown before allowing the next action
-      setTimeout(() => {
-        setIsProcessing(false);
-      }, 300);
+    switch (gamePhase) {
+      case 'ready':
+        startGame();
+        toast.success("Game started!");
+        break;
+        
+      case 'refresh':
+        // Auto-proceed after refresh phase
+        endPhase();
+        toast.info("Entering Draw phase");
+        break;
+        
+      case 'draw':
+        drawCard();
+        toast.success("Card drawn!");
+        endPhase();
+        break;
+        
+      case 'main1':
+      case 'main2':
+        endPhase();
+        toast.info("Entering Recheck phase");
+        break;
+        
+      case 'battle':
+        endPhase();
+        toast.info("Entering Main Phase 2");
+        break;
+        
+      case 'recheck':
+        endPhase();
+        toast.info("Entering End phase");
+        break;
+        
+      case 'end':
+        endTurn();
+        toast.info("Turn ended");
+        break;
+        
+      default:
+        break;
     }
   };
   
@@ -96,7 +81,9 @@ const GameControls2D: React.FC = () => {
       case 'battle':
         return "Go to Main Phase 2";
       case 'main2':
-        return "End Turn";
+        return "Go to Recheck Phase";
+      case 'recheck':
+        return "Go to End Phase";
       case 'end':
         return "End Turn";
       default:
@@ -118,6 +105,8 @@ const GameControls2D: React.FC = () => {
         return "Battle Phase: Attack with avatars";
       case 'main2':
         return "Main Phase 2: Play more cards after battle";
+      case 'recheck':
+        return "Recheck Phase: Discard cards if you have more than 8";
       case 'end':
         return "End Phase: End your turn";
       default:
@@ -142,12 +131,12 @@ const GameControls2D: React.FC = () => {
       <div className="flex flex-col gap-2">
         <button
           onClick={handlePhaseAction}
-          disabled={!isPlayerTurn || isProcessing}
-          className={`py-2 px-4 rounded-lg font-bold text-white transition-opacity ${
-            isPlayerTurn && !isProcessing
-              ? 'bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700'
+          disabled={!isPlayerTurn}
+          className={`py-2 px-4 rounded-lg font-bold text-white ${
+            isPlayerTurn 
+              ? 'bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700' 
               : 'bg-gray-700 cursor-not-allowed'
-          } ${isProcessing ? 'opacity-70' : ''}`}
+          }`}
         >
           {getActionButtonText()}
         </button>

@@ -2,7 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { cardNftService, WalletStatus } from '../blockchain/solana/cardNftService';
 import { toast } from 'sonner';
 
-const SolanaWalletConnect: React.FC = () => {
+interface SolanaWalletConnectProps {
+  onConnected?: () => void;
+}
+
+const SolanaWalletConnect: React.FC<SolanaWalletConnectProps> = ({ onConnected }) => {
   const [walletStatus, setWalletStatus] = useState<WalletStatus>({
     connected: false,
     address: null,
@@ -20,10 +24,19 @@ const SolanaWalletConnect: React.FC = () => {
         setWalletStatus(status);
       } catch (error) {
         console.error('Error checking wallet status:', error);
+        // Set default disconnected state on error
+        setWalletStatus({
+          connected: false,
+          address: null,
+          balance: 0
+        });
       }
     };
     
-    checkWalletStatus();
+    // Wrap async call to prevent unhandled promise rejection
+    checkWalletStatus().catch(error => {
+      console.error('Failed to initialize wallet status:', error);
+    });
   }, []);
   
   // Handle wallet connection
@@ -33,9 +46,18 @@ const SolanaWalletConnect: React.FC = () => {
       const status = await cardNftService.connect();
       setWalletStatus(status);
       toast.success('Wallet connected successfully');
+      if (onConnected) {
+        onConnected();
+      }
     } catch (error) {
       console.error('Error connecting wallet:', error);
       toast.error('Failed to connect wallet');
+      // Reset wallet status on error
+      setWalletStatus({
+        connected: false,
+        address: null,
+        balance: 0
+      });
     } finally {
       setIsLoading(false);
     }

@@ -1,28 +1,19 @@
-import React, { useEffect, useState } from "react";
-import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
-import { Toaster } from "sonner";
-
-// Style imports
-import "./styles/global.css";
-
-// Pages
-import HomePage from './pages/HomePage.tsx';
-import DeckBuilderPage from './pages/DeckBuilderPage';
-import ShopPage from './pages/ShopPage';
-import LibraryPage from './pages/LibraryPage';
-import ArenaPage from './pages/ArenaPage';
-import StartPage from './pages/StartPage';
-
-// Game components
-import GameBoard2D from "./game/components2D/GameBoard2D";
-import { useGameMode } from "./game/stores/useGameMode";
+import { useEffect, useState } from "react";
 import { useAudio } from "./lib/stores/useAudio";
-
-// Solana Wallet
-import { SolanaWalletProvider } from './lib/solana/SolanaWalletProvider';
-
-// Navigation
-import Navigation from './components/Navigation';
+import "@fontsource/inter";
+import { Toaster } from "sonner";
+import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate } from "react-router-dom";
+import GameBoard2D from "./game/components2D/GameBoard2D";
+import StartPage from "./pages/StartPage";
+import HomePage from "./pages/HomePage";
+import GameModePage from "./pages/GameModePage";
+import DeckBuilderPage from "./pages/DeckBuilderPage";
+import ShopPage from "./pages/ShopPage";
+import BoosterPacksPage from "./pages/BoosterPacksPage";
+import LibraryPage from "./pages/LibraryPage";
+import SettingsPage from "./pages/SettingsPage";
+import DevToolsPage from "./pages/DevToolsPage";
+import { useGameMode } from "./game/stores/useGameMode";
 
 // Define control keys for the game
 const controls = [
@@ -31,35 +22,32 @@ const controls = [
   { name: "nextPhase", keys: ["KeyC", "Tab"] }
 ];
 
-// Sound loader component to preload game sounds
 function SoundLoader() {
   const playHit = useAudio(state => state.playHit);
   const playButton = useAudio(state => state.playButton);
   
   useEffect(() => {
-    // We'll only play sounds after user interaction to avoid autoplay issues
-    const handleUserInteraction = () => {
+    // Audio preloading with proper user interaction handling
+    const handleFirstUserInteraction = () => {
       try {
-        // Attempt to play sounds only after user interaction
+        // Attempt to initialize audio context on first user interaction
         playHit();
         playButton();
-        
-        // Remove event listeners after successful play
-        document.removeEventListener('click', handleUserInteraction);
-        document.removeEventListener('keydown', handleUserInteraction);
       } catch (e) {
-        console.warn('Audio preload not available yet');
+        console.warn('Audio initialization deferred until user interaction');
       }
+      // Remove the event listeners after first interaction
+      document.removeEventListener('click', handleFirstUserInteraction);
+      document.removeEventListener('keydown', handleFirstUserInteraction);
     };
-    
-    // Add event listeners for user interaction
-    document.addEventListener('click', handleUserInteraction);
-    document.addEventListener('keydown', handleUserInteraction);
-    
-    // Clean up event listeners on unmount
+
+    // Listen for first user interaction
+    document.addEventListener('click', handleFirstUserInteraction);
+    document.addEventListener('keydown', handleFirstUserInteraction);
+
     return () => {
-      document.removeEventListener('click', handleUserInteraction);
-      document.removeEventListener('keydown', handleUserInteraction);
+      document.removeEventListener('click', handleFirstUserInteraction);
+      document.removeEventListener('keydown', handleFirstUserInteraction);
     };
   }, [playHit, playButton]);
   
@@ -104,68 +92,39 @@ const Game = () => {
   );
 };
 
-// Layout component that conditionally renders Navigation
-interface AppLayoutProps {
-  children: React.ReactNode;
-  showNavigation: boolean;
-}
+// Main App component with routing - removed as it has issues with navigate
+// We're using AppWithRouting instead
 
-const AppLayout = ({ children, showNavigation }: AppLayoutProps) => {
-  // For debugging purposes
-  console.log('AppLayout rendering, showNavigation:', showNavigation);
-  
-  return (
-    <div style={{ width: '100vw', height: '100vh', position: 'relative', overflow: 'hidden', background: '#DFE1DD' }}>
-      <Toaster position="top-center" richColors />
-      <SoundLoader />
-      
-      {/* Main content with padding for bottom navigation when needed */}
-      <div style={{ 
-        height: '100%', 
-        overflow: 'auto',
-        paddingBottom: showNavigation ? '70px' : '0',
-        color: '#0D1A29'
-      }}>
-        {children}
-      </div>
-      
-      {/* Always render Navigation when showNavigation is true */}
-      {showNavigation ? <Navigation /> : null}
-    </div>
-  );
-};
-
-// Simplified protected route - temporarily disabled wallet authentication
-function ProtectedRoute({ children }: { children: React.ReactNode }) {
-  // For now, just render children without authentication
-  return <>{children}</>;
+// Game mode route with navigation
+const GameModeRoute = () => {
+  const navigate = useNavigate();
+  return <GameModePage onStartGame={() => navigate('/game')} />;
 };
 
 // A wrapper component that has access to navigate (must be inside Router context)
-function App() {
+const AppWithRouting = () => {
   return (
-    <SolanaWalletProvider>
-      <Router>
+    <Router>
+      <div style={{ width: '100vw', height: '100vh', position: 'relative', overflow: 'hidden', background: '#121224' }}>
+        <Toaster position="top-center" richColors />
         <SoundLoader />
+        
         <Routes>
-          <Route path="/startpage" element={<AppLayout showNavigation={false}><StartPage /></AppLayout>} />
-          <Route path="/" element={<Navigate to="/startpage" replace />} />
-          <Route path="/home" element={<ProtectedRoute><AppLayout showNavigation={true}><HomePage /></AppLayout></ProtectedRoute>} />
-          <Route path="/deck-builder" element={<ProtectedRoute><AppLayout showNavigation={true}><DeckBuilderPage /></AppLayout></ProtectedRoute>} />
-          <Route path="/shop" element={<ProtectedRoute><AppLayout showNavigation={true}><ShopPage /></AppLayout></ProtectedRoute>} />
-          <Route path="/library" element={<ProtectedRoute><AppLayout showNavigation={true}><LibraryPage /></AppLayout></ProtectedRoute>} />
-          <Route path="/arena" element={<ProtectedRoute><AppLayout showNavigation={true}><ArenaPage /></AppLayout></ProtectedRoute>} />
-          <Route path="/game" element={<ProtectedRoute><AppLayout showNavigation={false}><Game /></AppLayout></ProtectedRoute>} />
+          <Route path="/" element={<StartPage />} />
+          <Route path="/home" element={<HomePage />} />
+          <Route path="/game-mode" element={<GameModeRoute />} />
+          <Route path="/game" element={<Game />} />
+          <Route path="/deck-builder" element={<DeckBuilderPage />} />
+          <Route path="/shop" element={<ShopPage />} />
+          <Route path="/shop/booster" element={<BoosterPacksPage />} />
+          <Route path="/library" element={<LibraryPage />} />
+          <Route path="/settings" element={<SettingsPage />} />
+          <Route path="/dev-tools" element={<DevToolsPage />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
-      </Router>
-    </SolanaWalletProvider>
+      </div>
+    </Router>
   );
 };
 
-// Home route with navigation
-const HomeRoute = () => {
-  const navigate = useNavigate();
-  return <HomePage />;
-};
-
-export default App;
+export default AppWithRouting;

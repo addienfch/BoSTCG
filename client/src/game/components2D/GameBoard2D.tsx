@@ -76,7 +76,7 @@ const CardPreview = ({
                     className={`inline-block w-5 h-5 rounded-full mx-0.5 ${
                       energy === 'fire' ? 'bg-red-500' : 
                       energy === 'water' ? 'bg-blue-500' : 
-                      energy === 'earth' ? 'bg-amber-700' : 
+                      energy === 'ground' ? 'bg-amber-700' : 
                       energy === 'air' ? 'bg-cyan-300' : 
                       'bg-gray-400'
                     }`}
@@ -122,6 +122,8 @@ const GameBoard2D: React.FC<GameBoard2DProps> = ({ onAction }) => {
   // State for preview card
   const [previewCard, setPreviewCard] = useState<Card | null>(null);
   const [selectedCard, setSelectedCard] = useState<Card | null>(null);
+  const [showDiscardModal, setShowDiscardModal] = useState(false);
+  const [discardCard, setDiscardCard] = useState<Card | null>(null);
   
   // Determine if a card is playable (can be placed on the field)
   const isCardPlayable = (card: Card) => {
@@ -140,18 +142,21 @@ const GameBoard2D: React.FC<GameBoard2DProps> = ({ onAction }) => {
       return player.activeAvatar !== null && game.hasEnoughEnergy(card.energyCost || [], 'player');
     }
     
-    // For regular cards, only allow during player's main phases
-    if (currentPlayer !== 'player' || (gamePhase !== 'main1' && gamePhase !== 'main2')) {
+    // For regular cards, only allow during player's main phases or recheck phase (for discarding)
+    if (currentPlayer !== 'player' || (gamePhase !== 'main1' && gamePhase !== 'main2' && gamePhase !== 'recheck')) {
       return false;
+    }
+    
+    // During recheck phase, cards are "playable" only for discarding if hand size > 8
+    if (gamePhase === 'recheck') {
+      return player.hand.length > 8;
     }
     
     // Energy requirements vary by card type
     if (card.type === 'avatar') {
-      // Avatars can only be played if player has no active avatar or reserve slots
-      if (player.activeAvatar === null || player.reserveAvatars.length < 2) {
-        return true;
-      }
-      return false;
+      // Avatars are always "playable" because they can be placed as active, reserve, or energy
+      // The specific placement logic is handled in the action handlers
+      return true;
     } else {
       // All other card types (spell, ritualArmor, field, equipment, item)
       // They all require an active avatar
@@ -164,9 +169,56 @@ const GameBoard2D: React.FC<GameBoard2DProps> = ({ onAction }) => {
     }
   };
   
+  // Function to handle discard card action
+  const handleDiscardCard = (card: Card) => {
+    setDiscardCard(card);
+    setShowDiscardModal(true);
+  };
+
+  // Function to confirm discard
+  const confirmDiscard = () => {
+    if (discardCard) {
+      const index = game.player.hand.findIndex(c => c.id === discardCard.id);
+      if (index !== -1) {
+        // Remove card from hand and add to graveyard
+        const updatedHand = [...game.player.hand];
+        const removedCard = updatedHand.splice(index, 1)[0];
+        
+        // Update the game state directly
+        game.player.hand = updatedHand;
+        game.player.graveyard.push(removedCard);
+        
+        game.addLog(`${discardCard.name} discarded.`);
+        toast.success(`${discardCard.name} discarded`);
+      }
+    }
+    setDiscardCard(null);
+    setShowDiscardModal(false);
+  };
+
   // Function to handle card actions
   const handleCardAction = (card: Card, action: string) => {
     console.log(action, card);
+    
+    // Handle discard action for end turn scenarios, hand limit, or recheck phase
+    const shouldHandleAsDiscard = action === 'discard' || 
+      (action === 'toEnergy' && (game.player.needsToDiscardCards || 
+        (game.gamePhase === 'recheck' && game.currentPlayer === 'player' && game.player.hand.length > 8)));
+    
+    if (shouldHandleAsDiscard) {
+      // If player needs to discard cards or is in recheck phase, handle it through the special discard function
+      if (game.player.needsToDiscardCards || 
+          (game.gamePhase === 'recheck' && game.currentPlayer === 'player' && game.player.hand.length > 8)) {
+        const cardIndex = game.player.hand.findIndex(c => c.id === card.id);
+        if (cardIndex !== -1) {
+          game.discardCardForHandLimit(cardIndex);
+        }
+        return;
+      } else {
+        handleDiscardCard(card);
+        return;
+      }
+    }
     
     // Special handling for setup phase
     if (game.gamePhase === 'setup') {
@@ -405,13 +457,25 @@ const GameBoard2D: React.FC<GameBoard2DProps> = ({ onAction }) => {
       }
       
     } else if (action === 'toEnergy') {
-      // Only limit avatar cards to energy pile - one per turn
-      if (card.type === 'avatar' && game.player.avatarToEnergyCount >= 1) {
+      // Check if it's main phase and player's turn for avatar energy placement
+      if (game.currentPlayer !== 'player' || (game.gamePhase !== 'main1' && game.gamePhase !== 'main2')) {
+        toast.error("You can only place cards in energy during your Main Phases!");
+        return;
+      }
+
+      // Only avatar cards can be placed in energy
+      if (card.type !== 'avatar') {
+        toast.error("Only avatar cards can be placed in the energy pile!");
+        return;
+      }
+
+      // Check if already added avatar to energy this turn (regardless of reserve count)
+      if (game.player.avatarToEnergyCount >= 1) {
         toast.error("You can only put 1 Avatar card into energy per turn!");
         return;
       }
 
-      // No limit on other card types - all cards can be moved to energy
+      // Move card to energy pile
       game.moveCardToEnergy(index);
       toast.success(`${card.name} added to your energy pile`);
     }
@@ -556,6 +620,13 @@ const GameBoard2D: React.FC<GameBoard2DProps> = ({ onAction }) => {
   // Create an AI reference
   const aiRef = useRef<SimpleGameAI | null>(null);
   
+  // Monitor for end-of-turn discard requirements
+  React.useEffect(() => {
+    if (game.player.needsToDiscardCards && game.player.hand.length > 8) {
+      toast.error(`You have ${game.player.hand.length} cards! Click on ${game.player.hand.length - 8} cards to discard them before ending your turn.`);
+    }
+  }, [game.player.needsToDiscardCards, game.player.hand.length]);
+
   // Initialize the game once on mount
   React.useEffect(() => {
     // Initialize game state
@@ -892,7 +963,7 @@ const GameBoard2D: React.FC<GameBoard2DProps> = ({ onAction }) => {
   }, [game.currentPlayer, game.gamePhase, game.turn]);
   
   return (
-    <div className="w-full h-full bg-gray-900 text-white p-2 sm:p-4 relative max-w-screen-xl mx-auto">
+    <div className="w-full h-full bg-gray-900 text-white p-4 relative">
       {/* Show card preview modal if a card is selected */}
       {previewCard && (
         <CardPreview card={previewCard} onClose={() => setPreviewCard(null)} />
@@ -1043,7 +1114,7 @@ const GameBoard2D: React.FC<GameBoard2DProps> = ({ onAction }) => {
                           className={`w-3 h-3 rounded-full flex-shrink-0 ${
                             card.element === 'fire' ? 'bg-red-500' : 
                             card.element === 'water' ? 'bg-blue-500' : 
-                            card.element === 'earth' ? 'bg-amber-800' : 
+                            card.element === 'ground' ? 'bg-amber-800' : 
                             card.element === 'air' ? 'bg-cyan-300' : 
                             'bg-gray-400'
                           }`}
@@ -1080,7 +1151,7 @@ const GameBoard2D: React.FC<GameBoard2DProps> = ({ onAction }) => {
               {game.opponent && game.opponent.reserveAvatars && game.opponent.reserveAvatars.length > 0 ? (
                 game.opponent.reserveAvatars.map((avatar, index) => (
                   <div 
-                    key={`opponent-reserve-${avatar.id}-${index}`} 
+                    key={index} 
                     className="text-xs mb-0.5 bg-red-900 bg-opacity-50 px-1 py-0.5 rounded flex justify-between cursor-pointer hover:bg-red-800"
                     onClick={() => setSelectedCard(avatar)}
                   >
@@ -1097,16 +1168,22 @@ const GameBoard2D: React.FC<GameBoard2DProps> = ({ onAction }) => {
       </div>
       
       {/* Game field */}
-      <div className="mb-2">
+      <div className="mb-4">
         <h3 className="text-sm font-bold mb-1">Field</h3>
-        <div className="flex justify-center bg-gray-800 bg-opacity-30 p-1 rounded min-h-[24px]">
-          {game.player.fieldCards.length > 0 ? (
-            <div className="text-xs bg-blue-900 bg-opacity-50 px-2 py-0.5 rounded flex items-center">
-              <span>{game.player.fieldCards[0].name}</span>
-            </div>
-          ) : (
-            <span className="text-xs text-gray-400">Field Zone</span>
-          )}
+        <div className="flex justify-center bg-gray-800 bg-opacity-30 p-4 rounded min-h-[100px]">
+          {/* Display field card if available - only show one placement */}
+          <div className="w-36 h-48 flex items-center justify-center">
+            {game.player.fieldCards.length > 0 ? (
+              <Card2D 
+                card={game.player.fieldCards[0]} 
+                isPlayable={false}
+              />
+            ) : (
+              <div className="border-2 border-dashed border-gray-600 rounded-lg p-2 w-full h-full flex items-center justify-center">
+                <span className="text-xs text-gray-400">Field Zone</span>
+              </div>
+            )}
+          </div>
         </div>
       </div>
       
@@ -1147,7 +1224,7 @@ const GameBoard2D: React.FC<GameBoard2DProps> = ({ onAction }) => {
                           className={`w-3 h-3 rounded-full ${
                             card.element === 'fire' ? 'bg-red-500' : 
                             card.element === 'water' ? 'bg-blue-500' : 
-                            card.element === 'earth' ? 'bg-amber-800' : 
+                            card.element === 'ground' ? 'bg-amber-800' : 
                             card.element === 'air' ? 'bg-cyan-300' : 
                             'bg-gray-400'
                           }`}
@@ -1174,7 +1251,7 @@ const GameBoard2D: React.FC<GameBoard2DProps> = ({ onAction }) => {
                           className={`w-3 h-3 rounded-full flex-shrink-0 ${
                             card.element === 'fire' ? 'bg-red-500' : 
                             card.element === 'water' ? 'bg-blue-500' : 
-                            card.element === 'earth' ? 'bg-amber-800' : 
+                            card.element === 'ground' ? 'bg-amber-800' : 
                             card.element === 'air' ? 'bg-cyan-300' : 
                             'bg-gray-400'
                           }`}
@@ -1207,7 +1284,7 @@ const GameBoard2D: React.FC<GameBoard2DProps> = ({ onAction }) => {
                           className={`w-2 h-2 rounded-full ${
                             card.element === 'fire' ? 'bg-red-500' : 
                             card.element === 'water' ? 'bg-blue-500' : 
-                            card.element === 'earth' ? 'bg-amber-800' : 
+                            card.element === 'ground' ? 'bg-amber-800' : 
                             card.element === 'air' ? 'bg-cyan-300' : 
                             'bg-gray-400'
                           }`}
@@ -1230,7 +1307,7 @@ const GameBoard2D: React.FC<GameBoard2DProps> = ({ onAction }) => {
                               className={`w-3 h-3 rounded-full flex-shrink-0 ${
                                 card.element === 'fire' ? 'bg-red-500' : 
                                 card.element === 'water' ? 'bg-blue-500' : 
-                                card.element === 'earth' ? 'bg-amber-800' : 
+                                card.element === 'ground' ? 'bg-amber-800' : 
                                 card.element === 'air' ? 'bg-cyan-300' : 
                                 'bg-gray-400'
                               }`}
@@ -1312,7 +1389,7 @@ const GameBoard2D: React.FC<GameBoard2DProps> = ({ onAction }) => {
                 <div className="text-xs text-yellow-300 font-bold mb-1">Select a reserve avatar:</div>
                 {game.player.reserveAvatars.map((avatar, index) => (
                   <div 
-                    key={`player-reserve-select-${avatar.id}-${index}`} 
+                    key={index} 
                     className="text-xs mb-0.5 bg-yellow-900 hover:bg-yellow-700 px-1 py-1 rounded cursor-pointer transition-colors"
                     onClick={() => handleSelectReserveAvatar(index)}
                   >
@@ -1324,7 +1401,7 @@ const GameBoard2D: React.FC<GameBoard2DProps> = ({ onAction }) => {
               // Normal display of reserve avatars
               game.player.reserveAvatars.map((avatar, index) => (
                 <div 
-                  key={`player-reserve-${avatar.id}-${index}`} 
+                  key={index} 
                   className="text-xs mb-0.5 bg-blue-900 bg-opacity-50 px-1 py-0.5 rounded cursor-pointer hover:bg-blue-800"
                   onClick={(e) => {
                     // Prevent action from triggering
@@ -1412,6 +1489,32 @@ const GameBoard2D: React.FC<GameBoard2DProps> = ({ onAction }) => {
         </button>
       </div>
       
+      {/* Discard Card Modal */}
+      {showDiscardModal && discardCard && (
+        <div className="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50">
+          <div className="bg-gray-800 p-4 rounded-lg text-center max-w-md">
+            <h2 className="text-xl font-bold mb-2">Discard Card</h2>
+            <p className="mb-4">
+              You have more than 8 cards. Discard {discardCard.name}?
+            </p>
+            <div className="flex gap-2 justify-center">
+              <button
+                className="bg-red-600 hover:bg-red-700 px-4 py-2 rounded"
+                onClick={confirmDiscard}
+              >
+                Discard
+              </button>
+              <button
+                className="bg-gray-600 hover:bg-gray-700 px-4 py-2 rounded"
+                onClick={() => setShowDiscardModal(false)}
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Game winner notification */}
       {game.winner && (
         <div className="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50">

@@ -1,0 +1,48 @@
+3.0. Start Page
+Login via Solana wallet
+3.1. Home Page
+Rolling Image
+3.2. Start Game
+Options:
+Vs AI: Play against a computer-controlled opponent with adjustable difficulty settings.
+Random Match: Automatically match with another player for a quick game.
+Create Room: Set up a custom match room where you can choose opponents and specific game settings.
+Enter Custom Room: Join a specific match room by entering a unique room code provided by the room creator.
+
+
+3.3. Deck Builder
+Features:
+Organize Cards: View and organize your card collection into decks.
+Create New Decks: Build custom decks by selecting Avatar and Action cards, ensuring deck legality (e.g., only 4 copies of a card).
+Card Filtering: Filter cards by element, subtype, level, and rarity to assist in creating the perfect deck.
+Deck Statistics: View deck stats, including total card count, average mana cost, and synergy between cards.
+
+
+3.4. Library
+Features:
+Card Collection: View all the cards in your possession, including owned NFTs.
+Card Details: Tap on any card to see detailed information, such as card level, abilities, health points, and card artwork.
+
+
+NFT Information: Cards represented as NFTs can be distinguished with a Solana wallet address, transaction history, and marketplace availability.
+
+
+3.5. Marketplace
+Features:
+Shop: Browse available card boosters, decks, and special edition cards available for purchase.
+NFT Marketplace Integration: Integrate with a Solana NFT marketplace (like Magic Eden) to allow players to buy, sell, and trade their NFT-based cards.
+Search & Filter: Search for cards by name, type, or rarity, and apply filters for price ranges or availability.
+Booster Packs: Purchase random booster packs to expand your card collection.
+Cosmetics: Purchase cosmetics for game.
+3.6. Settings
+Features:
+Game Settings:
+Adjust visual quality, game speed, and animations.
+Set language preferences (e.g., English, Indonesian).
+Toggle music and sound effects on/off.
+
+
+Wallet Settings:
+Solana Wallet Integration: Connect to your Solana wallet to log in and manage your game assets.
+Wallet Authentication: Use wallet apps like Phantom, Sollet, or Solflare to authenticate and sign in to the game.
+Transaction Settings: Enable or disable automatic confirmations for in-game transactions (e.g., NFT trades, booster pack purchases).

@@ -6,10 +6,6 @@ const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
-// Serve static assets
-app.use('/attached_assets', express.static('attached_assets'));
-app.use('/textures', express.static('client/src/assets/textures'));
-
 app.use((req, res, next) => {
   const start = Date.now();
   const path = req.path;
@@ -60,10 +56,14 @@ app.use((req, res, next) => {
     serveStatic(app);
   }
 
-  // Serve the app on port 3000
+  // ALWAYS serve the app on port 5000
   // this serves both the API and the client
-  const port = 3000;
-  server.listen(port, 'localhost', () => {
-    log(`serving on http://localhost:${port}`);
+  const port = 5000;
+  server.listen({
+    port,
+    host: "0.0.0.0",
+    reusePort: true,
+  }, () => {
+    log(`serving on port ${port}`);
   });
 })();
