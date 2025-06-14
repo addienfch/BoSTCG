@@ -1458,7 +1458,7 @@ export const useGameStore = create<GameState>((set, get) => ({
       // Also directly make isTapped false in any existing avatar objects
       console.log("TURN CHANGE - Directly untapping player avatars");
       if (get().player.activeAvatar) {
-        get().player.activeAvatar.isTapped = false;
+        get().player.activeAvatar!.isTapped = false;
       }
       get().player.reserveAvatars.forEach(avatar => {
         avatar.isTapped = false;
@@ -1503,7 +1503,7 @@ export const useGameStore = create<GameState>((set, get) => ({
       // Also directly make isTapped false in any existing avatar objects
       console.log("TURN CHANGE - Directly untapping opponent avatars");
       if (get().opponent.activeAvatar) {
-        get().opponent.activeAvatar.isTapped = false;
+        get().opponent.activeAvatar!.isTapped = false;
       }
       get().opponent.reserveAvatars.forEach(avatar => {
         avatar.isTapped = false;
