@@ -18,9 +18,8 @@ import GameBoard2D from "./game/components2D/GameBoard2D";
 import { useGameMode } from "./game/stores/useGameMode";
 import { useAudio } from "./lib/stores/useAudio";
 
-// Solana Wallet - temporarily disabled
-// import { SolanaWalletProvider } from './lib/solana/SolanaWalletProvider';
-// import { useSolanaWallet } from './lib/solana/useSolanaWallet';
+// Solana Wallet
+import { SolanaWalletProvider } from './lib/solana/SolanaWalletProvider';
 
 // Navigation
 import Navigation from './components/Navigation';
@@ -145,19 +144,21 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 // A wrapper component that has access to navigate (must be inside Router context)
 function App() {
   return (
-    <Router>
-      <SoundLoader />
-      <Routes>
-        <Route path="/startpage" element={<AppLayout showNavigation={false}><StartPage /></AppLayout>} />
-        <Route path="/" element={<Navigate to="/startpage" replace />} />
-        <Route path="/home" element={<ProtectedRoute><AppLayout showNavigation={true}><HomePage /></AppLayout></ProtectedRoute>} />
-        <Route path="/deck-builder" element={<ProtectedRoute><AppLayout showNavigation={true}><DeckBuilderPage /></AppLayout></ProtectedRoute>} />
-        <Route path="/shop" element={<ProtectedRoute><AppLayout showNavigation={true}><ShopPage /></AppLayout></ProtectedRoute>} />
-        <Route path="/library" element={<ProtectedRoute><AppLayout showNavigation={true}><LibraryPage /></AppLayout></ProtectedRoute>} />
-        <Route path="/arena" element={<ProtectedRoute><AppLayout showNavigation={true}><ArenaPage /></AppLayout></ProtectedRoute>} />
-        <Route path="/game" element={<ProtectedRoute><AppLayout showNavigation={false}><Game /></AppLayout></ProtectedRoute>} />
-      </Routes>
-    </Router>
+    <SolanaWalletProvider>
+      <Router>
+        <SoundLoader />
+        <Routes>
+          <Route path="/startpage" element={<AppLayout showNavigation={false}><StartPage /></AppLayout>} />
+          <Route path="/" element={<Navigate to="/startpage" replace />} />
+          <Route path="/home" element={<ProtectedRoute><AppLayout showNavigation={true}><HomePage /></AppLayout></ProtectedRoute>} />
+          <Route path="/deck-builder" element={<ProtectedRoute><AppLayout showNavigation={true}><DeckBuilderPage /></AppLayout></ProtectedRoute>} />
+          <Route path="/shop" element={<ProtectedRoute><AppLayout showNavigation={true}><ShopPage /></AppLayout></ProtectedRoute>} />
+          <Route path="/library" element={<ProtectedRoute><AppLayout showNavigation={true}><LibraryPage /></AppLayout></ProtectedRoute>} />
+          <Route path="/arena" element={<ProtectedRoute><AppLayout showNavigation={true}><ArenaPage /></AppLayout></ProtectedRoute>} />
+          <Route path="/game" element={<ProtectedRoute><AppLayout showNavigation={false}><Game /></AppLayout></ProtectedRoute>} />
+        </Routes>
+      </Router>
+    </SolanaWalletProvider>
   );
 };
 
