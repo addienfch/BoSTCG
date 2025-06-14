@@ -26,7 +26,6 @@ const LibraryPage: React.FC = () => {
         const walletStatus = await cardNftService.getWalletStatus();
         if (walletStatus.connected) {
           const ownedCards = await cardNftService.getOwnedCards();
-          console.log('Loaded cNFT cards:', ownedCards.length);
           setCNftCards(ownedCards);
         }
       } catch (error) {
@@ -38,17 +37,6 @@ const LibraryPage: React.FC = () => {
 
     loadCNftCards();
   }, []);
-
-  // Debug logging
-  useEffect(() => {
-    console.log('Library Debug:');
-    console.log('- All cards:', allCards.length);
-    console.log('- cNFT cards:', cNftCards.length);
-    console.log('- Combined cards:', combinedCards.length);
-    console.log('- Unique cards:', uniqueCards.length);
-    console.log('- Filtered cards:', filteredCards.length);
-    console.log('- Sample cards:', allCards.slice(0, 3).map(c => `${c.name} (${c.type})`));
-  }, [allCards, cNftCards, combinedCards, uniqueCards, filteredCards]);
 
   // Combine regular cards and cNFT cards
   const combinedCards = useMemo(() => {
@@ -89,6 +77,8 @@ const LibraryPage: React.FC = () => {
       return matchesSearch && matchesElement && matchesType && matchesRarity && matchesExpansion;
     });
   }, [uniqueCards, searchTerm, selectedElement, selectedType, selectedRarity, selectedExpansion]);
+
+
 
   const clearFilters = () => {
     setSearchTerm('');
