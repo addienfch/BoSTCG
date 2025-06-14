@@ -1021,7 +1021,7 @@ export const useGameStore = create<GameState>((set, get) => ({
         isTapped: targetAvatarCard!.isTapped
       };
       
-      console.log("Evolution - Damage counter explicitly preserved:", evolvedAvatar.counters.damage);
+      console.log("Evolution - Damage counter explicitly preserved:", evolvedAvatar.counters?.damage || 0);
       
       console.log("Evolution - Final evolved avatar:", evolvedAvatar);
       
@@ -1806,10 +1806,8 @@ export const useGameStore = create<GameState>((set, get) => ({
     const availableElements: {[key in ElementType]: number} = {
       fire: 0,
       water: 0,
-      earth: 0,
+      ground: 0,
       air: 0,
-      light: 0,
-      dark: 0,
       neutral: 0
     };
     
@@ -1824,10 +1822,8 @@ export const useGameStore = create<GameState>((set, get) => ({
     const requiredElements: {[key in ElementType]: number} = {
       fire: 0,
       water: 0,
-      earth: 0,
+      ground: 0,
       air: 0,
-      light: 0,
-      dark: 0,
       neutral: 0
     };
     
@@ -1897,11 +1893,9 @@ export const useGameStore = create<GameState>((set, get) => ({
       const elementCounts: Record<ElementType, number> = {
         fire: 0,
         water: 0,
-        earth: 0,
+        ground: 0,
         air: 0,
-        neutral: 0,
-        light: 0,
-        dark: 0
+        neutral: 0
       };
       
       // Count required elements (with safety check)
@@ -1919,7 +1913,7 @@ export const useGameStore = create<GameState>((set, get) => ({
       const usedIndices: number[] = [];
       
       // First try to match specific elements
-      const elements: ElementType[] = ['fire', 'water', 'earth', 'air'];
+      const elements: ElementType[] = ['fire', 'water', 'ground', 'air'];
       elements.forEach(element => {
         let required = elementCounts[element] || 0;
         if (required > 0) {
