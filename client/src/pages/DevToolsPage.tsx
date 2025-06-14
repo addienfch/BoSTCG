@@ -110,16 +110,24 @@ const DevToolsPage: React.FC = () => {
       energyCost: [],
       skill1Name: '',
       skill1Effect: '',
+      skill1AdditionalEffect: '',
       skill1EffectType: 'basic_damage',
       skill1Damage: 0,
       skill1Type: 'active',
       skill1EnergyCost: [],
       skill2Name: '',
       skill2Effect: '',
+      skill2AdditionalEffect: '',
       skill2EffectType: 'basic_damage',
       skill2Damage: 0,
       skill2Type: 'active',
-      skill2EnergyCost: []
+      skill2EnergyCost: [],
+      // Field card properties
+      passiveEffect: '',
+      affect1: '',
+      affect2: '',
+      affect3: '',
+      duration: 0
     });
   };
 
@@ -128,6 +136,7 @@ const DevToolsPage: React.FC = () => {
     setIsEditing(true);
     setActiveTab('edit');
     const avatarCard = card as AvatarCard;
+    const fieldCard = card.type === 'field' ? card as any : null;
     setFormData({
       name: card.name,
       type: card.type,
@@ -141,12 +150,14 @@ const DevToolsPage: React.FC = () => {
       energyCost: [...(card.energyCost || [])],
       skill1Name: avatarCard.skill1?.name || '',
       skill1Effect: avatarCard.skill1?.effect || '',
+      skill1AdditionalEffect: avatarCard.skill1?.additionalEffect || '',
       skill1EffectType: 'basic_damage',
       skill1Damage: avatarCard.skill1?.damage || 0,
       skill1Type: 'active',
       skill1EnergyCost: [...(avatarCard.skill1?.energyCost || [])],
       skill2Name: avatarCard.skill2?.name || '',
       skill2Effect: avatarCard.skill2?.effect || '',
+      skill2AdditionalEffect: avatarCard.skill2?.additionalEffect || '',
       skill2EffectType: 'basic_damage',
       skill2Damage: avatarCard.skill2?.damage || 0,
       skill2Type: 'active',
@@ -545,6 +556,17 @@ const DevToolsPage: React.FC = () => {
                         />
                       </div>
 
+                      <div>
+                        <label className="block text-sm font-medium mb-1">Additional Effect</label>
+                        <textarea
+                          value={formData.skill1AdditionalEffect || ''}
+                          onChange={(e) => setFormData(prev => ({ ...prev, skill1AdditionalEffect: e.target.value }))}
+                          className="w-full px-3 py-2 bg-gray-600 border border-gray-500 rounded"
+                          rows={2}
+                          placeholder="Optional additional effect for complex skills"
+                        />
+                      </div>
+
                       {formData.skill1Type === 'active' && (
                         <div>
                           <label className="block text-sm font-medium mb-1">Energy Cost</label>
@@ -644,6 +666,17 @@ const DevToolsPage: React.FC = () => {
                           onChange={(e) => setFormData(prev => ({ ...prev, skill2Effect: e.target.value }))}
                           className="w-full px-3 py-2 bg-gray-600 border border-gray-500 rounded"
                           rows={2}
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium mb-1">Additional Effect</label>
+                        <textarea
+                          value={formData.skill2AdditionalEffect || ''}
+                          onChange={(e) => setFormData(prev => ({ ...prev, skill2AdditionalEffect: e.target.value }))}
+                          className="w-full px-3 py-2 bg-gray-600 border border-gray-500 rounded"
+                          rows={2}
+                          placeholder="Optional additional effect for complex skills"
                         />
                       </div>
 

@@ -62,7 +62,7 @@ export interface ActionCard extends BaseCard {
   subType?: ActionSubType;
 }
 
-export type Card = AvatarCard | ActionCard;
+export type Card = AvatarCard | ActionCard | FieldCard;
 
 // Game phase type
 export type GamePhase = 'setup' | 'refresh' | 'draw' | 'main1' | 'battle' | 'damage' | 'main2' | 'recheck' | 'end';
