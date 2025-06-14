@@ -3,6 +3,7 @@ import { useDeckStore } from '../game/stores/useDeckStore';
 import { Card, ElementType, AvatarCard } from '../game/data/cardTypes';
 import BackButton from '../components/BackButton';
 import NavigationBar from '../components/NavigationBar';
+import { ChevronDown } from 'lucide-react';
 
 const LibraryPage: React.FC = () => {
   const { getAvailableCards } = useDeckStore();
@@ -73,7 +74,7 @@ const LibraryPage: React.FC = () => {
     
     return (
       <div 
-        className={`${elementColor} border-2 rounded-lg p-3 cursor-pointer hover:opacity-80 transition-opacity`}
+        className={`${elementColor} border-2 rounded-lg p-3 cursor-pointer hover:opacity-80 transition-opacity min-w-[200px]`}
         onClick={() => setSelectedCard(card)}
       >
         <div className="flex justify-between items-start mb-2">
@@ -100,8 +101,7 @@ const LibraryPage: React.FC = () => {
               alt={card.name}
               className="w-full h-24 object-cover rounded"
               onError={(e) => {
-                const target = e.target as HTMLImageElement;
-                target.style.display = 'none';
+                e.currentTarget.style.display = 'none';
               }}
             />
           </div>
@@ -111,94 +111,118 @@ const LibraryPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-spektrum-dark text-spektrum-light pb-20" style={{ fontFamily: 'Noto Sans, Inter, sans-serif' }}>
-      <BackButton />
-      <div className="max-w-md mx-auto p-4">
-        <h1 className="text-xl font-bold mb-4 text-center">Card Library</h1>
-        
-        {/* Search and Filters */}
-        <div className="bg-gray-800 rounded-lg p-3 mb-4">
-          {/* Search Bar */}
-          <div className="mb-3">
+    <div className="min-h-screen bg-gray-900 text-white">
+      <NavigationBar />
+      <div className="container mx-auto px-4 py-8">
+        <div className="flex items-center mb-6">
+          <BackButton />
+          <h1 className="text-3xl font-bold ml-4">Card Library</h1>
+        </div>
+
+        {/* Search and Filter Controls - Landscape Layout */}
+        <div className="mb-6">
+          <div className="flex flex-wrap gap-3 items-center bg-gray-800 p-4 rounded-lg">
             <input
               type="text"
               placeholder="Search cards..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded text-white placeholder-gray-400"
+              className="px-4 py-2 bg-gray-700 rounded-lg border border-gray-600 text-white w-64"
             />
-          </div>
-
-          {/* Element Filter */}
-          <div className="mb-3">
-            <label className="block text-sm font-medium mb-1">Element</label>
-            <div className="grid grid-cols-3 gap-2">
-              {[
-                { value: 'all', label: 'All', color: 'bg-gray-600' },
-                { value: 'fire', label: 'Fire', color: 'bg-red-600' },
-                { value: 'water', label: 'Water', color: 'bg-blue-600' },
-                { value: 'ground', label: 'Ground', color: 'bg-yellow-600' },
-                { value: 'air', label: 'Air', color: 'bg-green-600' },
-                { value: 'neutral', label: 'Neutral', color: 'bg-gray-600' }
-              ].map(element => (
-                <button
-                  key={element.value}
-                  onClick={() => setSelectedElement(element.value as ElementType | 'all')}
-                  className={`px-2 py-1 rounded text-xs font-medium transition-colors ${
-                    selectedElement === element.value 
-                      ? `${element.color} text-white` 
-                      : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
-                  }`}
-                >
-                  {element.label}
-                </button>
-              ))}
+            
+            {/* Element Dropdown */}
+            <div className="relative">
+              <select
+                value={selectedElement}
+                onChange={(e) => setSelectedElement(e.target.value as ElementType | 'all')}
+                className="appearance-none px-4 py-2 pr-8 bg-gray-700 rounded-lg border border-gray-600 text-white cursor-pointer hover:bg-gray-600"
+              >
+                <option value="all">All Elements</option>
+                <option value="fire">Fire</option>
+                <option value="water">Water</option>
+                <option value="ground">Ground</option>
+                <option value="air">Air</option>
+                <option value="neutral">Neutral</option>
+              </select>
+              <ChevronDown className="absolute right-2 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
             </div>
-          </div>
 
-          {/* Type Filter */}
-          <div className="mb-3">
-            <label className="block text-sm font-medium mb-1">Card Type</label>
-            <div className="grid grid-cols-2 gap-2">
-              {[
-                { value: 'all', label: 'All' },
-                { value: 'avatar', label: 'Avatar' },
-                { value: 'spell', label: 'Spell' },
-                { value: 'quickSpell', label: 'Quick Spell' },
-                { value: 'ritualArmor', label: 'Ritual Armor' },
-                { value: 'field', label: 'Field' },
-                { value: 'equipment', label: 'Equipment' },
-                { value: 'item', label: 'Item' }
-              ].map(type => (
-                <button
-                  key={type.value}
-                  onClick={() => setSelectedType(type.value)}
-                  className={`px-2 py-1 rounded text-xs font-medium transition-colors ${
-                    selectedType === type.value 
-                      ? 'bg-spektrum-orange text-spektrum-dark' 
-                      : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
-                  }`}
-                >
-                  {type.label}
-                </button>
-              ))}
+            {/* Type Dropdown */}
+            <div className="relative">
+              <select
+                value={selectedType}
+                onChange={(e) => setSelectedType(e.target.value)}
+                className="appearance-none px-4 py-2 pr-8 bg-gray-700 rounded-lg border border-gray-600 text-white cursor-pointer hover:bg-gray-600"
+              >
+                <option value="all">All Types</option>
+                <option value="avatar">Avatar</option>
+                <option value="spell">Spell</option>
+                <option value="quickSpell">Quick Spell</option>
+                <option value="ritualArmor">Ritual Armor</option>
+                <option value="item">Item</option>
+                <option value="field">Field</option>
+                <option value="equipment">Equipment</option>
+              </select>
+              <ChevronDown className="absolute right-2 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
             </div>
-          </div>
 
-          {/* Clear Filters */}
-          <button
-            onClick={clearFilters}
-            className="w-full bg-gray-600 hover:bg-gray-500 text-white py-2 px-4 rounded text-sm font-medium transition-colors"
-          >
-            Clear All Filters
-          </button>
+            {/* Rarity Dropdown */}
+            <div className="relative">
+              <select
+                value={selectedRarity}
+                onChange={(e) => setSelectedRarity(e.target.value)}
+                className="appearance-none px-4 py-2 pr-8 bg-gray-700 rounded-lg border border-gray-600 text-white cursor-pointer hover:bg-gray-600"
+              >
+                <option value="all">All Rarities</option>
+                <option value="common">Common</option>
+                <option value="uncommon">Uncommon</option>
+                <option value="rare">Rare</option>
+                <option value="epic">Epic</option>
+                <option value="legendary">Legendary</option>
+              </select>
+              <ChevronDown className="absolute right-2 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+            </div>
+
+            {/* Expansion Dropdown */}
+            <div className="relative">
+              <select
+                value={selectedExpansion}
+                onChange={(e) => setSelectedExpansion(e.target.value)}
+                className="appearance-none px-4 py-2 pr-8 bg-gray-700 rounded-lg border border-gray-600 text-white cursor-pointer hover:bg-gray-600"
+              >
+                <option value="all">All Sets</option>
+                <option value="base">Base Set</option>
+                <option value="expansion1">Expansion 1</option>
+                <option value="expansion2">Expansion 2</option>
+              </select>
+              <ChevronDown className="absolute right-2 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+            </div>
+
+            <button
+              onClick={clearFilters}
+              className="px-4 py-2 bg-red-600 hover:bg-red-700 rounded-lg transition-colors"
+            >
+              Clear Filters
+            </button>
+          </div>
         </div>
 
-        {/* Cards Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
-          {filteredCards.map(card => (
-            <CardItem key={`${card.id}-${card.name}-${card.element}`} card={card} />
-          ))}
+        {/* Results Count */}
+        <div className="mb-4">
+          <p className="text-gray-400">
+            Showing {filteredCards.length} of {uniqueCards.length} cards
+          </p>
+        </div>
+
+        {/* Cards Grid - Landscape Scrollable */}
+        <div className="overflow-x-auto">
+          <div className="flex gap-4 pb-4" style={{ width: 'max-content' }}>
+            {filteredCards.map((card, index) => (
+              <div key={`${card.name}-${card.type}-${card.element}-${index}`} className="flex-shrink-0">
+                <CardItem card={card} />
+              </div>
+            ))}
+          </div>
         </div>
 
         {filteredCards.length === 0 && (
@@ -206,7 +230,7 @@ const LibraryPage: React.FC = () => {
             <p>No cards found matching your filters.</p>
             <button
               onClick={clearFilters}
-              className="mt-2 text-spektrum-orange hover:underline"
+              className="mt-2 text-red-400 hover:underline"
             >
               Clear filters to see all cards
             </button>
@@ -217,12 +241,12 @@ const LibraryPage: React.FC = () => {
       {/* Card Detail Modal */}
       {selectedCard && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-spektrum-dark border border-gray-600 rounded-lg p-4 max-w-md w-full max-h-[80vh] overflow-y-auto">
+          <div className="bg-gray-800 border border-gray-600 rounded-lg p-6 max-w-md w-full max-h-[80vh] overflow-y-auto">
             <div className="flex justify-between items-start mb-4">
               <h2 className="text-xl font-bold">{selectedCard.name}</h2>
               <button
                 onClick={() => setSelectedCard(null)}
-                className="text-gray-400 hover:text-white text-2xl"
+                className="text-gray-400 hover:text-white text-xl"
               >
                 ×
               </button>
@@ -233,47 +257,28 @@ const LibraryPage: React.FC = () => {
                 src={selectedCard.art} 
                 alt={selectedCard.name}
                 className="w-full h-48 object-cover rounded mb-4"
-                onError={(e) => {
-                  const target = e.target as HTMLImageElement;
-                  target.style.display = 'none';
-                }}
               />
             )}
             
             <div className="space-y-2 text-sm">
-              <div><span className="font-medium">Type:</span> {selectedCard.type}</div>
-              <div><span className="font-medium">Element:</span> {selectedCard.element}</div>
-              
+              <p><span className="font-semibold">Type:</span> {selectedCard.type}</p>
+              <p><span className="font-semibold">Element:</span> {selectedCard.element}</p>
               {selectedCard.type === 'avatar' && (
                 <>
-                  <div><span className="font-medium">Level:</span> {(selectedCard as AvatarCard).level}</div>
-                  <div><span className="font-medium">Health:</span> {(selectedCard as AvatarCard).health}</div>
-                  <div><span className="font-medium">Sub Type:</span> {(selectedCard as AvatarCard).subType}</div>
-                  
-                  {(selectedCard as AvatarCard).skill1 && (
-                    <div>
-                      <span className="font-medium">Skill 1:</span> {(selectedCard as AvatarCard).skill1?.name}
-                      <p className="text-gray-300 ml-2">{(selectedCard as AvatarCard).skill1?.effect}</p>
-                    </div>
-                  )}
-                  
-                  {(selectedCard as AvatarCard).skill2 && (
-                    <div>
-                      <span className="font-medium">Skill 2:</span> {(selectedCard as AvatarCard).skill2?.name}
-                      <p className="text-gray-300 ml-2">{(selectedCard as AvatarCard).skill2?.effect}</p>
-                    </div>
-                  )}
+                  <p><span className="font-semibold">Health:</span> {(selectedCard as AvatarCard).health}</p>
+                  <p><span className="font-semibold">Level:</span> {(selectedCard as AvatarCard).level}</p>
                 </>
               )}
-              
-              <div><span className="font-medium">Description:</span></div>
-              <p className="text-gray-300">{selectedCard.description}</p>
+              {selectedCard.description && (
+                <p><span className="font-semibold">Description:</span> {selectedCard.description}</p>
+              )}
+              {selectedCard.energyCost && selectedCard.energyCost.length > 0 && (
+                <p><span className="font-semibold">Energy Cost:</span> {selectedCard.energyCost.join(', ')}</p>
+              )}
             </div>
           </div>
         </div>
       )}
-
-      <NavigationBar />
     </div>
   );
 };

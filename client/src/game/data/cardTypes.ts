@@ -11,6 +11,7 @@ export interface Skill {
   energyCost: ElementType[];  // Array of elements needed
   damage: number;
   effect?: string;
+  additionalEffect?: string; // Additional effect for more complex skills
 }
 
 export interface Counter {
@@ -45,9 +46,19 @@ export interface AvatarCard extends BaseCard {
   turnPlayed?: number; // Track which turn the avatar was played
 }
 
+// Field Card interface - has passive effects like avatars
+export interface FieldCard extends BaseCard {
+  type: 'field';
+  passiveEffect: string;
+  affect1?: string; // First affect bar
+  affect2?: string; // Second affect bar
+  affect3?: string; // Third affect bar
+  duration?: number; // How many turns the field stays active
+}
+
 // Action Card interface
 export interface ActionCard extends BaseCard {
-  type: 'spell' | 'quickSpell' | 'ritualArmor' | 'field' | 'equipment' | 'item';
+  type: 'spell' | 'quickSpell' | 'ritualArmor' | 'equipment' | 'item';
   subType?: ActionSubType;
 }
 
