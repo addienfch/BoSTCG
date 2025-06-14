@@ -21,9 +21,9 @@ import GameBoard2D from "./game/components2D/GameBoard2D";
 import { useGameMode } from "./game/stores/useGameMode";
 import { useAudio } from "./lib/stores/useAudio";
 
-// Solana Wallet
-import { SolanaWalletProvider } from './lib/solana/SolanaWalletProvider';
-import { useSolanaWallet } from './lib/solana/useSolanaWallet';
+// Solana Wallet - temporarily disabled
+// import { SolanaWalletProvider } from './lib/solana/SolanaWalletProvider';
+// import { useSolanaWallet } from './lib/solana/useSolanaWallet';
 
 // Navigation
 import Navigation from './components/Navigation';
@@ -139,64 +139,28 @@ const AppLayout = ({ children, showNavigation }: AppLayoutProps) => {
   );
 };
 
-// Protected route component to gate access behind Solana wallet connection
+// Simplified protected route - temporarily disabled wallet authentication
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
-  const navigate = useNavigate();
-  const [loading, setLoading] = useState(true);
-  const [authenticated, setAuthenticated] = useState(false);
-  
-  // Use the Solana wallet hook to access wallet state
-  const { walletAddress } = useSolanaWallet();
-  
-  useEffect(() => {
-    // Check if the user has connected a Solana wallet
-    // Either from our hook or directly from localStorage
-    const storedWalletAddress = localStorage.getItem('walletAddress');
-    
-    if (walletAddress || storedWalletAddress) {
-      // If we have a wallet address either from the hook or localStorage, consider authenticated
-      console.log('Authenticated with wallet:', walletAddress || storedWalletAddress);
-      setAuthenticated(true);
-      setLoading(false);
-    } else {
-      console.log('No wallet address found, redirecting to start page');
-      // Redirect to start page if not authenticated
-      navigate('/start');
-      setLoading(false);
-    }
-  }, [navigate, walletAddress]);
-  
-  // Show loading spinner while checking auth
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-900">
-        <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-blue-500"></div>
-      </div>
-    );
-  }
-  
-  // Render the protected content if authenticated
-  return authenticated ? <>{children}</> : null;
+  // For now, just render children without authentication
+  return <>{children}</>;
 };
 
 // A wrapper component that has access to navigate (must be inside Router context)
 function App() {
   return (
-    <SolanaWalletProvider>
-      <Router>
-        <SoundLoader />
-        <Routes>
-          <Route path="/startpage" element={<AppLayout showNavigation={false}><StartPage /></AppLayout>} />
-          <Route path="/" element={<Navigate to="/startpage" replace />} />
-          <Route path="/home" element={<ProtectedRoute><AppLayout showNavigation={true}><HomePage /></AppLayout></ProtectedRoute>} />
-          <Route path="/deck-builder" element={<ProtectedRoute><AppLayout showNavigation={true}><DeckBuilderPage /></AppLayout></ProtectedRoute>} />
-          <Route path="/shop" element={<ProtectedRoute><AppLayout showNavigation={true}><ShopPage /></AppLayout></ProtectedRoute>} />
-          <Route path="/library" element={<ProtectedRoute><AppLayout showNavigation={true}><LibraryPage /></AppLayout></ProtectedRoute>} />
-          <Route path="/arena" element={<ProtectedRoute><AppLayout showNavigation={true}><ArenaPage /></AppLayout></ProtectedRoute>} />
-          <Route path="/game" element={<ProtectedRoute><AppLayout showNavigation={false}><Game /></AppLayout></ProtectedRoute>} />
-        </Routes>
-      </Router>
-    </SolanaWalletProvider>
+    <Router>
+      <SoundLoader />
+      <Routes>
+        <Route path="/startpage" element={<AppLayout showNavigation={false}><StartPage /></AppLayout>} />
+        <Route path="/" element={<Navigate to="/startpage" replace />} />
+        <Route path="/home" element={<ProtectedRoute><AppLayout showNavigation={true}><HomePage /></AppLayout></ProtectedRoute>} />
+        <Route path="/deck-builder" element={<ProtectedRoute><AppLayout showNavigation={true}><DeckBuilderPage /></AppLayout></ProtectedRoute>} />
+        <Route path="/shop" element={<ProtectedRoute><AppLayout showNavigation={true}><ShopPage /></AppLayout></ProtectedRoute>} />
+        <Route path="/library" element={<ProtectedRoute><AppLayout showNavigation={true}><LibraryPage /></AppLayout></ProtectedRoute>} />
+        <Route path="/arena" element={<ProtectedRoute><AppLayout showNavigation={true}><ArenaPage /></AppLayout></ProtectedRoute>} />
+        <Route path="/game" element={<ProtectedRoute><AppLayout showNavigation={false}><Game /></AppLayout></ProtectedRoute>} />
+      </Routes>
+    </Router>
   );
 };
 
