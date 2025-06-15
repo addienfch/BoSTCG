@@ -76,10 +76,16 @@ class MockCardNftService implements CardNftService {
         balance: 5.5
       };
       
+      console.log('Mock wallet connected successfully');
       return this.walletStatus;
     } catch (error) {
       console.error('Mock wallet connection failed:', error);
-      throw new Error('Failed to connect to wallet');
+      this.walletStatus = {
+        connected: false,
+        address: null,
+        balance: 0
+      };
+      return this.walletStatus;
     }
   }
   
