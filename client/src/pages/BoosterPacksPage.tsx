@@ -122,17 +122,10 @@ const BoosterPacksPage: React.FC = () => {
     return cards;
   };
 
-  const togglePackSelection = (pack: BoosterPack) => {
-    setSelectedPacks(prev => {
-      const isSelected = prev.some(p => p.id === pack.id);
-      if (isSelected) {
-        return prev.filter(p => p.id !== pack.id);
-      } else if (prev.length < 3) {
-        return [...prev, pack];
-      } else {
-        toast.error('Maximum 3 packs can be selected at once');
-        return prev;
-      }
+  const handlePackSelection = (pack: BoosterPack) => {
+    // Navigate to pack variant selection page
+    navigate('/shop/booster/select', { 
+      state: { selectedPack: pack } 
     });
   };
 
@@ -212,12 +205,8 @@ const BoosterPacksPage: React.FC = () => {
               {boosterPacks.map(pack => (
                 <div
                   key={pack.id}
-                  onClick={() => togglePackSelection(pack)}
-                  className={`bg-gradient-to-r ${pack.color} rounded-lg p-4 cursor-pointer transition-all transform hover:scale-105 ${
-                    selectedPacks.some(p => p.id === pack.id) 
-                      ? 'ring-2 ring-spektrum-orange shadow-lg' 
-                      : 'hover:shadow-md'
-                  }`}
+                  onClick={() => handlePackSelection(pack)}
+                  className={`bg-gradient-to-r ${pack.color} rounded-lg p-4 cursor-pointer transition-all transform hover:scale-105 hover:shadow-md`}
                 >
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center gap-2">
@@ -236,63 +225,23 @@ const BoosterPacksPage: React.FC = () => {
                     <span className="bg-black bg-opacity-30 px-2 py-1 rounded">
                       Guaranteed: {pack.guaranteedRarity}
                     </span>
-                    {selectedPacks.some(p => p.id === pack.id) && (
-                      <span className="bg-spektrum-orange text-spektrum-dark px-2 py-1 rounded font-medium">
-                        Selected
-                      </span>
-                    )}
+                    <span className="text-sm font-medium">
+                      Choose from 9 variants →
+                    </span>
                   </div>
                 </div>
               ))}
             </div>
 
-            {/* Selection Summary */}
-            {selectedPacks.length > 0 && (
-              <div className="bg-gray-800 rounded-lg p-4 mb-4">
-                <h3 className="font-bold mb-2">Selected Packs ({selectedPacks.length}/3)</h3>
-                <div className="space-y-1 mb-3">
-                  {selectedPacks.map(pack => (
-                    <div key={pack.id} className="flex justify-between text-sm">
-                      <span>{pack.name}</span>
-                      <span>{pack.price} USDC</span>
-                    </div>
-                  ))}
-                </div>
-                <div className="border-t border-gray-600 pt-2 flex justify-between font-bold">
-                  <span>Total:</span>
-                  <span>{getTotalPrice().toFixed(2)} USDC</span>
-                </div>
-              </div>
-            )}
-
-            {/* Open Packs Button */}
-            <button
-              onClick={openSelectedPacks}
-              disabled={selectedPacks.length === 0 || isOpening}
-              className={`w-full py-4 px-6 rounded-lg font-bold text-lg transition-all ${
-                selectedPacks.length === 0 || isOpening
-                  ? 'bg-gray-600 text-gray-400 cursor-not-allowed'
-                  : 'bg-gradient-to-r from-spektrum-orange to-orange-600 hover:from-orange-600 hover:to-orange-700 text-spektrum-dark transform hover:scale-105'
-              }`}
-            >
-              {isOpening ? (
-                <div className="flex items-center justify-center gap-2">
-                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
-                  Opening Packs...
-                </div>
-              ) : (
-                `Open ${selectedPacks.length} Pack${selectedPacks.length !== 1 ? 's' : ''}`
-              )}
-            </button>
-
             {/* Info Section */}
-            <div className="mt-6 bg-gray-800 rounded-lg p-3">
-              <h3 className="font-bold mb-2">Pack Opening Rules</h3>
+            <div className="mt-6 bg-gray-800 rounded-lg p-4">
+              <h3 className="font-bold mb-2">How Pack Opening Works</h3>
               <ul className="text-sm text-gray-300 space-y-1">
-                <li>• Select 2-3 packs for the best opening experience</li>
-                <li>• Each pack contains randomized cards of the specified element</li>
-                <li>• Guaranteed minimum rarity ensures valuable pulls</li>
-                <li>• All cards are minted as cNFTs on Solana</li>
+                <li>• Choose a pack type based on your preferred element</li>
+                <li>• Select from 9 different variants with unique rarity distributions</li>
+                <li>• Each variant offers different guaranteed cards and drop rates</li>
+                <li>• All opened cards are minted as cNFTs on Solana blockchain</li>
+                <li>• Cards are immediately added to your library and deck collection</li>
               </ul>
             </div>
           </>

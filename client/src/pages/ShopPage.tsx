@@ -76,9 +76,9 @@ const ShopPage: React.FC = () => {
         <div className="mt-6 bg-gray-800 p-4 rounded-lg">
           <h2 className="text-lg font-bold mb-2">About the Shop</h2>
           <ul className="text-sm text-gray-300 space-y-1">
-            <li>• Booster packs contain random cards with guaranteed rarities</li>
-            <li>• Premade decks are tournament-ready 40-card strategies</li>
-            <li>• Cosmetics include card backs and visual customizations</li>
+            <li>• Booster packs: Choose from 9 variants with different rarity distributions</li>
+            <li>• Premade decks: One-time purchase of complete 40-card strategies</li>
+            <li>• Battle sets: Card backs, deck covers, avatar skins, and battlefield themes</li>
             <li>• NFT marketplace connects to Tensor for trading</li>
           </ul>
         </div>
