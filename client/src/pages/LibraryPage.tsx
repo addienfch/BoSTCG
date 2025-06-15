@@ -19,7 +19,7 @@ const LibraryPage: React.FC = () => {
   const [cNftCards, setCNftCards] = useState<Card[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Load cNFT cards on component mount
+  // Load cNFT cards on component mount and sync library
   useEffect(() => {
     const loadCNftCards = async () => {
       try {
@@ -36,6 +36,11 @@ const LibraryPage: React.FC = () => {
     };
 
     loadCNftCards();
+    
+    // Auto-refresh every 30 seconds to keep library in sync
+    const refreshInterval = setInterval(loadCNftCards, 30000);
+    
+    return () => clearInterval(refreshInterval);
   }, []);
 
   // Combine regular cards and cNFT cards

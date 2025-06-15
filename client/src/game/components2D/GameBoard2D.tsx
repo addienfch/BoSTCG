@@ -211,9 +211,24 @@ const GameBoard2D: React.FC<GameBoard2DProps> = ({ onAction }) => {
     setShowDiscardModal(false);
   };
 
-  // Function to handle card actions
+  // Function to handle card actions with effect processing
   const handleCardAction = (card: Card, action: string) => {
     console.log(action, card);
+    
+    // Process bleed damage at start of turn
+    if (action === 'startTurn' && game.player.activeAvatar) {
+      processBleedDamage(game.player.activeAvatar, (update) => {
+        // Apply the update to game state
+        Object.assign(game.player, update.player || {});
+      }, 'player');
+    }
+    
+    if (action === 'startOpponentTurn' && game.opponent.activeAvatar) {
+      processBleedDamage(game.opponent.activeAvatar, (update) => {
+        // Apply the update to game state
+        Object.assign(game.opponent, update.opponent || {});
+      }, 'opponent');
+    }
     
     // Handle discard action for end turn scenarios, hand limit, or recheck phase
     const shouldHandleAsDiscard = action === 'discard' || 
