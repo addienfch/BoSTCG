@@ -814,7 +814,9 @@ const GameBoard2D: React.FC<GameBoard2DProps> = ({ onAction }) => {
               const damage = 2; // Burn Ball does 2 damage
               
               // Add damage counter
-              playerAvatar.counters = playerAvatar.counters || { damage: 0, bleed: 0, shield: 0 };
+              playerAvatar.counters = playerAvatar.counters || { 
+                damage: 0, bleed: 0, shield: 0, burn: 0, freeze: 0, poison: 0, stun: 0 
+              };
               playerAvatar.counters.damage += damage;
               
               game.addLog(`Burn Ball deals ${damage} damage to your avatar!`);
@@ -857,7 +859,9 @@ const GameBoard2D: React.FC<GameBoard2DProps> = ({ onAction }) => {
             // Apply damage to player's avatar if it exists
             if (game.player.activeAvatar && damage > 0) {
               // Add damage counter
-              game.player.activeAvatar.counters = game.player.activeAvatar.counters || { damage: 0, bleed: 0, shield: 0 };
+              game.player.activeAvatar.counters = game.player.activeAvatar.counters || { 
+                damage: 0, bleed: 0, shield: 0, burn: 0, freeze: 0, poison: 0, stun: 0 
+              };
               game.player.activeAvatar.counters.damage += damage;
               
               game.addLog(`Opponent used ${skill.name}, dealing ${damage} damage to your avatar!`);
