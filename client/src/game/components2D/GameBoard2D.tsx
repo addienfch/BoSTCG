@@ -6,6 +6,7 @@ import { toast } from 'sonner';
 import { AvatarCard, Card } from '../data/cardTypes';
 import { SimpleGameAI, AIGameState } from '../ai/SimpleGameAI';
 import { useNavigate } from 'react-router-dom';
+import { processGameEffect, processBleedDamage } from '../utils/gameEffectProcessor';
 
 // Card Preview Component
 const CardPreview = ({ 

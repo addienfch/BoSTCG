@@ -42,6 +42,8 @@ interface DeckStore {
   findCard: (id: string) => Card | undefined;
   getAvailableCardsByElement: (element: string) => Card[];
   getAvailableCardsByTribe: (tribe: string) => Card[];
+  refreshLibrary: () => void;
+  syncWithNFTs: () => Promise<void>;
 }
 
 // Helper function to create a Kobar-Borah tribe deck
@@ -462,6 +464,24 @@ export const useDeckStore = create<DeckStore>()(
         
         // Default to all cards if tribe not recognized
         return get().getAvailableCards();
+      },
+
+      refreshLibrary: () => {
+        // Force refresh library data by triggering state update
+        set(state => ({ ...state }));
+      },
+
+      syncWithNFTs: async () => {
+        try {
+          const walletStatus = await cardNftService.getWalletStatus();
+          if (walletStatus.connected) {
+            await cardNftService.getOwnedCards();
+            // Trigger library refresh after syncing
+            get().refreshLibrary();
+          }
+        } catch (error) {
+          console.error('Error syncing with NFTs:', error);
+        }
       }
     }),
     {

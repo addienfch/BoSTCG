@@ -130,7 +130,7 @@ const LibraryPage: React.FC = () => {
             className="w-full h-24 object-cover rounded"
             onError={(e) => {
               const target = e.currentTarget;
-              target.src = '/textures/cards/placeholder.png';
+              target.src = '/textures/cards/placeholder.svg';
               target.onerror = null; // Prevent infinite loop
             }}
           />
