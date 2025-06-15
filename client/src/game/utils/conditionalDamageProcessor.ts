@@ -1,5 +1,31 @@
-import { AvatarCard, BaseCard, ElementType } from '../data/cardTypes';
-import { GameState, Player } from '../types/gameTypes';
+import { AvatarCard, BaseCard, ElementType, Card } from '../data/cardTypes';
+
+export interface Counter {
+  damage: number;
+  bleed: number;
+  shield: number;
+  burn: number;
+  freeze: number;
+  poison: number;
+  stun: number;
+}
+
+export interface Player {
+  id: string;
+  activeAvatar: AvatarCard | null;
+  hand: Card[];
+  graveyard: Card[];
+  energy: Record<ElementType, number>;
+  discardedThisTurn: Card[];
+  field: Card[];
+}
+
+export interface GameState {
+  player: Player;
+  opponent: Player;
+  turn: number;
+  phase: string;
+}
 
 export interface ConditionalDamageRule {
   id: string;
@@ -248,7 +274,10 @@ export class ConditionalDamageProcessor {
   private parsePassiveRules(card: BaseCard | AvatarCard): PassiveEffectRule[] {
     const rules: PassiveEffectRule[] = [];
     
-    [card.skill1, card.skill2].forEach((skill, index) => {
+    // Only process avatar cards which have skills
+    if (card.type === 'avatar') {
+      const avatarCard = card as AvatarCard;
+      [avatarCard.skill1, avatarCard.skill2].forEach((skill, index) => {
       if (!skill?.effect) return;
       
       const effect = skill.effect.toLowerCase();
@@ -275,6 +304,7 @@ export class ConditionalDamageProcessor {
         });
       }
     });
+    }
     
     return rules;
   }

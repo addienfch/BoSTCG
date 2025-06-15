@@ -230,6 +230,11 @@ const DeckBuilderPage: React.FC = () => {
                             src={coverCard.art} 
                             alt={`${deck.name} cover`} 
                             className="w-full h-full object-cover"
+                            onError={(e) => {
+                              const target = e.currentTarget;
+                              target.src = '/textures/cards/placeholder.svg';
+                              target.onerror = null;
+                            }}
                           />
                         );
                       } else {
