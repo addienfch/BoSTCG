@@ -63,7 +63,7 @@ const ConditionalDamageDemoPage: React.FC = () => {
         const opponent: AvatarCard = {
           ...card,
           id: 'opponent-avatar',
-          element: 'fire' as ElementType,
+          element: 'fire',
           type: 'avatar' as const
         };
         setGameState(prev => ({
