@@ -123,18 +123,18 @@ const LibraryPage: React.FC = () => {
           )}
         </div>
         
-        {card.art && (
-          <div className="mt-2">
-            <img 
-              src={card.art} 
-              alt={card.name}
-              className="w-full h-24 object-cover rounded"
-              onError={(e) => {
-                e.currentTarget.style.display = 'none';
-              }}
-            />
-          </div>
-        )}
+        <div className="mt-2">
+          <img 
+            src={card.art} 
+            alt={card.name}
+            className="w-full h-24 object-cover rounded"
+            onError={(e) => {
+              const target = e.currentTarget;
+              target.src = '/textures/cards/placeholder.png';
+              target.onerror = null; // Prevent infinite loop
+            }}
+          />
+        </div>
       </div>
     );
   };

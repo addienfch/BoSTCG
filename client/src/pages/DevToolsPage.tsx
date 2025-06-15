@@ -117,7 +117,7 @@ const DevToolsPage: React.FC = () => {
     { value: 'draw_card', label: 'Draw Card' },
     { value: 'energy_gain', label: 'Energy Gain' },
     { value: 'counter_attack', label: 'Counter Attack' },
-    { value: 'stun', label: 'Stun' },
+    { value: 'bleed', label: 'Bleed' },
     { value: 'poison', label: 'Poison' },
     { value: 'burn', label: 'Burn' }
   ];
@@ -150,13 +150,7 @@ const DevToolsPage: React.FC = () => {
       skill2EffectType: 'basic_damage',
       skill2Damage: 0,
       skill2Type: 'active',
-      skill2EnergyCost: [],
-      // Field card properties
-      passiveEffect: '',
-      affect1: '',
-      affect2: '',
-      affect3: '',
-      duration: 0
+      skill2EnergyCost: []
     });
   };
 
