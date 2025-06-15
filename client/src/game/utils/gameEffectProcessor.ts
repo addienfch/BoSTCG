@@ -182,8 +182,8 @@ function processBasicDamage(
 
   return {
     success: true,
-    message: `Dealt ${finalDamage} damage${shieldUsed > 0 ? ` (${shieldUsed} blocked by shield)` : ''}`,
-    damage: finalDamage,
+    message: `Dealt ${damageAfterShield} damage${shieldUsed > 0 ? ` (${shieldUsed} blocked by shield)` : ''}`,
+    damage: damageAfterShield,
     targetAvatar
   };
 }
