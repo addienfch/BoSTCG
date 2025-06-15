@@ -30,6 +30,21 @@ function SoundLoader() {
   const playButton = useAudio(state => state.playButton);
   
   useEffect(() => {
+    // Global error handlers for unhandled promise rejections
+    const handleUnhandledRejection = (event: PromiseRejectionEvent) => {
+      console.warn('Unhandled promise rejection caught:', event.reason);
+      event.preventDefault(); // Prevent the default browser behavior
+    };
+
+    const handleError = (event: ErrorEvent) => {
+      console.warn('Global error caught:', event.error);
+      event.preventDefault();
+    };
+
+    // Add global error handlers
+    window.addEventListener('unhandledrejection', handleUnhandledRejection);
+    window.addEventListener('error', handleError);
+
     // Audio preloading with proper user interaction handling
     const handleFirstUserInteraction = () => {
       try {
@@ -48,7 +63,10 @@ function SoundLoader() {
     document.addEventListener('click', handleFirstUserInteraction);
     document.addEventListener('keydown', handleFirstUserInteraction);
 
+    // Cleanup function
     return () => {
+      window.removeEventListener('unhandledrejection', handleUnhandledRejection);
+      window.removeEventListener('error', handleError);
       document.removeEventListener('click', handleFirstUserInteraction);
       document.removeEventListener('keydown', handleFirstUserInteraction);
     };

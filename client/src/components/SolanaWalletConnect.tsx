@@ -78,6 +78,12 @@ const SolanaWalletConnect: React.FC<SolanaWalletConnectProps> = ({ onConnected }
     } catch (error) {
       console.error('Error disconnecting wallet:', error);
       toast.error('Failed to disconnect wallet');
+      // Force reset wallet status even on error
+      setWalletStatus({
+        connected: false,
+        address: null,
+        balance: 0
+      });
     } finally {
       setIsLoading(false);
     }
@@ -132,7 +138,11 @@ const SolanaWalletConnect: React.FC<SolanaWalletConnectProps> = ({ onConnected }
               </button>
               
               <button
-                onClick={handleDisconnect}
+                onClick={() => {
+                  handleDisconnect().catch(error => {
+                    console.error('Disconnect button error:', error);
+                  });
+                }}
                 disabled={isLoading}
                 className="bg-red-600 hover:bg-red-700 text-white py-2 px-4 rounded disabled:opacity-50"
               >
@@ -142,7 +152,11 @@ const SolanaWalletConnect: React.FC<SolanaWalletConnectProps> = ({ onConnected }
           </div>
         ) : (
           <button
-            onClick={handleConnect}
+            onClick={() => {
+              handleConnect().catch(error => {
+                console.error('Connect button error:', error);
+              });
+            }}
             disabled={isLoading}
             className="bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded w-full disabled:opacity-50"
           >
