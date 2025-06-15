@@ -10,6 +10,9 @@ import GameModePage from "./pages/GameModePage";
 import DeckBuilderPage from "./pages/DeckBuilderPage";
 import ShopPage from "./pages/ShopPage";
 import BoosterPacksPage from "./pages/BoosterPacksPage";
+import BoosterSelectionPage from "./pages/BoosterSelectionPage";
+import PremadeDecksPage from "./pages/PremadeDecksPage";
+import BattleSetsPage from "./pages/BattleSetsPage";
 import LibraryPage from "./pages/LibraryPage";
 import SettingsPage from "./pages/SettingsPage";
 import DevToolsPage from "./pages/DevToolsPage";
@@ -140,6 +143,9 @@ const AppWithRouting = () => {
           <Route path="/deck-builder" element={<DeckBuilderPage />} />
           <Route path="/shop" element={<ShopPage />} />
           <Route path="/shop/booster" element={<BoosterPacksPage />} />
+          <Route path="/shop/booster/select" element={<BoosterSelectionPage />} />
+          <Route path="/shop/premade" element={<PremadeDecksPage />} />
+          <Route path="/shop/battle-sets" element={<BattleSetsPage />} />
           <Route path="/library" element={<LibraryPage />} />
           <Route path="/settings" element={<SettingsPage />} />
           <Route path="/dev-tools" element={<DevToolsPage />} />

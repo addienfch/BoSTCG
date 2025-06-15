@@ -12,7 +12,11 @@ const ShopPage: React.FC = () => {
   };
 
   const handlePremadeDecks = () => {
-    navigate('/shop/premade-decks');
+    navigate('/shop/premade');
+  };
+
+  const handleBattleSets = () => {
+    navigate('/shop/battle-sets');
   };
 
   const handleMarketplace = () => {
@@ -47,14 +51,14 @@ const ShopPage: React.FC = () => {
             <div className="text-sm opacity-90">Ready-to-play 40-card decks</div>
           </button>
 
-          {/* Cosmetics Button */}
+          {/* Battle Sets Button */}
           <button
-            onClick={() => navigate('/shop/cosmetics')}
+            onClick={handleBattleSets}
             className="w-full bg-gradient-to-r from-pink-600 to-pink-800 hover:from-pink-700 hover:to-pink-900 text-white py-6 px-6 rounded-lg shadow-lg transition-all transform hover:scale-105 flex flex-col items-center"
           >
-            <div className="text-4xl mb-2">✨</div>
-            <div className="text-xl font-bold mb-1">Cosmetics</div>
-            <div className="text-sm opacity-90">Card backs & customizations</div>
+            <div className="text-4xl mb-2">🎨</div>
+            <div className="text-xl font-bold mb-1">Battle Sets</div>
+            <div className="text-sm opacity-90">Card backs, covers & battlefield themes</div>
           </button>
 
           {/* NFT Marketplace Button */}
