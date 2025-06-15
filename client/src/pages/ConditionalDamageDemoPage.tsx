@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import BackButton from '../components/BackButton';
 import { conditionalDamageCards, getConditionalCardsByType } from '../game/data/conditionalDamageCards';
 import { calculateEnhancedDamage } from '../game/utils/enhancedDamageCalculator';
-import { AvatarCard } from '../game/data/cardTypes';
+import { AvatarCard, ElementType } from '../game/data/cardTypes';
 import { toast } from 'sonner';
 
 const ConditionalDamageDemoPage: React.FC = () => {
@@ -60,11 +60,11 @@ const ConditionalDamageDemoPage: React.FC = () => {
       description: 'Opponent has fire type for water attack bonus',
       setup: () => {
         const card = getConditionalCardsByType('type')[0];
-        const opponent = {
+        const opponent: AvatarCard = {
           ...card,
           id: 'opponent-avatar',
-          element: 'fire' as const,
-          type: 'fire'
+          element: 'fire' as ElementType,
+          type: 'avatar' as const
         };
         setGameState(prev => ({
           ...prev,
@@ -81,7 +81,13 @@ const ConditionalDamageDemoPage: React.FC = () => {
         const card = getConditionalCardsByType('equipment')[0];
         const cardWithEquipment = {
           ...card,
-          attachedEquipment: [{ id: 'sword-1', name: 'Iron Sword', type: 'equipment' as const }]
+          attachedEquipment: [{ 
+            id: 'sword-1', 
+            name: 'Iron Sword', 
+            type: 'equipment' as const,
+            element: 'fire',
+            art: '/textures/cards/equipment_sword.png'
+          } as any]
         };
         setGameState(prev => ({
           ...prev,
