@@ -1,4 +1,4 @@
-import { Card, ElementType } from '../../types/card';
+import { AvatarCard, BaseCard, ElementType } from '../data/cardTypes';
 import { GameState, Player } from '../types/gameTypes';
 
 export interface ConditionalDamageRule {
@@ -54,7 +54,7 @@ export class ConditionalDamageProcessor {
 
   // Calculate final damage with all conditional modifiers
   calculateConditionalDamage(
-    attackingCard: Card,
+    attackingCard: AvatarCard,
     skill: any,
     baseDamage: number,
     attackingPlayer: Player,
@@ -81,7 +81,7 @@ export class ConditionalDamageProcessor {
     return Math.max(0, finalDamage);
   }
 
-  private parseConditionalRules(card: Card): ConditionalDamageRule[] {
+  private parseConditionalRules(card: AvatarCard): ConditionalDamageRule[] {
     const rules: ConditionalDamageRule[] = [];
     
     // Parse skill descriptions for conditional damage patterns
@@ -170,7 +170,7 @@ export class ConditionalDamageProcessor {
     rule: ConditionalDamageRule,
     attackingPlayer: Player,
     defendingPlayer: Player,
-    attackingCard: Card
+    attackingCard: AvatarCard
   ): boolean {
     switch (rule.type) {
       case 'discard_trigger':
@@ -193,7 +193,7 @@ export class ConditionalDamageProcessor {
         
       case 'equipment_attached':
         // Check if attacking card has equipment attached
-        return attackingCard.attachedEquipment?.length > 0;
+        return (attackingCard.attachedEquipment?.length || 0) > 0;
         
       case 'self_counter':
         if (!rule.condition.counterType) return false;
@@ -221,7 +221,7 @@ export class ConditionalDamageProcessor {
     return currentDamage;
   }
 
-  private calculatePassiveBonus(attackingCard: Card, attackingPlayer: Player): number {
+  private calculatePassiveBonus(attackingCard: AvatarCard, attackingPlayer: Player): number {
     let totalBonus = 0;
     
     // Check all cards in player's field for passive effects
@@ -229,7 +229,7 @@ export class ConditionalDamageProcessor {
       ...(attackingPlayer.hand || []),
       ...(attackingPlayer.field || []),
       attackingPlayer.activeAvatar
-    ].filter(Boolean) as Card[];
+    ].filter(Boolean) as (BaseCard | AvatarCard)[];
     
     for (const card of allPlayerCards) {
       const passiveRules = this.parsePassiveRules(card);
@@ -245,7 +245,7 @@ export class ConditionalDamageProcessor {
     return totalBonus;
   }
 
-  private parsePassiveRules(card: Card): PassiveEffectRule[] {
+  private parsePassiveRules(card: BaseCard | AvatarCard): PassiveEffectRule[] {
     const rules: PassiveEffectRule[] = [];
     
     [card.skill1, card.skill2].forEach((skill, index) => {

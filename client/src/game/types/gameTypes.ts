@@ -28,7 +28,7 @@ export interface Player {
   field: BaseCard[];
   activeAvatar: AvatarCard | null;
   counters: Counter;
-  discardedThisTurn: Card[];
+  discardedThisTurn: BaseCard[];
   isActivePlayer: boolean;
 }
 
@@ -46,8 +46,8 @@ export interface GameState {
 
 export interface GameEffect {
   id: string;
-  sourceCard: Card;
-  targetCard?: Card;
+  sourceCard: BaseCard;
+  targetCard?: BaseCard;
   targetPlayer?: Player;
   type: 'damage' | 'heal' | 'buff' | 'debuff' | 'counter' | 'energy' | 'draw';
   value: number;
@@ -69,7 +69,7 @@ export interface BattleResult {
     [cardId: string]: {
       health: number;
       counters: Counter;
-      attachedEquipment: Card[];
+      attachedEquipment: BaseCard[];
     };
   };
 }
