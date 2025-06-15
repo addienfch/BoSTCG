@@ -48,6 +48,7 @@ const DevToolsPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'database' | 'edit' | 'expansion' | 'conditional'>('database');
   const [selectedExpansion, setSelectedExpansion] = useState<Expansion | null>(null);
   const [isEditingExpansion, setIsEditingExpansion] = useState(false);
+  const [selectedExpansionFilter, setSelectedExpansionFilter] = useState<string>('all');
   
   const [formData, setFormData] = useState<CardFormData>({
     name: '',
@@ -317,14 +318,33 @@ const DevToolsPage: React.FC = () => {
               </button>
             </div>
             
-            <div className="max-h-96 overflow-y-auto space-y-2">
-              {cards.map((card, index) => (
+            {/* Expansion Filter */}
+            <div className="mb-4">
+              <label className="block text-sm font-medium mb-2">Filter by Expansion</label>
+              <select
+                value={selectedExpansionFilter}
+                onChange={(e) => setSelectedExpansionFilter(e.target.value)}
+                className="px-3 py-2 bg-gray-700 border border-gray-600 rounded text-sm"
+              >
+                <option value="all">All Expansions</option>
+                {mockExpansions.map(expansion => (
+                  <option key={expansion.id} value={expansion.id}>
+                    {expansion.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+            
+            <div className="max-h-[600px] overflow-y-auto space-y-2">
+              {cards
+                .filter(card => selectedExpansionFilter === 'all' || (card as any).expansion === selectedExpansionFilter)
+                .map((card, index) => (
                 <div key={`${card.id}-${index}`} className="bg-gray-700 p-3 rounded flex gap-3 items-center">
                   {/* Card Image */}
                   <div className="w-16 h-20 bg-gray-600 rounded border border-gray-500 flex-shrink-0 overflow-hidden">
                     {card.art ? (
                       <img 
-                        src={card.art} 
+                        src={card.art.startsWith('/textures/') ? card.art : `/textures/cards/${card.art}`} 
                         alt={card.name}
                         className="w-full h-full object-cover"
                         onError={(e) => {
@@ -344,6 +364,9 @@ const DevToolsPage: React.FC = () => {
                     <div className="text-xs text-gray-400">
                       {card.type} - {card.element}
                       {card.type === 'avatar' && ` - Level ${(card as AvatarCard).level}`}
+                    </div>
+                    <div className="text-xs text-gray-500">
+                      Expansion: {(card as any).expansion || 'Core Set'}
                     </div>
                   </div>
                   
