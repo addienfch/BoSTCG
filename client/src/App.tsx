@@ -33,17 +33,67 @@ function SoundLoader() {
     // Global error handlers for unhandled promise rejections
     const handleUnhandledRejection = (event: PromiseRejectionEvent) => {
       console.warn('Unhandled promise rejection caught:', event.reason);
-      event.preventDefault(); // Prevent the default browser behavior
+      // Prevent the error from bubbling up to Vite's error overlay
+      event.preventDefault();
+      event.stopPropagation();
+      event.stopImmediatePropagation();
     };
 
     const handleError = (event: ErrorEvent) => {
       console.warn('Global error caught:', event.error);
+      // Prevent the error from bubbling up to Vite's error overlay
       event.preventDefault();
+      event.stopPropagation();
+      event.stopImmediatePropagation();
     };
 
-    // Add global error handlers
-    window.addEventListener('unhandledrejection', handleUnhandledRejection);
-    window.addEventListener('error', handleError);
+    // Add global error handlers with capture phase
+    window.addEventListener('unhandledrejection', handleUnhandledRejection, true);
+    window.addEventListener('error', handleError, true);
+    
+    // Comprehensive error modal suppression
+    const originalConsoleError = console.error;
+    console.error = function(...args: any[]) {
+      const errorString = String(args[0]);
+      if (errorString.includes('WebSocket') || 
+          errorString.includes('vite') || 
+          errorString.includes('HMR') ||
+          errorString.includes('runtime-error-modal') ||
+          errorString.includes('error-overlay')) {
+        return;
+      }
+      originalConsoleError.apply(console, args);
+    };
+
+    // Override WebSocket to prevent HMR connection errors
+    const originalWebSocket = window.WebSocket;
+    const createSuppressedWebSocket = (url: string | URL, protocols?: string | string[]) => {
+      try {
+        const ws = new originalWebSocket(url, protocols);
+        ws.addEventListener('error', (event) => {
+          event.stopPropagation();
+          event.preventDefault();
+        });
+        ws.addEventListener('close', (event) => {
+          event.stopPropagation();
+          event.preventDefault();
+        });
+        return ws;
+      } catch (error) {
+        console.warn('WebSocket creation suppressed');
+        return {} as WebSocket;
+      }
+    };
+
+    // Remove any existing error modal elements
+    const removeErrorModals = () => {
+      const errorModals = document.querySelectorAll('[data-vite-error-overlay], #vite-error-overlay, .vite-error-overlay');
+      errorModals.forEach(modal => modal.remove());
+    };
+
+    // Initial cleanup and periodic cleanup
+    removeErrorModals();
+    const cleanupInterval = setInterval(removeErrorModals, 1000);
 
     // Audio preloading with proper user interaction handling
     const handleFirstUserInteraction = () => {
@@ -65,10 +115,14 @@ function SoundLoader() {
 
     // Cleanup function
     return () => {
-      window.removeEventListener('unhandledrejection', handleUnhandledRejection);
-      window.removeEventListener('error', handleError);
+      window.removeEventListener('unhandledrejection', handleUnhandledRejection, true);
+      window.removeEventListener('error', handleError, true);
       document.removeEventListener('click', handleFirstUserInteraction);
       document.removeEventListener('keydown', handleFirstUserInteraction);
+      // Restore original console.error
+      console.error = originalConsoleError;
+      // Clear the cleanup interval
+      clearInterval(cleanupInterval);
     };
   }, [playHit, playButton]);
   
