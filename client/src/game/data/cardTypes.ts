@@ -17,7 +17,12 @@ export interface Skill {
 export interface Counter {
   damage: number;
   bleed: number;
+  burn: number;
+  freeze: number;
+  poison: number;
+  stun: number;
   shield: number | 0;
+  [key: string]: number;
 }
 
 // Base Card interface
@@ -44,6 +49,7 @@ export interface AvatarCard extends BaseCard {
   counters?: Counter;
   isTapped?: boolean; // If avatar has already used a skill this turn
   turnPlayed?: number; // Track which turn the avatar was played
+  attachedEquipment?: BaseCard[]; // Equipment cards attached to this avatar
 }
 
 // Field Card interface - has passive effects like avatars
