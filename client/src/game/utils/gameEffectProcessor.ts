@@ -1,5 +1,6 @@
 import { AvatarCard, Card } from '../data/cardTypes';
 import { toast } from 'sonner';
+import { createConditionalDamageProcessor } from './conditionalDamageProcessor';
 
 // Interface for effect processing results
 export interface EffectResult {
@@ -11,6 +12,72 @@ export interface EffectResult {
   healing?: number;
   cardsDraw?: number;
   energyGain?: number;
+}
+
+// Enhanced damage calculation with conditional modifiers
+export function calculateEnhancedDamage(
+  attackingCard: AvatarCard,
+  skill: any,
+  baseDamage: number,
+  gameState: any
+): number {
+  // Create mock game state structure for conditional damage processor
+  const mockGameState = {
+    currentTurn: gameState.turn || 1,
+    phase: 'battle' as const,
+    players: [
+      {
+        id: 'player',
+        name: 'Player',
+        health: gameState.playerHealth || 20,
+        maxHealth: 20,
+        energy: gameState.playerEnergy || { fire: 0, water: 0, ground: 0, air: 0, neutral: 0 },
+        hand: gameState.playerHand || [],
+        deck: gameState.playerDeck || [],
+        discardPile: gameState.playerGraveyard || [],
+        field: gameState.playerFieldCards || [],
+        activeAvatar: gameState.playerActiveAvatar,
+        counters: gameState.playerActiveAvatar?.counters || {},
+        discardedThisTurn: [],
+        isActivePlayer: true
+      },
+      {
+        id: 'opponent',
+        name: 'Opponent',
+        health: gameState.opponentHealth || 20,
+        maxHealth: 20,
+        energy: gameState.opponentEnergy || { fire: 0, water: 0, ground: 0, air: 0, neutral: 0 },
+        hand: gameState.opponentHand || [],
+        deck: gameState.opponentDeck || [],
+        discardPile: gameState.opponentGraveyard || [],
+        field: gameState.opponentFieldCards || [],
+        activeAvatar: gameState.opponentActiveAvatar,
+        counters: gameState.opponentActiveAvatar?.counters || {},
+        discardedThisTurn: [],
+        isActivePlayer: false
+      }
+    ] as const,
+    currentPlayerIndex: 0 as const,
+    winner: null,
+    turnTimer: 30,
+    lastAction: '',
+    battleLog: [],
+    effectStack: []
+  };
+
+  try {
+    const processor = createConditionalDamageProcessor(mockGameState);
+    return processor.calculateConditionalDamage(
+      attackingCard,
+      skill,
+      baseDamage,
+      mockGameState.players[0],
+      mockGameState.players[1]
+    );
+  } catch (error) {
+    console.error('Error calculating conditional damage:', error);
+    return baseDamage; // Fallback to base damage
+  }
 }
 
 // Process different effect types based on the effect string
@@ -65,12 +132,14 @@ export function processGameEffect(
   }
 }
 
-// Basic damage effect - deals direct damage to target
+// Basic damage effect with conditional damage calculation
 function processBasicDamage(
   sourceAvatar: AvatarCard,
   targetAvatar: AvatarCard | null,
   damage: number,
-  updateGameState: (update: any) => void
+  updateGameState: (update: any) => void,
+  gameState?: any,
+  skill?: any
 ): EffectResult {
   if (!targetAvatar) {
     return {
@@ -79,13 +148,23 @@ function processBasicDamage(
     };
   }
 
+  // Calculate enhanced damage with conditional modifiers
+  let enhancedDamage = damage;
+  if (gameState && skill) {
+    enhancedDamage = calculateEnhancedDamage(sourceAvatar, skill, damage, gameState);
+    
+    if (enhancedDamage !== damage) {
+      console.log(`Conditional damage applied: ${damage} → ${enhancedDamage}`);
+    }
+  }
+
   // Calculate final damage after shield
   const shieldAmount = targetAvatar.counters?.shield || 0;
-  const finalDamage = Math.max(0, damage - shieldAmount);
-  const shieldUsed = Math.min(damage, shieldAmount);
+  const damageAfterShield = Math.max(0, enhancedDamage - shieldAmount);
+  const shieldUsed = Math.min(enhancedDamage, shieldAmount);
 
   // Apply damage and reduce shield
-  const newDamageCounters = (targetAvatar.counters?.damage || 0) + finalDamage;
+  const newDamageCounters = (targetAvatar.counters?.damage || 0) + damageAfterShield;
   const newShieldCounters = Math.max(0, shieldAmount - shieldUsed);
 
   updateGameState({
