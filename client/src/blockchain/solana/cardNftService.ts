@@ -14,7 +14,7 @@ export interface CardNftMetadata {
   external_url?: string;
   attributes: {
     trait_type: string;
-    value: string | number;
+    value: any;
   }[];
 }
 
@@ -62,17 +62,25 @@ class MockCardNftService implements CardNftService {
   }
   
   async connect(): Promise<WalletStatus> {
-    // Simulate connection process
-    console.log('Connecting to Solana wallet...');
-    
-    // Generate mock wallet address and balance
-    this.walletStatus = {
-      connected: true,
-      address: 'mockSolanaAddress123456789',
-      balance: 5.5
-    };
-    
-    return this.walletStatus;
+    try {
+      // Simulate connection process
+      console.log('Connecting to Solana wallet...');
+      
+      // Simulate async delay
+      await new Promise(resolve => setTimeout(resolve, 100));
+      
+      // Generate mock wallet address and balance
+      this.walletStatus = {
+        connected: true,
+        address: 'mockSolanaAddress123456789',
+        balance: 5.5
+      };
+      
+      return this.walletStatus;
+    } catch (error) {
+      console.error('Mock wallet connection failed:', error);
+      throw new Error('Failed to connect to wallet');
+    }
   }
   
   async disconnect(): Promise<void> {
@@ -140,27 +148,27 @@ class MockCardNftService implements CardNftService {
   
   convertCardToNftMetadata(card: Card): CardNftMetadata {
     // Build NFT metadata from card object
-    const attributes = [
+    const attributes: { trait_type: string; value: string | number }[] = [
       { trait_type: 'type', value: card.type },
       { trait_type: 'element', value: card.element }
     ];
     
-    if ('level' in card) {
+    if ('level' in card && typeof card.level === 'number') {
       attributes.push({ trait_type: 'level', value: card.level });
     }
     
-    if ('subType' in card) {
+    if ('subType' in card && card.subType) {
       attributes.push({ trait_type: 'subType', value: card.subType });
     }
     
-    if ('health' in card) {
+    if ('health' in card && typeof card.health === 'number') {
       attributes.push({ trait_type: 'health', value: card.health });
     }
     
     if (card.energyCost) {
       attributes.push({ 
         trait_type: 'energyCost', 
-        value: Array.isArray(card.energyCost) ? card.energyCost.join(',') : card.energyCost 
+        value: Array.isArray(card.energyCost) ? card.energyCost.join(',') : String(card.energyCost)
       });
     }
     
