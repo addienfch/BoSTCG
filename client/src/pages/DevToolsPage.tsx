@@ -580,6 +580,26 @@ const DevToolsPage: React.FC = () => {
                         >
                           Kuhaka Subtype → +3 DMG
                         </button>
+                        <button
+                          type="button"
+                          onClick={() => setFormData(prev => ({ 
+                            ...prev, 
+                            description: 'If this card is fire element, this effect damage become 9' 
+                          }))}
+                          className="text-left text-xs bg-gray-800 hover:bg-gray-700 p-1 rounded"
+                        >
+                          Fire Element → DMG 9
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setFormData(prev => ({ 
+                            ...prev, 
+                            description: 'If the opponent active avatar is ground element, this effect damage become 12' 
+                          }))}
+                          className="text-left text-xs bg-gray-800 hover:bg-gray-700 p-1 rounded"
+                        >
+                          Opponent Ground → DMG 12
+                        </button>
                       </div>
                     </div>
                   )}
@@ -722,6 +742,26 @@ const DevToolsPage: React.FC = () => {
                             >
                               Equipment → DMG 12
                             </button>
+                            <button
+                              type="button"
+                              onClick={() => setFormData(prev => ({ 
+                                ...prev, 
+                                skill1Effect: 'If this card is fire element, this attack damage become 11' 
+                              }))}
+                              className="text-left text-xs bg-gray-800 hover:bg-gray-700 p-1 rounded"
+                            >
+                              Fire Element → DMG 11
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setFormData(prev => ({ 
+                                ...prev, 
+                                skill1Effect: 'If the opponent active avatar is water element, this attack damage become 14' 
+                              }))}
+                              className="text-left text-xs bg-gray-800 hover:bg-gray-700 p-1 rounded"
+                            >
+                              Opponent Water → DMG 14
+                            </button>
                           </div>
                         </div>
                         
@@ -744,6 +784,13 @@ const DevToolsPage: React.FC = () => {
                               )}
                               {formData.skill1Effect.toLowerCase().includes('damage get +') && (
                                 <span className="bg-red-800 text-red-200 px-1 rounded">Damage Bonus</span>
+                              )}
+                              {(formData.skill1Effect.toLowerCase().includes('element') || 
+                                formData.skill1Effect.toLowerCase().includes('fire element') || 
+                                formData.skill1Effect.toLowerCase().includes('water element') ||
+                                formData.skill1Effect.toLowerCase().includes('ground element') ||
+                                formData.skill1Effect.toLowerCase().includes('air element')) && (
+                                <span className="bg-indigo-800 text-indigo-200 px-1 rounded">Element Condition</span>
                               )}
                             </div>
                           </div>
@@ -906,6 +953,26 @@ const DevToolsPage: React.FC = () => {
                               className="text-left text-xs bg-gray-800 hover:bg-gray-700 p-1 rounded"
                             >
                               Self Bleed → +5 DMG
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setFormData(prev => ({ 
+                                ...prev, 
+                                skill2Effect: 'If your active avatar is ground element, that cards attack damage get +4' 
+                              }))}
+                              className="text-left text-xs bg-gray-800 hover:bg-gray-700 p-1 rounded"
+                            >
+                              Ground Element → +4 DMG
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setFormData(prev => ({ 
+                                ...prev, 
+                                skill2Effect: 'If this card is air element, all air spells get +2 damage' 
+                              }))}
+                              className="text-left text-xs bg-gray-800 hover:bg-gray-700 p-1 rounded"
+                            >
+                              Air Synergy → +2 DMG
                             </button>
                           </div>
                         </div>
