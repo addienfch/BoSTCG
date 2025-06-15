@@ -480,7 +480,16 @@ const DeckBuilderPage: React.FC = () => {
                       >
                         {card.art ? (
                           <>
-                            <img src={card.art} alt={card.name} className="h-full w-full object-cover opacity-80" />
+                            <img 
+                              src={card.art} 
+                              alt={card.name} 
+                              className="h-full w-full object-cover opacity-80"
+                              onError={(e) => {
+                                const target = e.currentTarget;
+                                target.src = '/textures/cards/placeholder.svg';
+                                target.onerror = null; // Prevent infinite loop
+                              }}
+                            />
                             <div className="absolute inset-0 flex flex-col justify-between p-1">
                               <div className="flex justify-between">
                                 <div className="bg-black bg-opacity-60 text-white text-xs px-2 py-0.5 rounded font-bold">

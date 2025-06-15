@@ -45,7 +45,7 @@ const DevToolsPage: React.FC = () => {
   const cards = getAvailableCards();
   const [selectedCard, setSelectedCard] = useState<Card | null>(null);
   const [isEditing, setIsEditing] = useState(false);
-  const [activeTab, setActiveTab] = useState<'database' | 'edit' | 'expansion'>('database');
+  const [activeTab, setActiveTab] = useState<'database' | 'edit' | 'expansion' | 'conditional'>('database');
   const [selectedExpansion, setSelectedExpansion] = useState<Expansion | null>(null);
   const [isEditingExpansion, setIsEditingExpansion] = useState(false);
   
@@ -301,6 +301,16 @@ const DevToolsPage: React.FC = () => {
             }`}
           >
             Expansions
+          </button>
+          <button
+            onClick={() => setActiveTab('conditional')}
+            className={`flex-1 py-2 px-4 rounded text-sm font-medium transition-colors ${
+              activeTab === 'conditional' 
+                ? 'bg-spektrum-orange text-spektrum-dark' 
+                : 'text-gray-400 hover:text-white'
+            }`}
+          >
+            Conditional Damage
           </button>
         </div>
         
@@ -888,6 +898,191 @@ const DevToolsPage: React.FC = () => {
                 </div>
               </div>
             )}
+          </div>
+        )}
+
+        {activeTab === 'conditional' && (
+          <div className="bg-gray-800 rounded-lg p-4">
+            <h2 className="text-lg font-semibold mb-4">Conditional Damage & Passive Effects</h2>
+            
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* Conditional Damage Input */}
+              <div className="space-y-4">
+                <h3 className="text-md font-medium text-spektrum-orange">Conditional Damage Patterns</h3>
+                
+                <div className="space-y-3">
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Discard Trigger</label>
+                    <input
+                      type="text"
+                      placeholder="If the player discard a card, then this attack damage become X"
+                      value={formData.skill1Effect.includes('discard') ? formData.skill1Effect : ''}
+                      onChange={(e) => setFormData(prev => ({ ...prev, skill1Effect: e.target.value }))}
+                      className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded text-sm"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Opponent Counter</label>
+                    <input
+                      type="text"
+                      placeholder="If the opponent active avatar has -bleed counter- this attack damage become X"
+                      value={formData.skill1Effect.includes('counter') ? formData.skill1Effect : ''}
+                      onChange={(e) => setFormData(prev => ({ ...prev, skill1Effect: e.target.value }))}
+                      className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded text-sm"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Type Advantage</label>
+                    <input
+                      type="text"
+                      placeholder="If the opponent active avatar has fire type this attack damage become X"
+                      value={formData.skill1Effect.includes('type') ? formData.skill1Effect : ''}
+                      onChange={(e) => setFormData(prev => ({ ...prev, skill1Effect: e.target.value }))}
+                      className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded text-sm"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Equipment Bonus</label>
+                    <input
+                      type="text"
+                      placeholder="If this card has equipment card attached, this attack damage become X"
+                      value={formData.skill1Effect.includes('equipment') ? formData.skill1Effect : ''}
+                      onChange={(e) => setFormData(prev => ({ ...prev, skill1Effect: e.target.value }))}
+                      className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded text-sm"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Self Counter Bonus</label>
+                    <input
+                      type="text"
+                      placeholder="If this card has bleed counter, then this attack damage get +X"
+                      value={formData.skill1Effect.includes('get +') ? formData.skill1Effect : ''}
+                      onChange={(e) => setFormData(prev => ({ ...prev, skill1Effect: e.target.value }))}
+                      className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded text-sm"
+                    />
+                  </div>
+                </div>
+              </div>
+              
+              {/* Passive Effects Input */}
+              <div className="space-y-4">
+                <h3 className="text-md font-medium text-spektrum-orange">Passive Effect Patterns</h3>
+                
+                <div className="space-y-3">
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Avatar Type Boost</label>
+                    <input
+                      type="text"
+                      placeholder="If your active avatar has kobar type, that cards attack damage get +X"
+                      value={formData.skill2Effect.includes('avatar has') && formData.skill2Effect.includes('type') ? formData.skill2Effect : ''}
+                      onChange={(e) => setFormData(prev => ({ ...prev, skill2Effect: e.target.value }))}
+                      className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded text-sm"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Avatar Subtype Boost</label>
+                    <input
+                      type="text"
+                      placeholder="If your active avatar has borah subtype that cards attack damage get +X"
+                      value={formData.skill2Effect.includes('subtype') ? formData.skill2Effect : ''}
+                      onChange={(e) => setFormData(prev => ({ ...prev, skill2Effect: e.target.value }))}
+                      className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded text-sm"
+                    />
+                  </div>
+                  
+                  <div className="bg-gray-700 p-3 rounded">
+                    <h4 className="text-sm font-medium mb-2">Quick Templates</h4>
+                    <div className="grid grid-cols-1 gap-2">
+                      <button
+                        onClick={() => setFormData(prev => ({ 
+                          ...prev, 
+                          skill1Effect: 'If the player discard a card, then this attack damage become 8' 
+                        }))}
+                        className="text-left text-xs bg-gray-600 hover:bg-gray-500 p-2 rounded"
+                      >
+                        Discard → Damage 8
+                      </button>
+                      <button
+                        onClick={() => setFormData(prev => ({ 
+                          ...prev, 
+                          skill1Effect: 'If the opponent active avatar has bleed counter this attack damage become 9' 
+                        }))}
+                        className="text-left text-xs bg-gray-600 hover:bg-gray-500 p-2 rounded"
+                      >
+                        Bleed Counter → Damage 9
+                      </button>
+                      <button
+                        onClick={() => setFormData(prev => ({ 
+                          ...prev, 
+                          skill1Effect: 'If the opponent active avatar has fire type this attack damage become 10' 
+                        }))}
+                        className="text-left text-xs bg-gray-600 hover:bg-gray-500 p-2 rounded"
+                      >
+                        Fire Type → Damage 10
+                      </button>
+                      <button
+                        onClick={() => setFormData(prev => ({ 
+                          ...prev, 
+                          skill2Effect: 'If your active avatar has kobar type, that cards attack damage get +3' 
+                        }))}
+                        className="text-left text-xs bg-gray-600 hover:bg-gray-500 p-2 rounded"
+                      >
+                        Kobar Type → +3 Damage
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            {/* Pattern Recognition Test */}
+            <div className="mt-6 bg-gray-700 p-4 rounded">
+              <h3 className="text-md font-medium mb-3">Pattern Recognition Test</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium mb-1">Test Skill Effect</label>
+                  <textarea
+                    placeholder="Enter skill effect text to test pattern recognition..."
+                    value={formData.skill1Effect}
+                    onChange={(e) => setFormData(prev => ({ ...prev, skill1Effect: e.target.value }))}
+                    className="w-full px-3 py-2 bg-gray-600 border border-gray-500 rounded text-sm h-20"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">Detected Patterns</label>
+                  <div className="bg-gray-600 p-3 rounded h-20 overflow-y-auto">
+                    <div className="text-xs space-y-1">
+                      {formData.skill1Effect.toLowerCase().includes('discard') && (
+                        <div className="text-green-400">✓ Discard Trigger Detected</div>
+                      )}
+                      {formData.skill1Effect.toLowerCase().includes('counter') && (
+                        <div className="text-green-400">✓ Counter Condition Detected</div>
+                      )}
+                      {formData.skill1Effect.toLowerCase().includes('type') && formData.skill1Effect.toLowerCase().includes('damage become') && (
+                        <div className="text-green-400">✓ Type Advantage Detected</div>
+                      )}
+                      {formData.skill1Effect.toLowerCase().includes('equipment') && (
+                        <div className="text-green-400">✓ Equipment Bonus Detected</div>
+                      )}
+                      {formData.skill1Effect.toLowerCase().includes('damage get +') && (
+                        <div className="text-green-400">✓ Damage Bonus Detected</div>
+                      )}
+                      {formData.skill2Effect.toLowerCase().includes('avatar has') && formData.skill2Effect.toLowerCase().includes('attack damage get +') && (
+                        <div className="text-blue-400">✓ Passive Effect Detected</div>
+                      )}
+                      {!formData.skill1Effect && !formData.skill2Effect && (
+                        <div className="text-gray-400">No patterns detected</div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         )}
       </div>
