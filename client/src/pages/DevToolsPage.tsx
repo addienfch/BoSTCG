@@ -452,8 +452,8 @@ const DevToolsPage: React.FC = () => {
               {selectedCard ? 'Edit Card' : 'Create New Card'}
             </h3>
             
-            {/* Compact Layout - Three Columns */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
+            {/* Compact Layout - Two Columns */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
               {/* Left Column - Basic Info */}
               <div className="space-y-2">
                 <div className="grid grid-cols-1 gap-2">
@@ -726,38 +726,33 @@ const DevToolsPage: React.FC = () => {
                     </div>
                   )}
                 </div>
-              </div>
-
-              {/* Middle Column - Expansions */}
-              <div className="space-y-2">
-                <div className="bg-gray-700 p-2 rounded">
-                  <h3 className="font-medium mb-2 text-sm">Expansions</h3>
-                  <div className="space-y-1">
-                    <div>
-                      <label className="block text-xs font-medium mb-1">Expansion</label>
-                      <select
-                        value={formData.expansion}
-                        onChange={(e) => setFormData(prev => ({ ...prev, expansion: e.target.value }))}
-                        className="w-full px-2 py-1 bg-gray-600 border border-gray-500 rounded text-sm"
-                      >
-                        <option value="">Select Expansion</option>
-                        {expansions.map(exp => (
-                          <option key={exp.id} value={exp.id}>{exp.name}</option>
-                        ))}
-                      </select>
-                    </div>
-                    <div>
-                      <label className="block text-xs font-medium mb-1">Rarity</label>
-                      <select
-                        value={formData.rarity}
-                        onChange={(e) => setFormData(prev => ({ ...prev, rarity: e.target.value as RarityType }))}
-                        className="w-full px-2 py-1 bg-gray-600 border border-gray-500 rounded text-sm"
-                      >
-                        {['Common', 'Uncommon', 'Rare', 'Super Rare', 'Mythic'].map(rarity => (
-                          <option key={rarity} value={rarity}>{rarity}</option>
-                        ))}
-                      </select>
-                    </div>
+                
+                {/* Expansion and Rarity */}
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <label className="block text-xs font-medium mb-1">Expansion</label>
+                    <select
+                      value={formData.expansion}
+                      onChange={(e) => setFormData(prev => ({ ...prev, expansion: e.target.value }))}
+                      className="w-full px-2 py-1 bg-gray-600 border border-gray-500 rounded text-sm"
+                    >
+                      <option value="">Select Expansion</option>
+                      {expansions.map(exp => (
+                        <option key={exp.id} value={exp.id}>{exp.name}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium mb-1">Rarity</label>
+                    <select
+                      value={formData.rarity}
+                      onChange={(e) => setFormData(prev => ({ ...prev, rarity: e.target.value as RarityType }))}
+                      className="w-full px-2 py-1 bg-gray-600 border border-gray-500 rounded text-sm"
+                    >
+                      {['Common', 'Uncommon', 'Rare', 'Super Rare', 'Mythic'].map(rarity => (
+                        <option key={rarity} value={rarity}>{rarity}</option>
+                      ))}
+                    </select>
                   </div>
                 </div>
               </div>
