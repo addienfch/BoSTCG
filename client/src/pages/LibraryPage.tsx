@@ -130,15 +130,11 @@ const LibraryPage: React.FC = () => {
         </div>
         
         <div className="mt-2">
-          <img 
-            src={card.art} 
+          <SafeCardImage
+            src={card.art}
             alt={card.name}
             className="w-full h-24 object-cover rounded"
-            onError={(e) => {
-              const target = e.currentTarget;
-              target.src = '/textures/cards/placeholder.svg';
-              target.onerror = null; // Prevent infinite loop
-            }}
+            fallbackClassName="w-full h-24 rounded"
           />
         </div>
       </div>
