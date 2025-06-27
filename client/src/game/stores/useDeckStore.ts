@@ -432,12 +432,14 @@ export const useDeckStore = create<DeckStore>()(
       },
       
       getAvailableCards: () => {
-        // Return all available cards including neutral cards
-        return [...allFireCards, ...allNeutralCards];
+        const state = get();
+        // Return base cards plus owned cards from booster packs and purchases
+        return [...allFireCards, ...allNeutralCards, ...state.ownedCards];
       },
 
       getAvailableCardsWithCNFTs: async () => {
         try {
+          const state = get();
           // Get cNFT cards from wallet
           const walletStatus = await cardNftService.getWalletStatus();
           let cNftCards: Card[] = [];
@@ -446,12 +448,13 @@ export const useDeckStore = create<DeckStore>()(
             cNftCards = await cardNftService.getOwnedCards();
           }
           
-          // Return all available cards including cNFTs and neutral cards
-          return [...allFireCards, ...allNeutralCards, ...cNftCards];
+          // Return all available cards including cNFTs, owned cards, and neutral cards
+          return [...allFireCards, ...allNeutralCards, ...state.ownedCards, ...cNftCards];
         } catch (error) {
           console.error('Error loading cNFT cards in deck store:', error);
-          // Fallback to regular cards if cNFT loading fails
-          return [...allFireCards, ...allNeutralCards];
+          // Fallback to regular cards plus owned cards if cNFT loading fails
+          const state = get();
+          return [...allFireCards, ...allNeutralCards, ...state.ownedCards];
         }
       },
       

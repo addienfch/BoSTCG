@@ -75,144 +75,167 @@ const PremadeDecksPage: React.FC = () => {
       purchased: false
     },
     {
-      id: 'fire-control',
-      name: 'Inferno Masters',
-      element: 'fire',
-      description: 'Advanced fire deck with complex burn synergies and tactical control.',
-      price: 45,
-      cardCount: 40,
-      strategy: 'Control-based burn with defensive options',
-      difficulty: 'Advanced',
-      coverCard: 'Boar Berserker',
-      keyCards: ['Boar Berserker', 'Burning Armor', 'After Burn', 'Double Bomb'],
-      purchased: false
-    },
-    {
-      id: 'water-flow',
-      name: 'Tidal Force',
-      element: 'water',
-      description: 'Fluid water-based deck emphasizing healing and defensive strategies.',
-      price: 35,
-      cardCount: 40,
-      strategy: 'Defensive healing with counter-attacks',
-      difficulty: 'Intermediate',
-      coverCard: 'Water Avatar',
-      keyCards: ['Water Avatar', 'Healing Wave', 'Tidal Shield', 'Flow Control'],
-      purchased: false
-    },
-    {
-      id: 'ground-fortress',
-      name: 'Stone Guardians',
-      element: 'ground',
-      description: 'Solid ground deck built around defense and gradual advantage building.',
+      id: 'kujana-kuhaka-starter',
+      name: 'Kujana-Kuhaka Tribal',
+      expansion: expansions[0],
+      tribe: 'kujana-kuhaka',
+      description: 'Aggressive tribal deck with Kujana and Kuhaka avatars plus fire spells.',
       price: 40,
-      cardCount: 40,
-      strategy: 'Tank and fortify with high-health avatars',
+      cardCount: 45,
+      strategy: 'Fast aggro with spell support and avatar synergies',
       difficulty: 'Intermediate',
-      coverCard: 'Stone Guardian',
-      keyCards: ['Stone Guardian', 'Rock Shield', 'Earth Tremor', 'Mountain Fortress'],
+      coverCardName: 'Boar Witch',
+      keyCards: ['Boar Witch', 'Daisy', 'Spark', 'Burn Ball'],
       purchased: false
     },
     {
-      id: 'air-swift',
-      name: 'Wind Dancers',
-      element: 'air',
-      description: 'Fast-paced air deck focusing on quick strikes and evasive maneuvers.',
-      price: 30,
+      id: 'kobar-pure',
+      name: 'Pure Kobar Deck',
+      expansion: expansions[1],
+      tribe: 'kobar',
+      description: 'Specialized deck focusing only on Kobar tribe avatars and equipment.',
+      price: 50,
       cardCount: 40,
-      strategy: 'Speed and agility with hit-and-run tactics',
-      difficulty: 'Beginner',
-      coverCard: 'Wind Dancer',
-      keyCards: ['Wind Dancer', 'Swift Strike', 'Gust Shield', 'Aerial Assault'],
-      purchased: false
-    },
-    {
-      id: 'neutral-balance',
-      name: 'Harmonious Balance',
-      element: 'neutral',
-      description: 'Versatile neutral deck that adapts to any situation with balanced strategies.',
-      price: 35,
-      cardCount: 40,
-      strategy: 'Adaptive multi-element synergy',
+      strategy: 'Pure tribal with equipment synergy',
       difficulty: 'Advanced',
-      coverCard: 'Balance Keeper',
-      keyCards: ['Balance Keeper', 'Elemental Harmony', 'Universal Shield', 'Adaptive Strike'],
+      coverCardName: 'Kobar Trainee A',
+      keyCards: ['Kobar Trainee A', 'Kobar Trainee B', 'Cracking Sword'],
+      purchased: false
+    },
+    {
+      id: 'kujana-pure',
+      name: 'Pure Kujana Deck',
+      expansion: expansions[1],
+      tribe: 'kujana',
+      description: 'Elite Kujana-only deck with advanced fire magic combinations.',
+      price: 55,
+      cardCount: 40,
+      strategy: 'Elite tribal with advanced spell combos',
+      difficulty: 'Advanced',
+      coverCardName: 'Witch Trainee',
+      keyCards: ['Witch Trainee', 'Burning Up!', 'Flaming Body'],
       purchased: false
     }
   ];
 
+  // Generate deck cards based on the premade deck configuration
   const generateDeckCards = (deckTemplate: PremadeDeck): Card[] => {
-    const availableCards = getAvailableCards();
-    const elementCards = deckTemplate.element === 'neutral' 
-      ? availableCards 
-      : availableCards.filter(card => card.element === deckTemplate.element);
-
     const cards: Card[] = [];
-    const usedCardCounts: Record<string, number> = {};
-
-    // Add key cards first (if they exist in our card pool)
-    deckTemplate.keyCards.forEach(keyCardName => {
-      const keyCard = elementCards.find(card => 
-        card.name.toLowerCase().includes(keyCardName.toLowerCase())
-      );
-      if (keyCard) {
-        // Add 3 copies of each key card
-        for (let i = 0; i < 3; i++) {
-          cards.push({
-            ...keyCard,
-            id: `${keyCard.id}-premade-${i + 1}`
-          });
-        }
-        usedCardCounts[keyCard.name] = 3;
-      }
-    });
-
-    // Fill remaining slots with other cards from the element
-    const remainingSlots = 40 - cards.length;
-    const otherCards = elementCards.filter(card => 
-      !deckTemplate.keyCards.some(keyCard => 
-        card.name.toLowerCase().includes(keyCard.toLowerCase())
-      )
-    );
-
-    for (let i = 0; i < remainingSlots; i++) {
-      const randomCard = otherCards[Math.floor(Math.random() * otherCards.length)];
-      if (randomCard) {
-        const currentCount = usedCardCounts[randomCard.name] || 0;
-        if (currentCount < 4) { // Max 4 copies of any card
-          cards.push({
-            ...randomCard,
-            id: `${randomCard.id}-premade-${Date.now()}-${i}`
-          });
-          usedCardCounts[randomCard.name] = currentCount + 1;
-        }
-      }
+    
+    switch (deckTemplate.tribe) {
+      case 'kobar-borah':
+        // Add Kobar-Borah avatars (3 copies each of level 1)
+        const kbAvatars = kobarBorahAvatarCards.filter(card => card.level === 1);
+        kbAvatars.forEach(avatar => {
+          for (let i = 1; i <= 3; i++) {
+            cards.push({ ...avatar, id: `${avatar.id}-${i}` });
+          }
+        });
+        
+        // Add action cards (3 copies each)
+        kobarBorahActionCards.forEach(action => {
+          for (let i = 1; i <= 3; i++) {
+            cards.push({ ...action, id: `${action.id}-${i}` });
+          }
+        });
+        
+        // Add level 2 avatars (1 copy each for evolution)
+        const kbLevel2 = kobarBorahAvatarCards.filter(card => card.level === 2);
+        kbLevel2.forEach(avatar => {
+          cards.push({ ...avatar, id: `${avatar.id}-1` });
+        });
+        break;
+        
+      case 'kujana-kuhaka':
+        // Add Kujana-Kuhaka avatars (3 copies each of level 1)
+        const kkAvatars = kujanaKuhakaAvatarCards.filter(card => card.level === 1);
+        kkAvatars.forEach(avatar => {
+          for (let i = 1; i <= 3; i++) {
+            cards.push({ ...avatar, id: `${avatar.id}-${i}` });
+          }
+        });
+        
+        // Add fire spells (3 copies each)
+        redElementalSpellCards.forEach(spell => {
+          for (let i = 1; i <= 3; i++) {
+            cards.push({ ...spell, id: `${spell.id}-${i}` });
+          }
+        });
+        
+        // Add level 2 avatars (1 copy each)
+        const kkLevel2 = kujanaKuhakaAvatarCards.filter(card => card.level === 2);
+        kkLevel2.forEach(avatar => {
+          cards.push({ ...avatar, id: `${avatar.id}-1` });
+        });
+        break;
+        
+      case 'kobar':
+        // Pure Kobar deck
+        const kobarAvatars = kobarBorahAvatarCards.filter(card => 
+          card.level === 1 && (card as AvatarCard).subType === 'kobar'
+        );
+        kobarAvatars.forEach(avatar => {
+          for (let i = 1; i <= 4; i++) {
+            cards.push({ ...avatar, id: `${avatar.id}-${i}` });
+          }
+        });
+        
+        // Add supporting action cards
+        kobarBorahActionCards.forEach(action => {
+          for (let i = 1; i <= 2; i++) {
+            cards.push({ ...action, id: `${action.id}-${i}` });
+          }
+        });
+        break;
+        
+      case 'kujana':
+        // Pure Kujana deck
+        const kujanaAvatars = kujanaKuhakaAvatarCards.filter(card => 
+          card.level === 1 && (card as AvatarCard).subType === 'kujana'
+        );
+        kujanaAvatars.forEach(avatar => {
+          for (let i = 1; i <= 4; i++) {
+            cards.push({ ...avatar, id: `${avatar.id}-${i}` });
+          }
+        });
+        
+        // Add fire spells
+        redElementalSpellCards.forEach(spell => {
+          for (let i = 1; i <= 2; i++) {
+            cards.push({ ...spell, id: `${spell.id}-${i}` });
+          }
+        });
+        break;
     }
-
-    return cards.slice(0, 40); // Ensure exactly 40 cards
+    
+    // Ensure minimum 40 cards
+    while (cards.length < 40) {
+      const randomIndex = Math.floor(Math.random() * Math.min(cards.length, 10));
+      const copyCard = { ...cards[randomIndex], id: `${cards[randomIndex].id}-extra-${cards.length}` };
+      cards.push(copyCard);
+    }
+    
+    return cards.slice(0, deckTemplate.cardCount);
   };
 
-  const handlePurchaseDeck = (deck: PremadeDeck) => {
-    if (purchasedDecks.has(deck.id)) {
-      toast.error('You have already purchased this deck!');
-      return;
-    }
-
+  const handlePurchaseDeck = async (deck: PremadeDeck) => {
     try {
       const deckCards = generateDeckCards(deck);
       
-      // Create the deck using the deck store
-      addDeck(deck.name, deckCards, deck.element);
+      // Add cards to player's collection
+      addCards(deckCards);
+      
+      // Create the deck
+      const newDeck = addDeck(deck.name, deckCards, deck.tribe);
       
       // Mark as purchased
-      setPurchasedDecks(prev => new Set(prev.add(deck.id)));
+      setPurchasedDecks(prev => {
+        const newSet = new Set(prev);
+        newSet.add(deck.id);
+        return newSet;
+      });
       
-      toast.success(`${deck.name} purchased and added to your collection!`);
-      
-      // Navigate to deck builder to show the new deck
-      setTimeout(() => {
-        navigate('/deck-builder');
-      }, 1500);
+      toast.success(`Successfully purchased ${deck.name}! Added ${deckCards.length} cards to your collection.`);
       
     } catch (error) {
       console.error('Error purchasing deck:', error);
@@ -220,138 +243,168 @@ const PremadeDecksPage: React.FC = () => {
     }
   };
 
+  const getExpansionDecks = (expansion: Expansion) => {
+    return premadeDecks.filter(deck => deck.expansion.id === expansion.id);
+  };
+
   const getDifficultyColor = (difficulty: string) => {
     switch (difficulty) {
-      case 'Beginner': return 'text-green-400';
-      case 'Intermediate': return 'text-yellow-400';
-      case 'Advanced': return 'text-red-400';
-      default: return 'text-gray-400';
+      case 'Beginner': return 'bg-green-500';
+      case 'Intermediate': return 'bg-yellow-500';
+      case 'Advanced': return 'bg-red-500';
+      default: return 'bg-gray-500';
     }
   };
 
-  const getElementColor = (element: ElementType) => {
-    switch (element) {
-      case 'fire': return 'border-red-500 bg-red-900';
-      case 'water': return 'border-blue-500 bg-blue-900';
-      case 'ground': return 'border-yellow-500 bg-yellow-900';
-      case 'air': return 'border-green-500 bg-green-900';
-      case 'neutral': return 'border-gray-500 bg-gray-900';
-      default: return 'border-gray-500 bg-gray-900';
+  const getTribeColor = (tribe: string) => {
+    switch (tribe) {
+      case 'kobar-borah': return 'from-orange-500 to-red-500';
+      case 'kujana-kuhaka': return 'from-red-500 to-purple-500';
+      case 'kobar': return 'from-orange-400 to-orange-600';
+      case 'kujana': return 'from-red-400 to-red-600';
+      default: return 'from-gray-500 to-gray-700';
     }
   };
 
-  return (
-    <div className="min-h-screen bg-spektrum-dark text-spektrum-light pb-20">
-      <NavigationBar />
-      <div className="container mx-auto px-4 py-6">
-        <div className="flex items-center mb-6">
-          <BackButton to="/shop" />
-          <h1 className="text-2xl font-bold ml-4">Premade Decks</h1>
-        </div>
+  const handleExpansionSelection = (expansion: Expansion) => {
+    setSelectedExpansion(expansion);
+    setCurrentStep('deck-selection');
+  };
 
-        <div className="mb-6 bg-gray-800 rounded-lg p-4">
-          <h2 className="text-lg font-semibold mb-2">Ready-to-Play Decks</h2>
-          <p className="text-gray-400 text-sm">
-            Each premade deck contains 40 carefully selected cards with synergistic strategies. 
-            You can only purchase one deck of each type. Perfect for getting started or trying new playstyles!
+  const handleBackNavigation = () => {
+    if (currentStep === 'deck-selection') {
+      setCurrentStep('expansion-selection');
+      setSelectedExpansion(null);
+    } else {
+      navigate('/shop');
+    }
+  };
+
+  // Render expansion selection
+  const renderExpansionSelection = () => (
+    <div className="space-y-6">
+      <div className="text-center">
+        <h1 className="text-3xl font-bold text-white mb-2">Choose Expansion</h1>
+        <p className="text-gray-300">Select the set you want to explore premade decks from</p>
+      </div>
+      
+      <div className="grid grid-cols-1 gap-6">
+        {expansions.map((expansion) => (
+          <div
+            key={expansion.id}
+            className="bg-gray-800 rounded-xl p-6 cursor-pointer hover:bg-gray-700 transition-colors duration-300 border border-gray-600 hover:border-spektrum-orange"
+            onClick={() => handleExpansionSelection(expansion)}
+          >
+            <div className="flex items-center space-x-4">
+              <div className="text-4xl">{expansion.symbol}</div>
+              <div className="flex-1">
+                <h3 className="text-xl font-bold text-white">{expansion.name}</h3>
+                <p className="text-gray-300 text-sm">{expansion.description}</p>
+                <div className="mt-2">
+                  <Badge variant="secondary">
+                    {getExpansionDecks(expansion).length} decks available
+                  </Badge>
+                </div>
+              </div>
+              <Button className="bg-spektrum-orange hover:bg-orange-600">
+                Select
+              </Button>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+
+  // Render deck selection
+  const renderDeckSelection = () => {
+    if (!selectedExpansion) return null;
+    
+    const expansionDecks = getExpansionDecks(selectedExpansion);
+    
+    return (
+      <div className="space-y-6">
+        <div className="text-center">
+          <h1 className="text-3xl font-bold text-white mb-2">Premade Decks</h1>
+          <p className="text-gray-300">
+            {selectedExpansion.name} ({selectedExpansion.symbol}) - Choose your deck
           </p>
         </div>
-
-        {/* Deck Grid */}
+        
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {premadeDecks.map((deck) => (
+          {expansionDecks.map((deck) => (
             <div
               key={deck.id}
-              className={`${getElementColor(deck.element)} border-2 rounded-lg p-6 transition-all ${
-                selectedDeck?.id === deck.id ? 'ring-2 ring-spektrum-orange' : ''
-              }`}
-              onClick={() => setSelectedDeck(deck)}
+              className={`relative overflow-hidden rounded-xl bg-gradient-to-br ${getTribeColor(deck.tribe)} p-6 border-2 border-gray-600 hover:border-spektrum-orange transition-all duration-300`}
             >
-              <div className="flex justify-between items-start mb-4">
-                <div>
-                  <h3 className="text-xl font-bold mb-1">{deck.name}</h3>
-                  <p className="text-sm text-gray-300 capitalize">{deck.element} Element</p>
-                </div>
-                <div className="text-right">
-                  <div className="text-2xl font-bold text-spektrum-orange">${deck.price}</div>
-                  <div className={`text-sm ${getDifficultyColor(deck.difficulty)}`}>
+              <div className="text-white">
+                <div className="flex justify-between items-start mb-4">
+                  <h3 className="text-xl font-bold">{deck.name}</h3>
+                  <Badge className={`${getDifficultyColor(deck.difficulty)} text-white`}>
                     {deck.difficulty}
+                  </Badge>
+                </div>
+                
+                <p className="text-sm opacity-90 mb-4">{deck.description}</p>
+                
+                <div className="space-y-2 mb-4">
+                  <div className="flex justify-between text-sm">
+                    <span>Cards:</span>
+                    <span className="font-bold">{deck.cardCount}</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span>Price:</span>
+                    <span className="font-bold">${deck.price}</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span>Tribe:</span>
+                    <span className="font-bold capitalize">{deck.tribe.replace('-', ' & ')}</span>
                   </div>
                 </div>
-              </div>
-
-              <p className="text-gray-300 text-sm mb-4">{deck.description}</p>
-
-              <div className="mb-4">
-                <div className="text-sm font-semibold mb-2">Strategy:</div>
-                <div className="text-sm text-gray-400">{deck.strategy}</div>
-              </div>
-
-              <div className="mb-4">
-                <div className="text-sm font-semibold mb-2">Key Cards:</div>
-                <div className="flex flex-wrap gap-1">
-                  {deck.keyCards.map((card, index) => (
-                    <span
-                      key={index}
-                      className="px-2 py-1 bg-gray-700 rounded text-xs"
-                    >
-                      {card}
-                    </span>
-                  ))}
+                
+                <div className="mb-4">
+                  <p className="text-xs opacity-75 mb-2">Strategy:</p>
+                  <p className="text-sm">{deck.strategy}</p>
                 </div>
-              </div>
-
-              <div className="flex justify-between items-center">
-                <span className="text-sm text-gray-400">{deck.cardCount} Cards</span>
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handlePurchaseDeck(deck);
-                  }}
+                
+                <div className="mb-4">
+                  <p className="text-xs opacity-75 mb-2">Key Cards:</p>
+                  <div className="flex flex-wrap gap-1">
+                    {deck.keyCards.map((card, index) => (
+                      <Badge key={index} variant="secondary" className="text-xs">
+                        {card}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+                
+                <Button
+                  onClick={() => handlePurchaseDeck(deck)}
                   disabled={purchasedDecks.has(deck.id)}
-                  className={`px-4 py-2 rounded-lg transition-colors ${
-                    purchasedDecks.has(deck.id)
-                      ? 'bg-gray-600 text-gray-400 cursor-not-allowed'
-                      : 'bg-spektrum-orange hover:bg-orange-600 text-white'
-                  }`}
+                  className="w-full bg-white text-black hover:bg-gray-100 disabled:bg-gray-400 disabled:text-gray-600"
                 >
-                  {purchasedDecks.has(deck.id) ? 'Purchased' : 'Purchase'}
-                </button>
+                  {purchasedDecks.has(deck.id) ? 'Purchased' : `Buy for $${deck.price}`}
+                </Button>
               </div>
             </div>
           ))}
         </div>
-
-        {/* Selected Deck Details */}
-        {selectedDeck && (
-          <div className="mt-6 bg-gray-800 rounded-lg p-6">
-            <h3 className="text-xl font-bold mb-4">Deck Details: {selectedDeck.name}</h3>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <h4 className="font-semibold mb-2">Strategy Guide:</h4>
-                <p className="text-gray-400 text-sm mb-4">{selectedDeck.strategy}</p>
-                
-                <h4 className="font-semibold mb-2">Playstyle:</h4>
-                <p className="text-gray-400 text-sm">
-                  This {selectedDeck.difficulty.toLowerCase()} deck focuses on {selectedDeck.element} element 
-                  synergies and provides a {selectedDeck.strategy.toLowerCase()} approach to gameplay.
-                </p>
-              </div>
-              
-              <div>
-                <h4 className="font-semibold mb-2">What's Included:</h4>
-                <ul className="text-gray-400 text-sm space-y-1">
-                  <li>• 40 carefully selected cards</li>
-                  <li>• Balanced mana curve</li>
-                  <li>• Synergistic card combinations</li>
-                  <li>• Ready-to-play strategy</li>
-                </ul>
-              </div>
-            </div>
-          </div>
-        )}
       </div>
+    );
+  };
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-spektrum-dark via-gray-900 to-black">
+      <div className="container mx-auto px-4 py-8">
+        <BackButton onClick={handleBackNavigation} />
+        
+        <div className="max-w-6xl mx-auto">
+          {currentStep === 'expansion-selection' && renderExpansionSelection()}
+          {currentStep === 'deck-selection' && renderDeckSelection()}
+        </div>
+      </div>
+      
+      <NavigationBar />
     </div>
   );
 };
