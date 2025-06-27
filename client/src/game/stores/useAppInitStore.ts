@@ -72,10 +72,26 @@ export const useAppInitStore = create<AppInitStore>()(
       },
 
       initializeAllStores: async () => {
+        // Helper function for safe initialization
+        const safeInitialize = async (initFn: () => void) => {
+          try {
+            const result = initFn();
+            // Handle both sync and async initialization
+            if (result && typeof result.then === 'function') {
+              await result;
+            }
+            // Add small delay to prevent race conditions
+            await new Promise(resolve => setTimeout(resolve, 50));
+          } catch (error) {
+            console.warn('Store initialization warning:', error);
+            // Don't fail the entire initialization for individual store errors
+          }
+        };
+
         try {
           set({ initializationInProgress: true });
           console.log('Starting coordinated store initialization...');
-          
+
           // Import and initialize stores in dependency order
           const { useExpansionStore } = await import('./useExpansionStore');
           const { usePremadeDecksStore } = await import('./usePremadeDecksStore');
@@ -86,27 +102,27 @@ export const useAppInitStore = create<AppInitStore>()(
 
           // Initialize stores in sequence to prevent race conditions
           console.log('Initializing expansion store...');
-          useExpansionStore.getState().initializeExpansions?.();
+          await safeInitialize(() => useExpansionStore.getState().initializeExpansions?.());
           get().markStoreInitialized(STORE_NAMES.EXPANSION);
 
           console.log('Initializing deck store...');
-          useDeckStore.getState().initializeDefaultCards?.();
+          await safeInitialize(() => useDeckStore.getState().initializeDefaultCards?.());
           get().markStoreInitialized(STORE_NAMES.DECK);
 
           console.log('Initializing premade decks store...');
-          usePremadeDecksStore.getState().initializePremadeDecks?.();
+          await safeInitialize(() => usePremadeDecksStore.getState().initializePremadeDecks?.());
           get().markStoreInitialized(STORE_NAMES.PREMADE_DECKS);
 
           console.log('Initializing battle sets store...');
-          useBattleSetsStore.getState().initializeBattleSets();
+          await safeInitialize(() => useBattleSetsStore.getState().initializeBattleSets());
           get().markStoreInitialized(STORE_NAMES.BATTLE_SETS);
 
           console.log('Initializing booster variant store...');
-          // Booster variant store doesn't need initialization
+          // Booster variant store doesn't need initialization - just mark as ready
           get().markStoreInitialized(STORE_NAMES.BOOSTER_VARIANT);
 
           console.log('Initializing data sync store...');
-          useDataSyncStore.getState().syncAllData();
+          await safeInitialize(() => useDataSyncStore.getState().syncAllData());
           get().markStoreInitialized(STORE_NAMES.DATA_SYNC);
 
           console.log('All stores initialized successfully');

@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useCallback } from 'react';
-import { Card } from '../game/types/gameTypes';
+import { Card } from '../game/data/cardTypes';
 import SafeCardImage from './SafeCardImage';
 
 interface VirtualizedCardListProps {

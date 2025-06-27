@@ -4,6 +4,7 @@ import { Card, ElementType, AvatarCard } from '../game/data/cardTypes';
 import { cardNftService } from '../blockchain/solana/cardNftService';
 import BackButton from '../components/BackButton';
 import NavigationBar from '../components/NavigationBar';
+import SafeCardImage from '../components/SafeCardImage';
 import { ChevronDown } from 'lucide-react';
 import { getRarityColor, getRarityTextColor } from '../game/utils/rarityUtils';
 
