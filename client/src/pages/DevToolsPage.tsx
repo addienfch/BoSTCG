@@ -20,6 +20,7 @@ interface Expansion {
   description: string;
   releaseDate: string;
   cardCount: number;
+  artUrl?: string;
 }
 
 interface CardFormData {
@@ -80,21 +81,24 @@ const DevToolsPage: React.FC = () => {
       name: 'Kobar Borah',
       description: 'The first expansion featuring fire and ground tribal cards',
       releaseDate: '2024-01-01',
-      cardCount: 50
+      cardCount: 50,
+      artUrl: '/attached_assets/Red Elemental Avatar_Ava - Crimson.png'
     },
     {
       id: 'kujana-kuhaka',
       name: 'Kujana Kuhaka',
       description: 'Water and air tribal cards with new mechanics',
       releaseDate: '2024-06-01',
-      cardCount: 45
+      cardCount: 45,
+      artUrl: '/attached_assets/Non Elemental - Spell_Kencur.png'
     },
     {
       id: 'neutral-base',
       name: 'Neutral Base Set',
       description: 'Core neutral cards and spell effects',
       releaseDate: '2024-03-01',
-      cardCount: 30
+      cardCount: 30,
+      artUrl: '/attached_assets/Non Elemental (1)-15.png'
     }
   ]);
   
@@ -130,7 +134,8 @@ const DevToolsPage: React.FC = () => {
     name: '',
     description: '',
     releaseDate: '',
-    cardCount: 0
+    cardCount: 0,
+    artUrl: ''
   });
 
   const mockExpansions: Expansion[] = [
@@ -1223,11 +1228,32 @@ const DevToolsPage: React.FC = () => {
               <div className="space-y-3">
                 {mockExpansions.map(expansion => (
                   <div key={expansion.id} className="bg-gray-700 p-4 rounded flex justify-between items-start">
-                    <div>
-                      <h3 className="font-medium text-lg">{expansion.name}</h3>
-                      <p className="text-sm text-gray-300 mb-2">{expansion.description}</p>
-                      <div className="text-xs text-gray-400">
-                        Released: {expansion.releaseDate} | {expansion.cardCount} cards
+                    <div className="flex gap-3">
+                      {/* Expansion Icon */}
+                      <div className="w-12 h-12 bg-gray-600 rounded border border-gray-500 flex-shrink-0 overflow-hidden">
+                        {expansion.artUrl ? (
+                          <img 
+                            src={expansion.artUrl} 
+                            alt={expansion.name}
+                            className="w-full h-full object-cover"
+                            onError={(e) => {
+                              e.currentTarget.src = '/textures/icons/default_expansion.png';
+                            }}
+                          />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center text-gray-400 text-xs">
+                            📦
+                          </div>
+                        )}
+                      </div>
+                      
+                      {/* Expansion Info */}
+                      <div>
+                        <h3 className="font-medium text-lg">{expansion.name}</h3>
+                        <p className="text-sm text-gray-300 mb-2">{expansion.description}</p>
+                        <div className="text-xs text-gray-400">
+                          Released: {expansion.releaseDate} | {expansion.cardCount} cards
+                        </div>
                       </div>
                     </div>
                     <div className="flex gap-2">
@@ -1283,6 +1309,20 @@ const DevToolsPage: React.FC = () => {
                     onChange={(e) => setExpansionForm(prev => ({ ...prev, cardCount: parseInt(e.target.value) || 0 }))}
                     className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded"
                   />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium mb-1">Icon URL</label>
+                  <input
+                    type="text"
+                    value={expansionForm.artUrl || ''}
+                    onChange={(e) => setExpansionForm(prev => ({ ...prev, artUrl: e.target.value }))}
+                    className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded"
+                    placeholder="Enter icon URL (e.g., /textures/icons/expansion.png)"
+                  />
+                  <div className="mt-2 text-xs text-gray-400">
+                    Upload your icon file to /textures/icons/ folder and enter the path here
+                  </div>
                 </div>
 
                 <div>
