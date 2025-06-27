@@ -17,6 +17,7 @@ import LibraryPage from "./pages/LibraryPage";
 import SettingsPage from "./pages/SettingsPage";
 import DevToolsPage from "./pages/DevToolsPage";
 import { useGameMode } from "./game/stores/useGameMode";
+import { useAppInitStore } from "./game/stores/useAppInitStore";
 
 // Define control keys for the game
 const controls = [
@@ -28,8 +29,15 @@ const controls = [
 function SoundLoader() {
   const playHit = useAudio(state => state.playHit);
   const playButton = useAudio(state => state.playButton);
+  const { initializeApp, getInitializationReport } = useAppInitStore();
   
   useEffect(() => {
+    // Initialize all stores on app startup
+    initializeApp().then(() => {
+      console.log(getInitializationReport());
+    }).catch(error => {
+      console.error('Failed to initialize app:', error);
+    });
     // Global error handlers for unhandled promise rejections
     const handleUnhandledRejection = (event: PromiseRejectionEvent) => {
       console.warn('Unhandled promise rejection caught:', event.reason);

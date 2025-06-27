@@ -181,7 +181,7 @@ const defaultBattleSets: BattleSetItem[] = [
 export const useBattleSetsStore = create<BattleSetsStore>()(
   persist(
     (set, get) => ({
-      battleSets: [],
+      battleSets: defaultBattleSets,
       ownedItems: new Set<string>(),
 
       initializeBattleSets: () => {
@@ -189,6 +189,8 @@ export const useBattleSetsStore = create<BattleSetsStore>()(
         if (battleSets.length === 0) {
           set({ battleSets: defaultBattleSets });
           console.log('Battle Sets initialized with default data');
+        } else {
+          console.log(`Battle Sets already loaded: ${battleSets.length} items`);
         }
       },
 

@@ -1,154 +1,152 @@
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
+import { useDeckStore } from './useDeckStore';
+import { useExpansionStore } from './useExpansionStore';
+import { usePremadeDecksStore } from './usePremadeDecksStore';
+import { useBattleSetsStore } from './useBattleSetsStore';
+import { useBoosterVariantStore } from './useBoosterVariantStore';
 
 interface AppInitStore {
-  storesInitialized: Record<string, boolean>;
-  initializationInProgress: boolean;
-  initializationComplete: boolean;
-  
-  // Actions
-  markStoreInitialized: (storeName: string) => void;
-  waitForStoreInitialization: (storeName: string) => Promise<boolean>;
-  initializeAllStores: () => Promise<void>;
-  resetInitialization: () => void;
+  isInitialized: boolean;
+  initializationStatus: {
+    decks: boolean;
+    expansions: boolean;
+    premadeDecks: boolean;
+    battleSets: boolean;
+    boosterVariants: boolean;
+  };
+  initializeApp: () => Promise<void>;
+  getInitializationReport: () => string;
 }
 
-// Store names that need coordination
-export const STORE_NAMES = {
-  EXPANSION: 'expansion',
-  PREMADE_DECKS: 'premadeDecks',
-  DECK: 'deck',
-  BATTLE_SETS: 'battleSets',
-  BOOSTER_VARIANT: 'boosterVariant',
-  DATA_SYNC: 'dataSync'
-} as const;
+export const useAppInitStore = create<AppInitStore>()((set, get) => ({
+  isInitialized: false,
+  initializationStatus: {
+    decks: false,
+    expansions: false,
+    premadeDecks: false,
+    battleSets: false,
+    boosterVariants: false,
+  },
 
-export const useAppInitStore = create<AppInitStore>()(
-  persist(
-    (set, get) => ({
-      storesInitialized: {},
-      initializationInProgress: false,
-      initializationComplete: false,
+  initializeApp: async () => {
+    console.log('🚀 Starting comprehensive app initialization...');
+    
+    try {
+      const status = {
+        decks: false,
+        expansions: false,
+        premadeDecks: false,
+        battleSets: false,
+        boosterVariants: false,
+      };
 
-      markStoreInitialized: (storeName: string) => {
-        const { storesInitialized } = get();
-        const newInitialized = { ...storesInitialized, [storeName]: true };
-        
-        // Check if all stores are initialized
-        const allStoresInitialized = Object.values(STORE_NAMES).every(
-          name => newInitialized[name] === true
-        );
-
-        set({
-          storesInitialized: newInitialized,
-          initializationComplete: allStoresInitialized,
-          initializationInProgress: !allStoresInitialized
-        });
-
-        console.log(`Store ${storeName} initialized. Complete: ${allStoresInitialized}`);
-      },
-
-      waitForStoreInitialization: async (storeName: string): Promise<boolean> => {
-        return new Promise((resolve) => {
-          const checkInitialization = () => {
-            const { storesInitialized } = get();
-            if (storesInitialized[storeName]) {
-              resolve(true);
-              return;
-            }
-            
-            // Check again in 100ms
-            setTimeout(checkInitialization, 100);
-          };
-          
-          checkInitialization();
-          
-          // Timeout after 10 seconds
-          setTimeout(() => {
-            console.warn(`Store ${storeName} initialization timeout`);
-            resolve(false);
-          }, 10000);
-        });
-      },
-
-      initializeAllStores: async () => {
-        // Helper function for safe initialization
-        const safeInitialize = async (initFn: () => any) => {
-          try {
-            const result = initFn();
-            // Handle both sync and async initialization
-            if (result && typeof result.then === 'function') {
-              await result;
-            }
-            // Add small delay to prevent race conditions
-            await new Promise(resolve => setTimeout(resolve, 50));
-          } catch (error) {
-            console.warn('Store initialization warning:', error);
-            // Don't fail the entire initialization for individual store errors
-          }
-        };
-
-        try {
-          set({ initializationInProgress: true });
-          console.log('Starting coordinated store initialization...');
-
-          // Import and initialize stores in dependency order
-          const { useExpansionStore } = await import('./useExpansionStore');
-          const { usePremadeDecksStore } = await import('./usePremadeDecksStore');
-          const { useDeckStore } = await import('./useDeckStore');
-          const { useBattleSetsStore } = await import('./useBattleSetsStore');
-          const { useBoosterVariantStore } = await import('./useBoosterVariantStore');
-          const { useDataSyncStore } = await import('./useDataSyncStore');
-
-          // Initialize stores in sequence to prevent race conditions
-          console.log('Initializing expansion store...');
-          await safeInitialize(() => useExpansionStore.getState().initializeExpansions?.());
-          get().markStoreInitialized(STORE_NAMES.EXPANSION);
-
-          console.log('Initializing deck store...');
-          await safeInitialize(() => useDeckStore.getState().initializeDefaultCards?.());
-          get().markStoreInitialized(STORE_NAMES.DECK);
-
-          console.log('Initializing premade decks store...');
-          await safeInitialize(() => usePremadeDecksStore.getState().initializePremadeDecks?.());
-          get().markStoreInitialized(STORE_NAMES.PREMADE_DECKS);
-
-          console.log('Initializing battle sets store...');
-          await safeInitialize(() => useBattleSetsStore.getState().initializeBattleSets());
-          get().markStoreInitialized(STORE_NAMES.BATTLE_SETS);
-
-          console.log('Initializing booster variant store...');
-          // Booster variant store doesn't need initialization - just mark as ready
-          get().markStoreInitialized(STORE_NAMES.BOOSTER_VARIANT);
-
-          console.log('Initializing data sync store...');
-          await safeInitialize(() => useDataSyncStore.getState().syncAllData());
-          get().markStoreInitialized(STORE_NAMES.DATA_SYNC);
-
-          console.log('All stores initialized successfully');
-          
-        } catch (error) {
-          console.error('Error during store initialization:', error);
-          set({ initializationInProgress: false });
-        }
-      },
-
-      resetInitialization: () => {
-        set({
-          storesInitialized: {},
-          initializationInProgress: false,
-          initializationComplete: false
-        });
+      // Initialize Expansions first (other stores depend on this)
+      try {
+        useExpansionStore.getState().initializeExpansions();
+        status.expansions = true;
+        console.log('✅ Expansions initialized');
+      } catch (error) {
+        console.error('❌ Failed to initialize expansions:', error);
       }
-    }),
-    {
-      name: 'app-init-storage',
-      partialize: (state) => ({
-        // Don't persist initialization state - always reinitialize on app start
-        storesInitialized: {},
-        initializationInProgress: false,
-        initializationComplete: false
-      })
+
+      // Initialize Deck Store (ensure cards are loaded)
+      try {
+        const deckStore = useDeckStore.getState();
+        const cardCount = deckStore.getAvailableCards().length;
+        if (cardCount > 0) {
+          status.decks = true;
+          console.log(`✅ Deck store initialized with ${cardCount} cards`);
+        } else {
+          console.warn('⚠️ Deck store has no cards available');
+        }
+      } catch (error) {
+        console.error('❌ Failed to initialize deck store:', error);
+      }
+
+      // Initialize Premade Decks
+      try {
+        usePremadeDecksStore.getState().initializePremadeDecks();
+        status.premadeDecks = true;
+        console.log('✅ Premade decks initialized');
+      } catch (error) {
+        console.error('❌ Failed to initialize premade decks:', error);
+      }
+
+      // Initialize Battle Sets
+      try {
+        useBattleSetsStore.getState().initializeBattleSets();
+        status.battleSets = true;
+        console.log('✅ Battle sets initialized');
+      } catch (error) {
+        console.error('❌ Failed to initialize battle sets:', error);
+      }
+
+      // Initialize Booster Variants (this doesn't have default data, just mark as ready)
+      try {
+        status.boosterVariants = true;
+        console.log('✅ Booster variants ready');
+      } catch (error) {
+        console.error('❌ Failed to initialize booster variants:', error);
+      }
+
+      const allInitialized = Object.values(status).every(Boolean);
+      
+      set({ 
+        isInitialized: allInitialized,
+        initializationStatus: status 
+      });
+
+      if (allInitialized) {
+        console.log('🎉 All stores successfully initialized!');
+      } else {
+        console.warn('⚠️ Some stores failed to initialize:', status);
+      }
+
+    } catch (error) {
+      console.error('💥 Critical error during app initialization:', error);
+      set({ 
+        isInitialized: false,
+        initializationStatus: {
+          decks: false,
+          expansions: false,
+          premadeDecks: false,
+          battleSets: false,
+          boosterVariants: false,
+        }
+      });
     }
-  )
-);
+  },
+
+  getInitializationReport: () => {
+    const { isInitialized, initializationStatus } = get();
+    
+    let report = `APP INITIALIZATION STATUS\n`;
+    report += `========================\n`;
+    report += `Overall Status: ${isInitialized ? '✅ READY' : '❌ INCOMPLETE'}\n\n`;
+    
+    report += `Store Status:\n`;
+    report += `- Expansions: ${initializationStatus.expansions ? '✅' : '❌'}\n`;
+    report += `- Deck Store: ${initializationStatus.decks ? '✅' : '❌'}\n`;
+    report += `- Premade Decks: ${initializationStatus.premadeDecks ? '✅' : '❌'}\n`;
+    report += `- Battle Sets: ${initializationStatus.battleSets ? '✅' : '❌'}\n`;
+    report += `- Booster Variants: ${initializationStatus.boosterVariants ? '✅' : '❌'}\n`;
+    
+    // Add data counts
+    try {
+      const expansionCount = useExpansionStore.getState().expansions.length;
+      const deckCount = useDeckStore.getState().getAvailableCards().length;
+      const premadeCount = usePremadeDecksStore.getState().premadeDecks.length;
+      const battleSetCount = useBattleSetsStore.getState().battleSets.length;
+      
+      report += `\nData Counts:\n`;
+      report += `- Expansions: ${expansionCount}\n`;
+      report += `- Available Cards: ${deckCount}\n`;
+      report += `- Premade Decks: ${premadeCount}\n`;
+      report += `- Battle Set Items: ${battleSetCount}\n`;
+    } catch (error) {
+      report += `\nData Count Error: ${error instanceof Error ? error.message : 'Unknown error'}\n`;
+    }
+    
+    return report;
+  }
+}));
