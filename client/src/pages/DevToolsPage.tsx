@@ -427,10 +427,12 @@ const DevToolsPage: React.FC = () => {
               {selectedCard ? 'Edit Card' : 'Create New Card'}
             </h3>
             
-            {/* Compact Layout - Three Columns */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
-              {/* Left Column - Basic Info */}
-              <div className="space-y-2">
+            {/* Compact Layout */}
+            <div className="space-y-3">
+              {/* Top Row - Basic Info */}
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
+                {/* Left Column - Basic Info */}
+                <div className="space-y-2">
                 <div className="grid grid-cols-1 gap-2">
                   <div>
                     <label className="block text-xs font-medium mb-1">Name</label>
@@ -702,11 +704,12 @@ const DevToolsPage: React.FC = () => {
                   )}
                 </div>
               </div>
+              </div>
 
-              {/* Right Column - Skills */}
+              {/* Skills Section - Full Width */}
               {formData.type === 'avatar' && (
-                <div className="grid grid-cols-2 gap-3">
-                  {/* Skill 1 */}
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
+                  {/* Skill 1 - Takes 1 column */}
                   <div className="bg-gray-700 p-2 rounded">
                     <h3 className="font-medium mb-2 text-sm">Skill 1</h3>
                     <div className="space-y-2">
@@ -918,8 +921,8 @@ const DevToolsPage: React.FC = () => {
                     </div>
                   </div>
 
-                  {/* Skill 2 */}
-                  <div className="bg-gray-700 p-2 rounded">
+                  {/* Skill 2 - Takes 2 columns (wider like expansions) */}
+                  <div className="bg-gray-700 p-2 rounded lg:col-span-2">
                     <h3 className="font-medium mb-2 text-sm">Skill 2</h3>
                     <div className="space-y-2">
                       <div className="grid grid-cols-1 gap-2">
