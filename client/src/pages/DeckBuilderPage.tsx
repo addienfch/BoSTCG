@@ -8,7 +8,7 @@ import NavigationBar from '../components/NavigationBar';
 import { getRarityColor, getRarityTextColor } from '../game/utils/rarityUtils';
 
 const DeckBuilderPage: React.FC = () => {
-  const { decks, activeDeckId, getAvailableCards, getAvailableCardsWithCNFTs, addDeck, updateDeck, deleteDeck, setActiveDeck, canAddCardToDeck, getBaseCardCount } = useDeckStore();
+  const { decks, activeDeckId, getAvailableCards, getAvailableCardsWithCNFTs, addDeck, updateDeck, deleteDeck, setActiveDeck } = useDeckStore();
   const navigate = useNavigate();
   
   // Local state for the deck builder
@@ -85,6 +85,13 @@ const DeckBuilderPage: React.FC = () => {
     
     // All other cards can have up to 4 copies
     return currentCount >= 4;
+  };
+
+  // Get wallet card count - how many the user actually owns
+  const getWalletCardCount = (cardName: string) => {
+    // Use the current available cards from state instead of calling async function
+    const availableCards = filteredCards.length > 0 ? filteredCards : [];
+    return availableCards.filter(card => card.name === cardName).length;
   };
   
   // Load a deck into the editor
@@ -470,7 +477,8 @@ const DeckBuilderPage: React.FC = () => {
             {/* Card grid */}
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 max-h-[500px] overflow-y-auto p-2">
               {filteredCards.map((card, index) => {
-                const count = cardCounts[card.name] || 0;
+                const deckCount = cardCounts[card.name] || 0; // Cards in current deck
+                const walletCount = getWalletCardCount(card.name); // Cards owned in wallet
                 const isMaxed = hasReachedMaxCount(card);
                 const maxAllowed = card.type === 'avatar' && (card as AvatarCard).level === 2 ? 1 : 4;
                 
@@ -596,9 +604,16 @@ const DeckBuilderPage: React.FC = () => {
                       </div>
                       
                       {/* Count badge */}
-                      {count > 0 && (
+                      {deckCount > 0 && (
                         <div className="absolute top-1 right-1 bg-blue-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center z-20">
-                          {count}
+                          {deckCount}
+                        </div>
+                      )}
+                      
+                      {/* Wallet count badge */}
+                      {walletCount > 0 && (
+                        <div className="absolute top-1 left-1 bg-green-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center z-20">
+                          {walletCount}
                         </div>
                       )}
                     </div>
@@ -627,7 +642,7 @@ const DeckBuilderPage: React.FC = () => {
                         onClick={() => handleAddCard(card)}
                         disabled={isMaxed}
                       >
-                        {isMaxed ? `Max (${count}/${maxAllowed})` : `Add (${count}/${maxAllowed})`}
+                        {isMaxed ? `Max (${deckCount}/${maxAllowed})` : `Add (${deckCount}/${maxAllowed})`}
                       </button>
                     </div>
                   </div>
