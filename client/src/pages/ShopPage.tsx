@@ -36,7 +36,9 @@ const ShopPage: React.FC = () => {
             onClick={handleBoosterPacks}
             className="w-full bg-gradient-to-r from-purple-600 to-purple-800 hover:from-purple-700 hover:to-purple-900 text-white py-6 px-6 rounded-lg shadow-lg transition-all transform hover:scale-105 flex flex-col items-center"
           >
-            <div className="text-4xl mb-2">🎁</div>
+            <svg className="w-8 h-8 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 8v-2a2 2 0 012-2h2a2 2 0 012 2v2m-6 4h4m-4 0v6m4-6v6m-4-6H8a2 2 0 00-2 2v4a2 2 0 002 2h8a2 2 0 002-2v-4a2 2 0 00-2-2h-4z"/>
+            </svg>
             <div className="text-xl font-bold mb-1">Booster Packs</div>
             <div className="text-sm opacity-90">Buy randomized card packs</div>
           </button>
@@ -46,7 +48,9 @@ const ShopPage: React.FC = () => {
             onClick={handlePremadeDecks}
             className="w-full bg-gradient-to-r from-blue-600 to-blue-800 hover:from-blue-700 hover:to-blue-900 text-white py-6 px-6 rounded-lg shadow-lg transition-all transform hover:scale-105 flex flex-col items-center"
           >
-            <div className="text-4xl mb-2">🃏</div>
+            <svg className="w-8 h-8 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
+            </svg>
             <div className="text-xl font-bold mb-1">Premade Decks</div>
             <div className="text-sm opacity-90">Ready-to-play 40-card decks</div>
           </button>

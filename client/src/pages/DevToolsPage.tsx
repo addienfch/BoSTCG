@@ -705,27 +705,27 @@ const DevToolsPage: React.FC = () => {
 
               {/* Right Column - Skills */}
               {formData.type === 'avatar' && (
-                <div className="space-y-4">
+                <div className="grid grid-cols-2 gap-3">
                   {/* Skill 1 */}
-                  <div className="bg-gray-700 p-3 rounded">
-                    <h3 className="font-medium mb-3">Skill 1</h3>
-                    <div className="space-y-3">
-                      <div className="grid grid-cols-2 gap-3">
+                  <div className="bg-gray-700 p-2 rounded">
+                    <h3 className="font-medium mb-2 text-sm">Skill 1</h3>
+                    <div className="space-y-2">
+                      <div className="grid grid-cols-1 gap-2">
                         <div>
-                          <label className="block text-sm font-medium mb-1">Name</label>
+                          <label className="block text-xs font-medium mb-1">Name</label>
                           <input
                             type="text"
                             value={formData.skill1Name}
                             onChange={(e) => setFormData(prev => ({ ...prev, skill1Name: e.target.value }))}
-                            className="w-full px-3 py-2 bg-gray-600 border border-gray-500 rounded"
+                            className="w-full px-2 py-1 bg-gray-600 border border-gray-500 rounded text-sm"
                           />
                         </div>
                         <div>
-                          <label className="block text-sm font-medium mb-1">Effect Type</label>
+                          <label className="block text-xs font-medium mb-1">Effect Type</label>
                           <select
                             value={formData.skill1EffectType}
                             onChange={(e) => setFormData(prev => ({ ...prev, skill1EffectType: e.target.value }))}
-                            className="w-full px-3 py-2 bg-gray-600 border border-gray-500 rounded"
+                            className="w-full px-2 py-1 bg-gray-600 border border-gray-500 rounded text-sm"
                           >
                             {skillEffectTypes.map(type => (
                               <option key={type.value} value={type.value}>{type.label}</option>
@@ -734,23 +734,23 @@ const DevToolsPage: React.FC = () => {
                         </div>
                       </div>
 
-                      <div className="grid grid-cols-2 gap-3">
+                      <div className="grid grid-cols-2 gap-2">
                         <div>
-                          <label className="block text-sm font-medium mb-1">Damage</label>
+                          <label className="block text-xs font-medium mb-1">Damage</label>
                           <input
                             type="number"
                             min="0"
                             value={formData.skill1Damage}
                             onChange={(e) => setFormData(prev => ({ ...prev, skill1Damage: parseInt(e.target.value) || 0 }))}
-                            className="w-full px-3 py-2 bg-gray-600 border border-gray-500 rounded"
+                            className="w-full px-2 py-1 bg-gray-600 border border-gray-500 rounded text-sm"
                           />
                         </div>
                         <div>
-                          <label className="block text-sm font-medium mb-1">Type</label>
+                          <label className="block text-xs font-medium mb-1">Type</label>
                           <select
                             value={formData.skill1Type}
                             onChange={(e) => setFormData(prev => ({ ...prev, skill1Type: e.target.value as 'active' | 'passive' }))}
-                            className="w-full px-3 py-2 bg-gray-600 border border-gray-500 rounded"
+                            className="w-full px-2 py-1 bg-gray-600 border border-gray-500 rounded text-sm"
                           >
                             <option value="active">Active</option>
                             <option value="passive">Passive</option>
@@ -919,25 +919,25 @@ const DevToolsPage: React.FC = () => {
                   </div>
 
                   {/* Skill 2 */}
-                  <div className="bg-gray-700 p-3 rounded">
-                    <h3 className="font-medium mb-3">Skill 2</h3>
-                    <div className="space-y-3">
-                      <div className="grid grid-cols-2 gap-3">
+                  <div className="bg-gray-700 p-2 rounded">
+                    <h3 className="font-medium mb-2 text-sm">Skill 2</h3>
+                    <div className="space-y-2">
+                      <div className="grid grid-cols-1 gap-2">
                         <div>
-                          <label className="block text-sm font-medium mb-1">Name</label>
+                          <label className="block text-xs font-medium mb-1">Name</label>
                           <input
                             type="text"
                             value={formData.skill2Name}
                             onChange={(e) => setFormData(prev => ({ ...prev, skill2Name: e.target.value }))}
-                            className="w-full px-3 py-2 bg-gray-600 border border-gray-500 rounded"
+                            className="w-full px-2 py-1 bg-gray-600 border border-gray-500 rounded text-sm"
                           />
                         </div>
                         <div>
-                          <label className="block text-sm font-medium mb-1">Effect Type</label>
+                          <label className="block text-xs font-medium mb-1">Effect Type</label>
                           <select
                             value={formData.skill2EffectType}
                             onChange={(e) => setFormData(prev => ({ ...prev, skill2EffectType: e.target.value }))}
-                            className="w-full px-3 py-2 bg-gray-600 border border-gray-500 rounded"
+                            className="w-full px-2 py-1 bg-gray-600 border border-gray-500 rounded text-sm"
                           >
                             {skillEffectTypes.map(type => (
                               <option key={type.value} value={type.value}>{type.label}</option>
@@ -946,23 +946,23 @@ const DevToolsPage: React.FC = () => {
                         </div>
                       </div>
 
-                      <div className="grid grid-cols-2 gap-3">
+                      <div className="grid grid-cols-2 gap-2">
                         <div>
-                          <label className="block text-sm font-medium mb-1">Damage</label>
+                          <label className="block text-xs font-medium mb-1">Damage</label>
                           <input
                             type="number"
                             min="0"
                             value={formData.skill2Damage}
                             onChange={(e) => setFormData(prev => ({ ...prev, skill2Damage: parseInt(e.target.value) || 0 }))}
-                            className="w-full px-3 py-2 bg-gray-600 border border-gray-500 rounded"
+                            className="w-full px-2 py-1 bg-gray-600 border border-gray-500 rounded text-sm"
                           />
                         </div>
                         <div>
-                          <label className="block text-sm font-medium mb-1">Type</label>
+                          <label className="block text-xs font-medium mb-1">Type</label>
                           <select
                             value={formData.skill2Type}
                             onChange={(e) => setFormData(prev => ({ ...prev, skill2Type: e.target.value as 'active' | 'passive' }))}
-                            className="w-full px-3 py-2 bg-gray-600 border border-gray-500 rounded"
+                            className="w-full px-2 py-1 bg-gray-600 border border-gray-500 rounded text-sm"
                           >
                             <option value="active">Active</option>
                             <option value="passive">Passive</option>
