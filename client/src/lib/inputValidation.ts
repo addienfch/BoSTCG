@@ -2,7 +2,7 @@
  * Comprehensive input validation for dev tools and user inputs
  */
 
-import { ElementType, RarityType, CardType } from '../game/data/cardTypes';
+import { ElementType, RarityType } from '../game/data/cardTypes';
 
 export interface ValidationResult {
   isValid: boolean;

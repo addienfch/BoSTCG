@@ -73,7 +73,7 @@ export const useAppInitStore = create<AppInitStore>()(
 
       initializeAllStores: async () => {
         // Helper function for safe initialization
-        const safeInitialize = async (initFn: () => void) => {
+        const safeInitialize = async (initFn: () => any) => {
           try {
             const result = initFn();
             // Handle both sync and async initialization
