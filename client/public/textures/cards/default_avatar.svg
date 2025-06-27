@@ -1,6 +1,7 @@
-<svg width="100" height="140" viewBox="0 0 100 140" fill="none" xmlns="http://www.w3.org/2000/svg">
-<rect width="100" height="140" fill="#333" rx="8"/>
-<circle cx="50" cy="40" r="15" fill="#666"/>
-<rect x="35" y="60" width="30" height="40" fill="#666" rx="4"/>
-<text x="50" y="120" text-anchor="middle" fill="#ccc" font-family="Arial" font-size="10">Avatar</text>
+<svg width="200" height="280" xmlns="http://www.w3.org/2000/svg">
+  <rect width="200" height="280" fill="#1a1a1a" stroke="#444" stroke-width="2" rx="12"/>
+  <circle cx="100" cy="80" r="25" fill="#666"/>
+  <rect x="75" y="120" width="50" height="60" fill="#666" rx="5"/>
+  <text x="100" y="200" text-anchor="middle" fill="#888" font-family="Arial" font-size="12">Default Avatar</text>
+  <text x="100" y="220" text-anchor="middle" fill="#666" font-family="Arial" font-size="10">Missing Image</text>
 </svg>

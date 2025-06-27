@@ -8,6 +8,7 @@ import { SimpleGameAI, AIGameState } from '../ai/SimpleGameAI';
 import { useNavigate } from 'react-router-dom';
 import { processGameEffect, processBleedDamage } from '../utils/gameEffectProcessor';
 import DiscardConfirmationPopup from '../../components/DiscardConfirmationPopup';
+import SafeCardImage from '../../components/SafeCardImage';
 
 // Card Preview Component
 const CardPreview = ({ 
@@ -33,7 +34,7 @@ const CardPreview = ({
         <div className="p-4">
           <div className="mb-4 rounded-lg overflow-hidden">
             {card.art && (
-              <img src={card.art} alt={card.name} className="w-full object-cover" />
+              <SafeCardImage src={card.art} alt={card.name} className="w-full object-cover" />
             )}
           </div>
           

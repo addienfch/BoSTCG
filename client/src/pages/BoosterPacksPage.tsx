@@ -9,6 +9,7 @@ import { cardNftService } from '../blockchain/solana/cardNftService';
 import BackButton from '../components/BackButton';
 import NavigationBar from '../components/NavigationBar';
 import CardRewardPopup from '../components/CardRewardPopup';
+import SafeCardImage from '../components/SafeCardImage';
 import { Button } from '../components/ui/button';
 import { Badge } from '../components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../components/ui/dialog';
@@ -390,13 +391,10 @@ const BoosterPacksPage: React.FC = () => {
               >
                 <div className="aspect-[3/4] bg-gray-600 rounded mb-2 relative overflow-hidden">
                   {card.art && (
-                    <img
+                    <SafeCardImage
                       src={card.art}
                       alt={card.name}
                       className="w-full h-full object-cover"
-                      onError={(e) => {
-                        (e.target as HTMLImageElement).style.display = 'none';
-                      }}
                     />
                   )}
                   <div className="absolute top-2 right-2">
