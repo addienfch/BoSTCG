@@ -515,11 +515,12 @@ export const useDeckStore = create<DeckStore>()(
       }
     }),
     {
-      name: 'book-of-spektrum-decks', // Local storage key
-      // Only persist deck data
+      name: 'book-of-spektrum-decks-v2', // Changed key to force reset
+      // Persist both deck and card data
       partialize: (state) => ({ 
         decks: state.decks,
-        activeDeckId: state.activeDeckId
+        activeDeckId: state.activeDeckId,
+        ownedCards: state.ownedCards
       })
     }
   )

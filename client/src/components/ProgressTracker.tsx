@@ -47,8 +47,8 @@ const ProgressTracker: React.FC<ProgressTrackerProps> = ({ className = '' }) => 
         // Calculate completed decks (minimum 40 cards)
         const completedDecks = decks.filter((deck: any) => deck.cards.length >= 40).length;
         
-        // Mock NFT count (in real implementation, this would query the blockchain)
-        const mintedNFTs = walletStatus.connected ? Math.floor(totalCards * 0.3) : 0;
+        // All purchased cards are automatically cNFTs, so NFT count equals total cards
+        const mintedNFTs = walletStatus.connected ? totalCards : 0;
         
         // Calculate level and experience based on activities
         const baseExp = totalCards * 2 + uniqueCards * 5 + completedDecks * 20 + mintedNFTs * 10;

@@ -1,6 +1,14 @@
 import React, { useState } from 'react';
 import { useDeckStore } from '../game/stores/useDeckStore';
 import { Card, ElementType, AvatarCard, ActionCard } from '../game/data/cardTypes';
+import { 
+  kobarBorahAvatarCards, 
+  kobarBorahActionCards, 
+  kujanaKuhakaAvatarCards, 
+  allFireCards 
+} from '../game/data/kobarBorahCards';
+import { redElementalSpellCards } from '../game/data/redElementalCards';
+import { allNeutralCards } from '../game/data/neutralCards';
 import { toast } from 'sonner';
 import BackButton from '../components/BackButton';
 import NavigationBar from '../components/NavigationBar';
@@ -41,8 +49,21 @@ interface CardFormData {
 }
 
 const DevToolsPage: React.FC = () => {
-  const { getAvailableCards } = useDeckStore();
-  const cards = getAvailableCards();
+  // Get complete database of cards for dev tools (not just owned cards)
+  const allDatabaseCards = [
+    ...kobarBorahAvatarCards,
+    ...kobarBorahActionCards,
+    ...kujanaKuhakaAvatarCards,
+    ...redElementalSpellCards,
+    ...allNeutralCards
+  ];
+  
+  // Remove duplicates based on card name and type
+  const uniqueCards = allDatabaseCards.filter((card, index, self) => 
+    index === self.findIndex(c => c.name === card.name && c.type === card.type)
+  );
+  
+  const cards = uniqueCards;
   const [selectedCard, setSelectedCard] = useState<Card | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [activeTab, setActiveTab] = useState<'database' | 'edit' | 'expansion' | 'conditional'>('database');
