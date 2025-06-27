@@ -74,6 +74,13 @@ const DevToolsPage: React.FC = () => {
   
   // Combine original cards, local edits, and custom cards
   const cards = [...localCards, ...customCards];
+  
+  // Local state for expansions
+  const [localExpansions, setLocalExpansions] = useState<Expansion[]>([
+    { id: 'kobar-borah', name: 'Kobar & Borah', description: 'Fire and Earth tribes clash', releaseDate: '2024-01-01', cardCount: 120, artUrl: '' },
+    { id: 'kujana-kuhaka', name: 'Kujana & Kuhaka', description: 'Water and Air tribes unite', releaseDate: '2024-03-01', cardCount: 115, artUrl: '' },
+    { id: 'neutral-spells', name: 'Neutral Spells', description: 'Universal magic cards', releaseDate: '2024-02-01', cardCount: 80, artUrl: '' }
+  ]);
   const [selectedCard, setSelectedCard] = useState<Card | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [activeTab, setActiveTab] = useState<'database' | 'edit' | 'expansion' | 'conditional' | 'premade-decks'>('database');
@@ -454,8 +461,32 @@ const DevToolsPage: React.FC = () => {
       toast.error('Expansion name is required');
       return;
     }
-    toast.success(selectedExpansion ? 'Expansion updated' : 'Expansion created');
+
+    const expansionData: Expansion = {
+      id: selectedExpansion?.id || `exp-${Date.now()}`,
+      name: expansionForm.name.trim(),
+      description: expansionForm.description.trim(),
+      releaseDate: expansionForm.releaseDate,
+      cardCount: expansionForm.cardCount,
+      artUrl: expansionForm.artUrl || ''
+    };
+
+    console.log('Saving expansion:', expansionData);
+
+    if (selectedExpansion) {
+      // Update existing expansion
+      setLocalExpansions(prev => prev.map(exp => 
+        exp.id === selectedExpansion.id ? expansionData : exp
+      ));
+      toast.success(`${expansionForm.name} expansion updated`);
+    } else {
+      // Create new expansion
+      setLocalExpansions(prev => [...prev, expansionData]);
+      toast.success(`${expansionForm.name} expansion created`);
+    }
+    
     setIsEditingExpansion(false);
+    setSelectedExpansion(null);
   };
 
   return (
@@ -530,7 +561,7 @@ const DevToolsPage: React.FC = () => {
                 className="w-full px-2 py-1 bg-gray-700 border border-gray-600 rounded text-xs"
               >
                 <option value="all">All Expansions</option>
-                {mockExpansions.map(expansion => (
+                {localExpansions.map(expansion => (
                   <option key={expansion.id} value={expansion.id}>
                     {expansion.name}
                   </option>
