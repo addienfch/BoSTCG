@@ -169,19 +169,28 @@ const DeckBuilderPage: React.FC = () => {
   
   // Add a card to the deck
   const handleAddCard = (card: Card) => {
+    const currentCount = cardCounts[card.name] || 0;
+    const maxAllowed = card.type === 'avatar' && (card as AvatarCard).level === 2 ? 1 : 4;
+    const ownedCount = getWalletCardCount(card.name);
+    
+    // First check: Can't exceed game rules (max 4 copies, max 1 for level 2 avatars)
     if (hasReachedMaxCount(card)) {
-      const currentCount = cardCounts[card.name] || 0;
-      const maxAllowed = card.type === 'avatar' && (card as AvatarCard).level === 2 ? 1 : 4;
       toast.error(`Maximum ${maxAllowed} copies allowed for "${card.name}" (currently have ${currentCount})`);
+      return;
+    }
+    
+    // Second check: Can't add more cards than owned in library
+    if (currentCount >= ownedCount) {
+      toast.error(`You only own ${ownedCount} copies of "${card.name}" (trying to add ${currentCount + 1})`);
       return;
     }
     
     // Create a new copy of the card with a unique timestamp-based ID to ensure uniqueness
     const timestamp = Date.now();
-    const currentCount = cardCounts[card.name] || 0;
     const newCard = { ...card, id: `${card.id}-copy-${currentCount + 1}-${timestamp}` };
     
     setSelectedCards([...selectedCards, newCard]);
+    toast.success(`Added "${card.name}" to deck (${currentCount + 1}/${Math.min(ownedCount, maxAllowed)})`);
   };
   
   // Remove a card from the deck
@@ -474,8 +483,9 @@ const DeckBuilderPage: React.FC = () => {
               {filteredCards.map((card, index) => {
                 const deckCount = cardCounts[card.name] || 0; // Cards in current deck
                 const walletCount = getWalletCardCount(card.name); // Cards owned in wallet
-                const isMaxed = hasReachedMaxCount(card);
-                const maxAllowed = 4; // All cards can have up to 4 copies
+                const maxAllowed = card.type === 'avatar' && (card as AvatarCard).level === 2 ? 1 : 4;
+                const effectiveMax = Math.min(walletCount, maxAllowed); // Can't add more than owned or game limit
+                const isMaxed = deckCount >= effectiveMax;
                 
                 return (
                   <div 
@@ -632,8 +642,13 @@ const DeckBuilderPage: React.FC = () => {
                         onClick={() => handleAddCard(card)}
                         disabled={isMaxed}
                       >
-                        {isMaxed ? `Max (${deckCount}/${maxAllowed})` : `Add (${deckCount}/${maxAllowed})`}
+                        {isMaxed ? `Max (${deckCount}/${effectiveMax})` : `Add (${deckCount}/${effectiveMax})`}
                       </button>
+                      
+                      {/* Show ownership info */}
+                      <div className="text-xs text-gray-400 mt-1 text-center">
+                        Own: {walletCount} | Game Limit: {maxAllowed}
+                      </div>
                     </div>
                   </div>
                 );
