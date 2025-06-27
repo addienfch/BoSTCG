@@ -81,6 +81,39 @@ const DevToolsPage: React.FC = () => {
     { id: 'kujana-kuhaka', name: 'Kujana & Kuhaka', description: 'Water and Air tribes unite', releaseDate: '2024-03-01', cardCount: 115, artUrl: '' },
     { id: 'neutral-spells', name: 'Neutral Spells', description: 'Universal magic cards', releaseDate: '2024-02-01', cardCount: 80, artUrl: '' }
   ]);
+
+  // Local state for premade decks
+  interface PremadeDeck {
+    id: string;
+    name: string;
+    expansion: string;
+    tribe: string;
+    description: string;
+    price: number;
+    cardCount: number;
+    strategy: string;
+    difficulty: 'Beginner' | 'Intermediate' | 'Advanced';
+    coverCardName: string;
+    keyCards: string[];
+    purchased: boolean;
+  }
+
+  const [localPremadeDecks, setLocalPremadeDecks] = useState<PremadeDeck[]>([
+    {
+      id: 'kobar-starter',
+      name: 'Kobar Fire Starter',
+      expansion: 'Kobar & Borah',
+      tribe: 'Kobar',
+      description: 'A balanced fire-based starter deck',
+      price: 1500,
+      cardCount: 40,
+      strategy: 'Aggressive gameplay with burn effects',
+      difficulty: 'Beginner',
+      coverCardName: 'Radja',
+      keyCards: ['Radja', 'Crimson', 'Spark'],
+      purchased: false
+    }
+  ]);
   const [selectedCard, setSelectedCard] = useState<Card | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [activeTab, setActiveTab] = useState<'database' | 'edit' | 'expansion' | 'conditional' | 'premade-decks'>('database');
@@ -115,6 +148,22 @@ const DevToolsPage: React.FC = () => {
       artUrl: '/attached_assets/Non Elemental (1)-15.png'
     }
   ]);
+
+  // Premade deck form state
+  const [deckForm, setDeckForm] = useState({
+    name: '',
+    expansion: '',
+    tribe: '',
+    description: '',
+    price: 1500,
+    cardCount: 40,
+    strategy: '',
+    difficulty: 'Beginner' as 'Beginner' | 'Intermediate' | 'Advanced',
+    coverCardName: '',
+    keyCards: [] as string[]
+  });
+  const [isEditingDeck, setIsEditingDeck] = useState(false);
+  const [selectedDeck, setSelectedDeck] = useState<PremadeDeck | null>(null);
   
   const [formData, setFormData] = useState<CardFormData>({
     name: '',
@@ -489,6 +538,87 @@ const DevToolsPage: React.FC = () => {
     setSelectedExpansion(null);
   };
 
+  // Premade deck functions
+  const handleNewDeck = () => {
+    setSelectedDeck(null);
+    setIsEditingDeck(true);
+    setDeckForm({
+      name: '',
+      expansion: '',
+      tribe: '',
+      description: '',
+      price: 1500,
+      cardCount: 40,
+      strategy: '',
+      difficulty: 'Beginner',
+      coverCardName: '',
+      keyCards: []
+    });
+  };
+
+  const handleEditDeck = (deck: PremadeDeck) => {
+    setSelectedDeck(deck);
+    setIsEditingDeck(true);
+    setDeckForm({
+      name: deck.name,
+      expansion: deck.expansion,
+      tribe: deck.tribe,
+      description: deck.description,
+      price: deck.price,
+      cardCount: deck.cardCount,
+      strategy: deck.strategy,
+      difficulty: deck.difficulty,
+      coverCardName: deck.coverCardName,
+      keyCards: [...deck.keyCards]
+    });
+  };
+
+  const handleSaveDeck = () => {
+    if (!deckForm.name.trim()) {
+      toast.error('Deck name is required');
+      return;
+    }
+
+    const deckData: PremadeDeck = {
+      id: selectedDeck?.id || `deck-${Date.now()}`,
+      name: deckForm.name.trim(),
+      expansion: deckForm.expansion,
+      tribe: deckForm.tribe,
+      description: deckForm.description.trim(),
+      price: deckForm.price,
+      cardCount: deckForm.cardCount,
+      strategy: deckForm.strategy.trim(),
+      difficulty: deckForm.difficulty,
+      coverCardName: deckForm.coverCardName.trim(),
+      keyCards: deckForm.keyCards,
+      purchased: false
+    };
+
+    console.log('Saving premade deck:', deckData);
+
+    if (selectedDeck) {
+      // Update existing deck
+      setLocalPremadeDecks(prev => prev.map(deck => 
+        deck.id === selectedDeck.id ? deckData : deck
+      ));
+      toast.success(`${deckForm.name} deck updated`);
+    } else {
+      // Create new deck
+      setLocalPremadeDecks(prev => [...prev, deckData]);
+      toast.success(`${deckForm.name} deck created`);
+    }
+    
+    setIsEditingDeck(false);
+    setSelectedDeck(null);
+  };
+
+  const handleDeleteDeck = (deck: PremadeDeck) => {
+    if (confirm(`Delete ${deck.name} deck?`)) {
+      setLocalPremadeDecks(prev => prev.filter(d => d.id !== deck.id));
+      toast.success(`${deck.name} deleted`);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-spektrum-dark text-spektrum-light pb-20" style={{ fontFamily: 'Noto Sans, Inter, sans-serif' }}>
       <BackButton />
@@ -708,7 +838,7 @@ const DevToolsPage: React.FC = () => {
                       className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded"
                     >
                       <option value="">Select Expansion</option>
-                      {mockExpansions.map(expansion => (
+                      {localExpansions.map(expansion => (
                         <option key={expansion.id} value={expansion.name}>
                           {expansion.name}
                         </option>
@@ -1394,7 +1524,7 @@ const DevToolsPage: React.FC = () => {
             
             {!isEditingExpansion ? (
               <div className="space-y-3">
-                {mockExpansions.map(expansion => (
+                {localExpansions.map(expansion => (
                   <div key={expansion.id} className="bg-gray-700 p-4 rounded flex justify-between items-start">
                     <div className="flex gap-3">
                       {/* Expansion Icon */}
@@ -1432,7 +1562,12 @@ const DevToolsPage: React.FC = () => {
                         Edit
                       </button>
                       <button
-                        onClick={() => toast.success(`${expansion.name} deleted`)}
+                        onClick={() => {
+                          if (confirm(`Delete ${expansion.name} expansion?`)) {
+                            setLocalExpansions(prev => prev.filter(exp => exp.id !== expansion.id));
+                            toast.success(`${expansion.name} deleted`);
+                          }
+                        }}
                         className="bg-red-600 hover:bg-red-700 px-3 py-1 rounded text-xs"
                       >
                         Delete
