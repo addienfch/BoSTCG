@@ -16,6 +16,18 @@ const shuffleArray = <T extends any>(array: T[]): T[] => {
   return newArray;
 };
 
+// Helper function to create complete Counter objects
+const createFullCounters = (partial?: Partial<any>) => ({
+  damage: 0,
+  bleed: 0,
+  burn: 0,
+  freeze: 0,
+  poison: 0,
+  stun: 0,
+  shield: 0,
+  ...partial
+});
+
 interface PlayerState {
   health: number;
   deck: Card[];
@@ -100,6 +112,10 @@ interface GameState {
   
   // AI actions
   performAIActions: () => void;
+  
+  // Enhanced avatar death handling
+  processAvatarDeathEffects: (avatar: AvatarCard, player: Player) => void;
+  selectBestReserveAvatar: (reserves: AvatarCard[]) => AvatarCard;
 }
 
 // Initialize a player state (player or opponent)
@@ -827,7 +843,7 @@ export const useGameStore = create<GameState>((set, get) => ({
       
       // Initialize counters safely
       if (!opponentAvatar.counters) {
-        opponentAvatar.counters = { damage: 0, bleed: 0, shield: 0 };
+        opponentAvatar.counters = { damage: 0, bleed: 0, burn: 0, freeze: 0, poison: 0, stun: 0, shield: 0 };
       }
       
       const currentDamage = opponentAvatar.counters?.damage || 0;
@@ -1020,7 +1036,7 @@ export const useGameStore = create<GameState>((set, get) => ({
       console.log("Evolution - Original avatar counters:", targetAvatarCard!.counters);
       
       // Create safe default counters
-      const defaultCounters = { damage: 0, bleed: 0, shield: 0 };
+      const defaultCounters = createFullCounters();
       
       // Get the existing counters or default to zeros if none exist
       const existingCounters = targetAvatarCard!.counters 
@@ -1136,11 +1152,7 @@ export const useGameStore = create<GameState>((set, get) => ({
                 subType: 'kobar',
                 health: 8,
                 art: '/textures/cards/fire-spirit.png',
-                counters: {
-                  damage: 0,
-                  bleed: 0,
-                  shield: 0
-                },
+                counters: createFullCounters(),
                 skill1: {
                   name: 'Flame Strike',
                   energyCost: ['fire'],
@@ -2187,7 +2199,7 @@ export const useGameStore = create<GameState>((set, get) => ({
               const newActiveAvatar = reserveAvatars.splice(bestIndex, 1)[0];
               
               // Reset counters for new active avatar
-              newActiveAvatar.counters = { damage: 0, bleed: 0, shield: 0 };
+              newActiveAvatar.counters = createFullCounters();
               newActiveAvatar.isTapped = false;
               
               updatedState.opponent.activeAvatar = newActiveAvatar;
@@ -2804,6 +2816,67 @@ export const useGameStore = create<GameState>((set, get) => ({
         setTimeout(() => get().nextPhase(), 1000);
         break;
     }
+  },
+  
+  // Process death effects when an avatar dies
+  processAvatarDeathEffects: (avatar, player) => {
+    // Check if avatar has death trigger effects
+    if (avatar.skill1?.effect?.toLowerCase().includes('when this card is defeated')) {
+      get().addLog(`${avatar.name}'s death effect triggered: ${avatar.skill1.name}`);
+      // Process the death effect here - could heal, draw cards, etc.
+    }
+    
+    if (avatar.skill2?.effect?.toLowerCase().includes('when this card is defeated')) {
+      get().addLog(`${avatar.name}'s death effect triggered: ${avatar.skill2.name}`);
+      // Process the death effect here
+    }
+    
+    // Log the death for game history
+    get().addLog(`${player === 'player' ? 'Your' : 'Opponent\'s'} ${avatar.name} was defeated and sent to the graveyard.`);
+  },
+  
+  // AI selects the best reserve avatar to bring into play
+  selectBestReserveAvatar: (reserves) => {
+    if (reserves.length === 0) {
+      throw new Error('No reserve avatars available');
+    }
+    
+    // AI logic for selecting best reserve avatar
+    // Priority: highest level > highest health > most damage potential
+    const scoredReserves = reserves.map(avatar => {
+      let score = 0;
+      
+      // Level is most important (level 2 > level 1)
+      score += avatar.level * 50;
+      
+      // Health is important for survivability
+      score += avatar.health * 2;
+      
+      // Consider current damage on the avatar (negative score)
+      const currentDamage = avatar.counters?.damage || 0;
+      score -= currentDamage * 3;
+      
+      // Consider skill damage potential
+      const skill1Damage = avatar.skill1?.damage || 0;
+      const skill2Damage = avatar.skill2?.damage || 0;
+      score += Math.max(skill1Damage, skill2Damage) * 3;
+      
+      // Prefer avatars with lower energy costs
+      const skill1Cost = avatar.skill1?.energyCost?.length || 0;
+      const skill2Cost = avatar.skill2?.energyCost?.length || 0;
+      const avgCost = (skill1Cost + skill2Cost) / 2;
+      score -= avgCost * 5;
+      
+      return { avatar, score };
+    });
+    
+    // Sort by score (highest first) and return the best avatar
+    scoredReserves.sort((a, b) => b.score - a.score);
+    
+    const bestAvatar = scoredReserves[0].avatar;
+    get().addLog(`AI selected ${bestAvatar.name} as the best reserve avatar (Level ${bestAvatar.level}, ${bestAvatar.health} HP).`);
+    
+    return bestAvatar;
   }
 }));
 
