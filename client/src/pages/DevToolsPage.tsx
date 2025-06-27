@@ -73,6 +73,31 @@ const DevToolsPage: React.FC = () => {
   const [isEditingExpansion, setIsEditingExpansion] = useState(false);
   const [selectedExpansionFilter, setSelectedExpansionFilter] = useState<string>('all');
   
+  // Expansions data
+  const [expansions, setExpansions] = useState<Expansion[]>([
+    {
+      id: 'kobar-borah',
+      name: 'Kobar Borah',
+      description: 'The first expansion featuring fire and ground tribal cards',
+      releaseDate: '2024-01-01',
+      cardCount: 50
+    },
+    {
+      id: 'kujana-kuhaka',
+      name: 'Kujana Kuhaka',
+      description: 'Water and air tribal cards with new mechanics',
+      releaseDate: '2024-06-01',
+      cardCount: 45
+    },
+    {
+      id: 'neutral-base',
+      name: 'Neutral Base Set',
+      description: 'Core neutral cards and spell effects',
+      releaseDate: '2024-03-01',
+      cardCount: 30
+    }
+  ]);
+  
   const [formData, setFormData] = useState<CardFormData>({
     name: '',
     type: 'avatar' as 'avatar' | 'spell' | 'quickSpell' | 'ritualArmor' | 'field' | 'equipment' | 'item',
