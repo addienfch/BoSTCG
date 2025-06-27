@@ -253,22 +253,7 @@ const PremadeDecksPage: React.FC = () => {
     }
   };
 
-  const handleMintCards = async () => {
-    try {
-      const walletStatus = await cardNftService.getWalletStatus();
-      if (!walletStatus.connected) {
-        toast.error('Please connect your wallet first to mint NFTs');
-        return;
-      }
-      
-      // Mock minting process
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      toast.success(`Successfully minted ${rewardCards.length} cards as NFTs!`);
-    } catch (error) {
-      console.error('Minting error:', error);
-      toast.error('Failed to mint cards. Please try again.');
-    }
-  };
+
 
   const getExpansionDecks = (expansion: Expansion) => {
     return premadeDecks.filter(deck => deck.expansion.id === expansion.id);
