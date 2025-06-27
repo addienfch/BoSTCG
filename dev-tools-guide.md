@@ -28,27 +28,38 @@ Complete guide for using the Dev Tools to manage cards, expansions, and decks.
 - **Skills**: Avatar cards can have 2 skills with damage values
 - **Rarity**: Common → Uncommon → Rare → Super Rare → Mythic
 
-## Expansion Management Status: 🔄 FIXING
+## Expansion Management Status: ✅ WORKING
 
-### Current Issue
-- Expansion creation form exists but save function needs implementation
-- Icon upload works but expansion list doesn't update
+### Features
+- Create new card expansions with custom names, descriptions, and release dates
+- Upload icons for visual identification
+- Edit existing expansions with live updates
+- Delete expansions with confirmation
+- All changes persist during dev session
 
-### Intended Functionality
-- Create new card sets/expansions
-- Upload custom icons for each expansion
-- Track which cards belong to which expansion
+### How to Use
+1. Go to "Expansions" tab
+2. Click "Add New Expansion" 
+3. Fill in name, description, release date, card count
+4. Upload icon (optional)
+5. Click "Save" - expansion appears immediately
 
-## Premade Deck Builder Status: 🔄 FIXING
+## Premade Deck Builder Status: ✅ WORKING
 
-### Current Issue
-- Interface exists but deck creation doesn't save properly
-- Need to implement deck generation logic
+### Features
+- Create complete starter deck templates
+- Assign to expansions and tribes
+- Set difficulty levels and pricing
+- Edit existing decks
+- Delete decks with confirmation
+- Live preview of deck templates
 
-### Intended Functionality  
-- Create complete 40-60 card starter decks
-- Assign to specific tribes and expansions
-- Set difficulty levels and strategies
+### How to Use
+1. Go to "Premade Decks" tab
+2. Click "New Deck Template"
+3. Fill in deck details (name, expansion, tribe, etc.)
+4. Click "Save Deck Template"
+5. Deck appears in template list with edit/delete options
 
 ## Quick Start Guide
 

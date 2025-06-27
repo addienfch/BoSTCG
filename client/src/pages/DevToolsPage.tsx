@@ -1662,6 +1662,7 @@ const DevToolsPage: React.FC = () => {
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-lg font-medium">Premade Decks Configuration</h3>
               <button
+                onClick={handleNewDeck}
                 className="bg-green-600 hover:bg-green-700 px-4 py-2 rounded text-sm"
               >
                 + New Deck Template
@@ -1680,6 +1681,8 @@ const DevToolsPage: React.FC = () => {
                       <label className="block text-sm font-medium mb-1">Deck Name</label>
                       <input
                         type="text"
+                        value={deckForm.name}
+                        onChange={(e) => setDeckForm(prev => ({ ...prev, name: e.target.value }))}
                         placeholder="Enter deck name..."
                         className="w-full px-3 py-2 bg-gray-600 border border-gray-500 rounded"
                       />
@@ -1687,10 +1690,14 @@ const DevToolsPage: React.FC = () => {
                     
                     <div>
                       <label className="block text-sm font-medium mb-1">Expansion</label>
-                      <select className="w-full px-3 py-2 bg-gray-600 border border-gray-500 rounded">
+                      <select 
+                        value={deckForm.expansion}
+                        onChange={(e) => setDeckForm(prev => ({ ...prev, expansion: e.target.value }))}
+                        className="w-full px-3 py-2 bg-gray-600 border border-gray-500 rounded"
+                      >
                         <option value="">Select Expansion</option>
-                        {expansions.map(exp => (
-                          <option key={exp.id} value={exp.id}>{exp.name}</option>
+                        {localExpansions.map(exp => (
+                          <option key={exp.id} value={exp.name}>{exp.name}</option>
                         ))}
                       </select>
                     </div>
@@ -1835,8 +1842,11 @@ const DevToolsPage: React.FC = () => {
                 </div>
                 
                 <div className="mt-4 flex gap-2">
-                  <button className="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded">
-                    Save Deck Template
+                  <button 
+                    onClick={handleSaveDeck}
+                    className="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded"
+                  >
+                    {selectedDeck ? 'Update Deck' : 'Save Deck Template'}
                   </button>
                   <button className="bg-gray-600 hover:bg-gray-700 px-4 py-2 rounded">
                     Preview Deck
@@ -1852,19 +1862,35 @@ const DevToolsPage: React.FC = () => {
                 <h4 className="font-medium mb-3">Existing Deck Templates</h4>
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                  {/* Sample deck template cards */}
-                  <div className="bg-gray-600 p-3 rounded border border-gray-500">
-                    <div className="flex justify-between items-start mb-2">
-                      <h5 className="font-medium text-sm">Fire Starter Deck</h5>
-                      <span className="text-xs bg-green-500 px-2 py-1 rounded">Beginner</span>
+                  {localPremadeDecks.map(deck => (
+                    <div key={deck.id} className="bg-gray-600 p-3 rounded border border-gray-500">
+                      <div className="flex justify-between items-start mb-2">
+                        <h5 className="font-medium text-sm">{deck.name}</h5>
+                        <span className={`text-xs px-2 py-1 rounded ${
+                          deck.difficulty === 'Beginner' ? 'bg-green-500' :
+                          deck.difficulty === 'Intermediate' ? 'bg-yellow-500' : 'bg-red-500'
+                        }`}>
+                          {deck.difficulty}
+                        </span>
+                      </div>
+                      <p className="text-xs text-gray-300 mb-2">{deck.expansion} • ${deck.price/100}</p>
+                      <p className="text-xs text-gray-400 mb-3">{deck.description}</p>
+                      <div className="flex gap-1">
+                        <button 
+                          onClick={() => handleEditDeck(deck)}
+                          className="flex-1 bg-blue-600 hover:bg-blue-700 px-2 py-1 rounded text-xs"
+                        >
+                          Edit
+                        </button>
+                        <button 
+                          onClick={() => handleDeleteDeck(deck)}
+                          className="flex-1 bg-red-600 hover:bg-red-700 px-2 py-1 rounded text-xs"
+                        >
+                          Delete
+                        </button>
+                      </div>
                     </div>
-                    <p className="text-xs text-gray-300 mb-2">Kobar Borah • $12.99</p>
-                    <p className="text-xs text-gray-400 mb-3">Basic fire-based strategy focusing on direct damage and aggressive plays.</p>
-                    <div className="flex gap-1">
-                      <button className="flex-1 bg-blue-600 hover:bg-blue-700 px-2 py-1 rounded text-xs">Edit</button>
-                      <button className="flex-1 bg-red-600 hover:bg-red-700 px-2 py-1 rounded text-xs">Delete</button>
-                    </div>
-                  </div>
+                  ))}
                   
                   <div className="bg-gray-600 p-3 rounded border border-gray-500">
                     <div className="flex justify-between items-start mb-2">
