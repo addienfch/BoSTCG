@@ -6,6 +6,7 @@ import { useDeckStore } from '../game/stores/useDeckStore';
 import { cardNftService } from '../blockchain/solana/cardNftService';
 import BackButton from '../components/BackButton';
 import NavigationBar from '../components/NavigationBar';
+import CardRewardPopup from '../components/CardRewardPopup';
 import { Button } from '../components/ui/button';
 import { Badge } from '../components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../components/ui/dialog';
@@ -59,6 +60,9 @@ const BoosterPacksPage: React.FC = () => {
   const [openedPacks, setOpenedPacks] = useState<PackReward[]>([]);
   const [showResults, setShowResults] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [showRewardPopup, setShowRewardPopup] = useState(false);
+  const [rewardCards, setRewardCards] = useState<Card[]>([]);
+  const [rewardTitle, setRewardTitle] = useState('');
 
   // Data definitions
   const expansions: Expansion[] = [
@@ -229,14 +233,35 @@ const BoosterPacksPage: React.FC = () => {
     try {
       const reward = await shuffleAndMintCards(pack);
       setOpenedPacks([reward]);
-      setCurrentStep('results');
-      setShowResults(true);
       
+      // Show reward popup
+      setRewardCards(reward.cards);
+      setRewardTitle(`${pack.tier.name} Pack Opened!`);
+      setShowRewardPopup(true);
+      
+      setCurrentStep('results');
       toast.success(`Successfully opened ${pack.tier.name}! Got ${reward.cards.length} cards.`);
     } catch (error) {
       console.error('Pack opening error:', error);
       toast.error('Failed to open pack. Please try again.');
       setCurrentStep('pack-selection');
+    }
+  };
+
+  const handleMintCards = async () => {
+    try {
+      const walletStatus = await cardNftService.getWalletStatus();
+      if (!walletStatus.connected) {
+        toast.error('Please connect your wallet first to mint NFTs');
+        return;
+      }
+      
+      // Mock minting process
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      toast.success(`Successfully minted ${rewardCards.length} cards as NFTs!`);
+    } catch (error) {
+      console.error('Minting error:', error);
+      toast.error('Failed to mint cards. Please try again.');
     }
   };
 
@@ -520,6 +545,17 @@ const BoosterPacksPage: React.FC = () => {
       </div>
       
       <NavigationBar />
+      
+      {/* Card Reward Popup */}
+      <CardRewardPopup
+        isOpen={showRewardPopup}
+        onClose={() => setShowRewardPopup(false)}
+        title={rewardTitle}
+        subtitle={`${selectedPack?.expansion.name} - ${selectedTier?.name}`}
+        cards={rewardCards}
+        onMintCards={handleMintCards}
+        showMintButton={true}
+      />
     </div>
   );
 };

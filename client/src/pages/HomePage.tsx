@@ -78,7 +78,7 @@ const HomePage: React.FC = () => {
           </p>
           
           {/* Rolling Image Section */}
-          <div className="relative h-48 bg-spektrum-light bg-opacity-10 rounded-lg overflow-hidden border border-spektrum-light border-opacity-20">
+          <div className="relative h-64 bg-spektrum-light bg-opacity-10 rounded-lg overflow-hidden border border-spektrum-light border-opacity-20">
             <div 
               className="flex transition-transform duration-500 ease-in-out h-full"
               style={{ transform: `translateX(-${currentImageIndex * 100}%)` }}
@@ -97,7 +97,7 @@ const HomePage: React.FC = () => {
                     <img 
                       src={image}
                       alt={`Card ${index + 1}`}
-                      className="w-full h-full object-cover"
+                      className="w-full h-full object-contain"
                       onError={() => {
                         setImageLoadErrors(prev => new Set(prev.add(index)));
                         console.warn(`Failed to load image: ${image}`);
