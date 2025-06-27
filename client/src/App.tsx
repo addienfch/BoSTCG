@@ -40,7 +40,10 @@ function SoundLoader() {
     };
 
     const handleError = (event: ErrorEvent) => {
-      console.warn('Global error caught:', event.error);
+      // Only log meaningful errors, ignore null/undefined errors
+      if (event.error !== null && event.error !== undefined) {
+        console.warn('Global error caught:', event.error);
+      }
       // Prevent the error from bubbling up to Vite's error overlay
       event.preventDefault();
       event.stopPropagation();
