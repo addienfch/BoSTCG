@@ -849,7 +849,7 @@ export const useGameStore = create<GameState>((set, get) => ({
           ...state[player].activeAvatar,
           isTapped: true,
           // Make sure counters exist
-          counters: state[player].activeAvatar.counters || { damage: 0, bleed: 0, shield: 0 }
+          counters: state[player].activeAvatar.counters || { damage: 0, bleed: 0, burn: 0, freeze: 0, poison: 0, stun: 0, shield: 0 }
         }
       };
       
@@ -2030,7 +2030,10 @@ export const useGameStore = create<GameState>((set, get) => ({
         const damage = avatar.counters?.damage || 0;
         
         if (damage >= avatar.health) {
-          // Avatar defeated
+          // Process death triggers first
+          get().processAvatarDeathEffects(avatar, 'player');
+          
+          // Avatar defeated - move to graveyard
           updatedState.player = {
             ...state.player,
             activeAvatar: null,
@@ -2075,29 +2078,35 @@ export const useGameStore = create<GameState>((set, get) => ({
             toast.error(`Your health reduced to ${newHealth}. You lost a life card: ${lostLifeCard.name}!`, { duration: 5000 });
           }
           
-          // Check if player has reserve avatars
+          // Enhanced reserve avatar handling
           if (state.player.reserveAvatars.length === 0) {
             // No reserve avatars - game over immediately
             updatedState.winner = 'opponent';
             get().addLog('You have lost! You have no reserve avatars left.');
             toast.error('You have no reserve avatars. Game over!', { duration: 5000 });
           } else {
-            // Has reserve avatars - prompt to select one
-            if (state.currentPlayer === 'player') {
-              toast.warning('You need to select a reserve avatar to become your new active avatar!', {
-                duration: 5000
-              });
-              
-              // Set a flag in the state to indicate the player needs to select a reserve
-              updatedState.player.needsToSelectReserveAvatar = true;
-            } else {
-              // For AI opponent, automatically select the first reserve avatar
+            // Has reserve avatars - must select one immediately
+            updatedState.player.needsToSelectReserveAvatar = true;
+            
+            // Pause the game until avatar is selected
+            get().addLog(`You must select a reserve avatar to continue! You have ${state.player.reserveAvatars.length} available.`);
+            toast.warning('Select a reserve avatar to become your new active avatar!', {
+              duration: 10000
+            });
+            
+            // If it's AI's turn handling player's death, auto-select first reserve
+            if (state.currentPlayer === 'opponent') {
               const reserveAvatars = [...state.player.reserveAvatars];
               const newActiveAvatar = reserveAvatars.shift();
               
               if (newActiveAvatar) {
+                // Reset counters for new active avatar
+                newActiveAvatar.counters = { damage: 0, bleed: 0, burn: 0, freeze: 0, poison: 0, stun: 0, shield: 0 };
+                newActiveAvatar.isTapped = false;
+                
                 updatedState.player.activeAvatar = newActiveAvatar;
                 updatedState.player.reserveAvatars = reserveAvatars;
+                updatedState.player.needsToSelectReserveAvatar = false;
               }
               
               get().addLog(`Your ${newActiveAvatar?.name} has moved to the active position.`);
@@ -2112,7 +2121,10 @@ export const useGameStore = create<GameState>((set, get) => ({
         const damage = avatar.counters?.damage || 0;
         
         if (damage >= avatar.health) {
-          // Avatar defeated
+          // Process death triggers first
+          get().processAvatarDeathEffects(avatar, 'opponent');
+          
+          // Avatar defeated - move to graveyard
           updatedState.opponent = {
             ...state.opponent,
             activeAvatar: null,
@@ -2157,24 +2169,33 @@ export const useGameStore = create<GameState>((set, get) => ({
             toast.success(`Opponent's health reduced to ${newHealth}. They lost a life card!`, { duration: 5000 });
           }
           
-          // Check if opponent has reserve avatars
+          // Enhanced opponent reserve avatar handling
           if (state.opponent.reserveAvatars.length === 0) {
             // No reserve avatars - game over immediately
             updatedState.winner = 'player';
             get().addLog('You are victorious! Your opponent has no reserve avatars left.');
             toast.success('Opponent has no reserve avatars. You win!', { duration: 5000 });
           } else {
-            // For AI opponent, automatically select the first reserve avatar
+            // AI opponent automatically selects the best reserve avatar
             const reserveAvatars = [...state.opponent.reserveAvatars];
-            const newActiveAvatar = reserveAvatars.shift();
             
-            if (newActiveAvatar) {
+            // For AI, select the strongest available reserve avatar
+            const bestReserve = get().selectBestReserveAvatar(reserveAvatars);
+            const bestIndex = reserveAvatars.findIndex(avatar => avatar.id === bestReserve.id);
+            
+            if (bestIndex !== -1) {
+              const newActiveAvatar = reserveAvatars.splice(bestIndex, 1)[0];
+              
+              // Reset counters for new active avatar
+              newActiveAvatar.counters = { damage: 0, bleed: 0, shield: 0 };
+              newActiveAvatar.isTapped = false;
+              
               updatedState.opponent.activeAvatar = newActiveAvatar;
               updatedState.opponent.reserveAvatars = reserveAvatars;
+              
+              get().addLog(`Opponent's ${newActiveAvatar.name} has moved to the active position.`);
+              toast.info(`Opponent moved ${newActiveAvatar.name} to the active position.`);
             }
-            
-            get().addLog(`Opponent's ${newActiveAvatar?.name} has moved to the active position.`);
-            toast.info(`Opponent moved ${newActiveAvatar?.name} to the active position.`);
           }
         }
       }
