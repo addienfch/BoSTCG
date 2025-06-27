@@ -5,39 +5,73 @@ import { useDeckStore } from '../game/stores/useDeckStore';
 import { toast } from 'sonner';
 import BackButton from '../components/BackButton';
 import NavigationBar from '../components/NavigationBar';
+import { Button } from '../components/ui/button';
+import { Badge } from '../components/ui/badge';
+import { 
+  kobarBorahAvatarCards, 
+  kobarBorahActionCards, 
+  kujanaKuhakaAvatarCards 
+} from '../game/data/kobarBorahCards';
+import { redElementalSpellCards } from '../game/data/redElementalCards';
+
+interface Expansion {
+  id: string;
+  name: string;
+  description: string;
+  symbol: string;
+}
 
 interface PremadeDeck {
   id: string;
   name: string;
-  element: ElementType;
+  expansion: Expansion;
+  tribe: string;
   description: string;
   price: number;
   cardCount: number;
   strategy: string;
   difficulty: 'Beginner' | 'Intermediate' | 'Advanced';
-  coverCard: string;
+  coverCardName: string;
   keyCards: string[];
   purchased: boolean;
 }
 
 const PremadeDecksPage: React.FC = () => {
   const navigate = useNavigate();
-  const { addDeck, getAvailableCards } = useDeckStore();
+  const { addDeck, getAvailableCards, addCards } = useDeckStore();
   const [purchasedDecks, setPurchasedDecks] = useState<Set<string>>(new Set());
-  const [selectedDeck, setSelectedDeck] = useState<PremadeDeck | null>(null);
+  const [selectedExpansion, setSelectedExpansion] = useState<Expansion | null>(null);
+  const [currentStep, setCurrentStep] = useState<'expansion-selection' | 'deck-selection'>('expansion-selection');
+
+  // Define expansions
+  const expansions: Expansion[] = [
+    {
+      id: 'genesis',
+      name: 'Genesis Set',
+      description: 'The foundational tribal decks',
+      symbol: '⚡'
+    },
+    {
+      id: 'elemental-fury',
+      name: 'Elemental Fury',
+      description: 'Advanced elemental combinations',
+      symbol: '🔥'
+    }
+  ];
 
   const premadeDecks: PremadeDeck[] = [
     {
-      id: 'fire-starter',
-      name: 'Blazing Beginners',
-      element: 'fire',
-      description: 'Perfect starter deck focused on aggressive fire tactics and basic combos.',
-      price: 25,
-      cardCount: 40,
-      strategy: 'Aggressive rush tactics with burn effects',
+      id: 'kobar-borah-starter',
+      name: 'Kobar-Borah Tribal',
+      expansion: expansions[0],
+      tribe: 'kobar-borah',
+      description: 'Complete tribal deck featuring Kobar and Borah avatars with supporting spells.',
+      price: 35,
+      cardCount: 42,
+      strategy: 'Tribal synergy with avatar evolution and equipment support',
       difficulty: 'Beginner',
-      coverCard: 'Radja',
-      keyCards: ['Radja', 'Crimson', 'Burn Ball', 'Spark'],
+      coverCardName: 'Radja',
+      keyCards: ['Radja', 'Crimson', 'Boar Berserker', 'Banaspati'],
       purchased: false
     },
     {

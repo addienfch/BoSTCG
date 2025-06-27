@@ -52,9 +52,9 @@ const BoosterPacksPage: React.FC = () => {
   const allCards = getAvailableCards();
   
   // State management
-  const [currentStep, setCurrentStep] = useState<'tier-selection' | 'expansion-selection' | 'pack-selection' | 'opening' | 'results'>('tier-selection');
-  const [selectedTier, setSelectedTier] = useState<PackTier | null>(null);
+  const [currentStep, setCurrentStep] = useState<'expansion-selection' | 'tier-selection' | 'pack-selection' | 'opening' | 'results'>('expansion-selection');
   const [selectedExpansion, setSelectedExpansion] = useState<Expansion | null>(null);
+  const [selectedTier, setSelectedTier] = useState<PackTier | null>(null);
   const [selectedPack, setSelectedPack] = useState<IndividualPack | null>(null);
   const [openedPacks, setOpenedPacks] = useState<PackReward[]>([]);
   const [showResults, setShowResults] = useState(false);
@@ -212,13 +212,13 @@ const BoosterPacksPage: React.FC = () => {
   };
 
   // Step handlers
-  const handleTierSelection = (tier: PackTier) => {
-    setSelectedTier(tier);
-    setCurrentStep('expansion-selection');
-  };
-
   const handleExpansionSelection = (expansion: Expansion) => {
     setSelectedExpansion(expansion);
+    setCurrentStep('tier-selection');
+  };
+
+  const handleTierSelection = (tier: PackTier) => {
+    setSelectedTier(tier);
     setCurrentStep('pack-selection');
   };
 
@@ -242,18 +242,18 @@ const BoosterPacksPage: React.FC = () => {
 
   const handleBackNavigation = () => {
     switch (currentStep) {
-      case 'expansion-selection':
-        setCurrentStep('tier-selection');
-        setSelectedTier(null);
-        break;
-      case 'pack-selection':
+      case 'tier-selection':
         setCurrentStep('expansion-selection');
         setSelectedExpansion(null);
         break;
-      case 'results':
+      case 'pack-selection':
         setCurrentStep('tier-selection');
         setSelectedTier(null);
+        break;
+      case 'results':
+        setCurrentStep('expansion-selection');
         setSelectedExpansion(null);
+        setSelectedTier(null);
         setSelectedPack(null);
         setOpenedPacks([]);
         setShowResults(false);
@@ -268,7 +268,9 @@ const BoosterPacksPage: React.FC = () => {
     <div className="space-y-6">
       <div className="text-center">
         <h1 className="text-3xl font-bold text-white mb-2">Choose Your Pack Type</h1>
-        <p className="text-gray-300">Select between beginner-friendly or advanced booster packs</p>
+        <p className="text-gray-300">
+          {selectedExpansion?.name} ({selectedExpansion?.symbol}) - Select pack difficulty
+        </p>
       </div>
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -312,9 +314,7 @@ const BoosterPacksPage: React.FC = () => {
     <div className="space-y-6">
       <div className="text-center">
         <h1 className="text-3xl font-bold text-white mb-2">Choose Expansion</h1>
-        <p className="text-gray-300">
-          Selected: {selectedTier?.name} ({selectedTier?.emoji})
-        </p>
+        <p className="text-gray-300">Select the card set you want to open packs from</p>
       </div>
       
       <div className="grid grid-cols-1 gap-6">
@@ -511,8 +511,8 @@ const BoosterPacksPage: React.FC = () => {
         <BackButton onClick={handleBackNavigation} />
         
         <div className="max-w-6xl mx-auto">
-          {currentStep === 'tier-selection' && renderTierSelection()}
           {currentStep === 'expansion-selection' && renderExpansionSelection()}
+          {currentStep === 'tier-selection' && renderTierSelection()}
           {currentStep === 'pack-selection' && renderPackSelection()}
           {currentStep === 'opening' && renderOpening()}
           {currentStep === 'results' && renderResults()}
