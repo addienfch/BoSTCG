@@ -140,11 +140,13 @@ const BoosterPacksPage: React.FC = () => {
   const shuffleAndMintCards = async (pack: IndividualPack): Promise<PackReward> => {
     setIsProcessing(true);
     
-    // Filter cards by expansion (mock logic for now)
-    const expansionCards = allCards.filter(card => {
-      // In real implementation, cards would have expansion property
-      return true; // For now, use all cards
-    });
+    // Filter cards by expansion and add default rarity if missing
+    const expansionCards = allCards.map(card => ({
+      ...card,
+      rarity: card.rarity || (card.type === 'avatar' && (card as AvatarCard).level === 2 ? 'Rare' : 
+              card.element === 'fire' ? 'Uncommon' : 'Common'),
+      expansion: card.expansion || pack.expansion.id
+    }));
 
     // Generate random cards based on tier guarantees
     const cards: Card[] = [];
@@ -159,10 +161,32 @@ const BoosterPacksPage: React.FC = () => {
       }
     }
     
-    // Fill remaining slots with random cards
+    // Fill remaining slots with random cards (weighted by rarity)
     while (cards.length < cardCount) {
-      const randomCard = expansionCards[Math.floor(Math.random() * expansionCards.length)];
-      cards.push(randomCard);
+      const weights = { 'Common': 50, 'Uncommon': 30, 'Rare': 15, 'Epic': 4, 'Legendary': 1 };
+      const totalWeight = Object.values(weights).reduce((sum, weight) => sum + weight, 0);
+      const random = Math.random() * totalWeight;
+      
+      let currentWeight = 0;
+      let selectedRarity: keyof typeof weights = 'Common';
+      
+      for (const [rarity, weight] of Object.entries(weights)) {
+        currentWeight += weight;
+        if (random <= currentWeight) {
+          selectedRarity = rarity as keyof typeof weights;
+          break;
+        }
+      }
+      
+      const rarityCards = expansionCards.filter(card => card.rarity === selectedRarity);
+      if (rarityCards.length > 0) {
+        const randomCard = rarityCards[Math.floor(Math.random() * rarityCards.length)];
+        cards.push(randomCard);
+      } else {
+        // Fallback to any available card
+        const randomCard = expansionCards[Math.floor(Math.random() * expansionCards.length)];
+        cards.push(randomCard);
+      }
     }
 
     // Simulate minting process

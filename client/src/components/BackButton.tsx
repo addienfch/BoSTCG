@@ -3,14 +3,23 @@ import { useNavigate } from 'react-router-dom';
 
 interface BackButtonProps {
   to?: string;
+  onClick?: () => void;
 }
 
-const BackButton: React.FC<BackButtonProps> = ({ to = '/home' }) => {
+const BackButton: React.FC<BackButtonProps> = ({ to = '/home', onClick }) => {
   const navigate = useNavigate();
+
+  const handleClick = () => {
+    if (onClick) {
+      onClick();
+    } else {
+      navigate(to);
+    }
+  };
 
   return (
     <button
-      onClick={() => navigate(to)}
+      onClick={handleClick}
       className="fixed top-4 right-4 z-50 bg-gray-800 bg-opacity-80 text-white p-2 rounded-full hover:bg-gray-700 transition-colors"
       title="Back to Home"
     >

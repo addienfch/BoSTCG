@@ -4,6 +4,7 @@ export type ElementType = 'fire' | 'water' | 'ground' | 'air' | 'neutral';
 export type SubType = 'kobar' | 'borah' | 'kuhaka' | 'kujana' | 'kuku';
 export type ActionSubType = 'equipment' | 'healing' | 'damage' | 'draw' | 'search';
 export type CardCategory = 'avatar' | 'spell' | 'quickSpell' | 'ritualArmor' | 'field' | 'equipment' | 'item';
+export type RarityType = 'Common' | 'Uncommon' | 'Rare' | 'Epic' | 'Legendary';
 
 // Card interfaces
 export interface Skill {
@@ -31,6 +32,8 @@ export interface BaseCard {
   name: string;
   type: CardCategory;
   element: ElementType;
+  rarity?: RarityType; // Card rarity for booster pack systems
+  expansion?: string; // Expansion set identifier
   description?: string;
   energyCost?: ElementType[];
   effect?: string;
