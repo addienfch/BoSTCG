@@ -113,7 +113,15 @@ Book of Spektrum is a full-stack 3D trading card game built for the web, featuri
 ## Changelog
 
 - June 27, 2025. Initial setup
+- December 27, 2024. UI improvements and discard mechanics:
+  - Made dev-tools UI more compact while preserving all functionality
+  - Updated all navigation icons to simple lineart style (SVG)
+  - Added discard confirmation popup for cards with "you may discard" mechanics
+  - Implemented card rarity system with 5 tiers (Common, Uncommon, Rare, Super Rare, Mythic)
+  - Added card rarity variants system for same cards with different artwork
 
 ## User Preferences
 
 Preferred communication style: Simple, everyday language.
+Preferred icon style: Simple lineart style icons (SVG-based)
+Preferred UI density: Compact layouts with preserved functionality
