@@ -921,8 +921,8 @@ const DevToolsPage: React.FC = () => {
                     </div>
                   </div>
 
-                  {/* Skill 2 - Takes 2 columns (wider like expansions) */}
-                  <div className="bg-gray-700 p-2 rounded lg:col-span-2">
+                  {/* Skill 2 - Takes 1 column */}
+                  <div className="bg-gray-700 p-2 rounded">
                     <h3 className="font-medium mb-2 text-sm">Skill 2</h3>
                     <div className="space-y-2">
                       <div className="grid grid-cols-1 gap-2">
