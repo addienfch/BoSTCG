@@ -77,13 +77,20 @@ const GameModePage: React.FC<GameModePageProps> = ({ onStartGame }) => {
     onStartGame(); // Call the parent component callback to navigate to the game
   };
   
-  // Handle starting AI opponent game
-  const handleStartAIGame = () => {
+  // Handle starting AI opponent game with difficulty selection
+  const handleStartAIGame = (difficulty?: 'newbie' | 'regular' | 'advanced') => {
+    if (!difficulty) {
+      setShowAIDifficultySelector(true);
+      return;
+    }
+    
     if (!updateActiveDeck()) return;
     
     gameMode.setPlayerName(playerName);
+    gameMode.setAIDifficulty(difficulty);
     gameMode.startAIGame();
-    toast.success('Starting game against AI...');
+    toast.success(`Starting game against ${difficulty} AI...`);
+    setShowAIDifficultySelector(false);
     onStartGame(); // Call the parent component callback to navigate to the game
   };
   
@@ -205,7 +212,7 @@ const GameModePage: React.FC<GameModePageProps> = ({ onStartGame }) => {
             
             <div className="grid grid-cols-2 gap-3">
               <button
-                onClick={handleStartAIGame}
+                onClick={() => handleStartAIGame()}
                 className="bg-spektrum-orange hover:bg-orange-600 text-spektrum-dark py-3 px-4 rounded-md transition-colors font-medium"
                 disabled={decks.length === 0 || !selectedDeckId}
               >
@@ -275,6 +282,51 @@ const GameModePage: React.FC<GameModePageProps> = ({ onStartGame }) => {
             >
               Copy Code
             </button>
+          </div>
+        )}
+        
+        {/* AI Difficulty Selection Modal */}
+        {showAIDifficultySelector && (
+          <div className="fixed inset-0 bg-black bg-opacity-70 z-50 flex items-center justify-center p-4">
+            <div className="bg-spektrum-dark border border-spektrum-light border-opacity-20 rounded-lg p-6 shadow-lg max-w-md w-full">
+              <h2 className="text-xl font-bold mb-4 text-spektrum-light text-center">Choose AI Difficulty</h2>
+              <p className="text-sm text-gray-300 mb-6 text-center">
+                Select the AI opponent difficulty level for your match
+              </p>
+              
+              <div className="space-y-3">
+                <button
+                  onClick={() => handleStartAIGame('newbie')}
+                  className="w-full bg-green-600 hover:bg-green-700 text-white py-3 px-4 rounded-md transition-colors font-medium text-left"
+                >
+                  <div className="font-bold">🟢 Newbie AI</div>
+                  <div className="text-sm opacity-90">Easy opponent, makes simple moves with longer thinking time</div>
+                </button>
+                
+                <button
+                  onClick={() => handleStartAIGame('regular')}
+                  className="w-full bg-yellow-600 hover:bg-yellow-700 text-white py-3 px-4 rounded-md transition-colors font-medium text-left"
+                >
+                  <div className="font-bold">🟡 Regular AI</div>
+                  <div className="text-sm opacity-90">Balanced opponent, considers multiple options</div>
+                </button>
+                
+                <button
+                  onClick={() => handleStartAIGame('advanced')}
+                  className="w-full bg-red-600 hover:bg-red-700 text-white py-3 px-4 rounded-md transition-colors font-medium text-left"
+                >
+                  <div className="font-bold">🔴 Advanced AI</div>
+                  <div className="text-sm opacity-90">Challenging opponent, makes strategic decisions quickly</div>
+                </button>
+              </div>
+              
+              <button
+                onClick={() => setShowAIDifficultySelector(false)}
+                className="w-full mt-4 bg-gray-600 hover:bg-gray-700 text-white py-2 px-4 rounded-md transition-colors"
+              >
+                Cancel
+              </button>
+            </div>
           </div>
         )}
       </div>
