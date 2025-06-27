@@ -3,6 +3,7 @@ import { Card } from '../game/data/cardTypes';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
 import { X } from 'lucide-react';
+import SafeCardImage from './SafeCardImage';
 
 interface CardRewardPopupProps {
   isOpen: boolean;
@@ -94,15 +95,10 @@ const CardRewardPopup: React.FC<CardRewardPopupProps> = ({
               >
                 <div className="aspect-[3/4] bg-gray-700 rounded-lg mb-3 flex items-center justify-center overflow-hidden">
                   {card.art ? (
-                    <img
+                    <SafeCardImage
                       src={card.art}
                       alt={card.name}
                       className="w-full h-full object-contain"
-                      onError={(e) => {
-                        const target = e.target as HTMLImageElement;
-                        target.style.display = 'none';
-                        target.nextElementSibling!.classList.remove('hidden');
-                      }}
                     />
                   ) : null}
                   <div className="text-center text-gray-400 hidden">

@@ -5,6 +5,7 @@ import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
 import BackButton from '../components/BackButton';
 import NavigationBar from '../components/NavigationBar';
+import SafeCardImage from '../components/SafeCardImage';
 import { getRarityColor, getRarityTextColor } from '../game/utils/rarityUtils';
 
 const DeckBuilderPage: React.FC = () => {
@@ -338,7 +339,7 @@ const DeckBuilderPage: React.FC = () => {
                         <div className="flex items-center">
                           {card.art ? (
                             <div className={`w-8 h-8 mr-2 rounded overflow-hidden border-2 ${card.rarity ? getRarityColor(card.rarity) : 'border-gray-400'}`}>
-                              <img src={card.art} alt={card.name} className="w-full h-full object-cover" />
+                              <SafeCardImage src={card.art} alt={card.name} className="w-full h-full object-cover" />
                             </div>
                           ) : (
                             <div 
@@ -494,15 +495,10 @@ const DeckBuilderPage: React.FC = () => {
                       >
                         {card.art ? (
                           <>
-                            <img 
-                              src={card.art} 
-                              alt={card.name} 
+                            <SafeCardImage
+                              src={card.art}
+                              alt={card.name}
                               className="h-full w-full object-cover opacity-80"
-                              onError={(e) => {
-                                const target = e.currentTarget;
-                                target.src = '/textures/cards/placeholder.svg';
-                                target.onerror = null; // Prevent infinite loop
-                              }}
                             />
                             <div className="absolute inset-0 flex flex-col justify-between p-1">
                               <div className="flex justify-between">
