@@ -55,6 +55,7 @@ interface DeckStore {
   getBaseCardCount: (baseName: string, deckCards: Card[]) => number;
   refreshLibrary: () => void;
   syncWithNFTs: () => Promise<void>;
+  initializeDefaultCards: () => void;
 }
 
 // Helper function to create a Kobar-Borah tribe deck
@@ -534,6 +535,25 @@ export const useDeckStore = create<DeckStore>()(
 
       getBaseCardCount: (baseName, deckCards) => {
         return deckCards.filter(card => card.name === baseName).length;
+      },
+
+      initializeDefaultCards: () => {
+        const { ownedCards } = get();
+        if (ownedCards.length === 0) {
+          // Initialize with some starter cards for new players
+          const starterCards = [
+            ...allFireCards.slice(0, 10), // First 10 fire cards
+            ...allNeutralCards.slice(0, 5)  // First 5 neutral cards
+          ].map((card, index) => ({
+            ...card,
+            id: `starter-${card.id}-${index}`
+          }));
+          
+          set({ ownedCards: starterCards });
+          console.log('Initialized deck store with starter cards');
+        } else {
+          console.log('Deck store already has cards');
+        }
       }
     }),
     {

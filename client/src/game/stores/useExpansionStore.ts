@@ -18,6 +18,7 @@ interface ExpansionStore {
   deleteExpansion: (id: string) => void;
   getExpansion: (id: string) => Expansion | undefined;
   getExpansionByName: (name: string) => Expansion | undefined;
+  initializeExpansions: () => void;
 }
 
 // Default expansions data
@@ -82,6 +83,16 @@ export const useExpansionStore = create<ExpansionStore>()(
 
       getExpansionByName: (name: string) => {
         return get().expansions.find(exp => exp.name === name);
+      },
+
+      initializeExpansions: () => {
+        const { expansions } = get();
+        if (expansions.length === 0) {
+          set({ expansions: defaultExpansions });
+          console.log('Initialized expansions with default data');
+        } else {
+          console.log('Expansions already initialized');
+        }
       }
     }),
     {

@@ -26,6 +26,7 @@ interface PremadeDecksStore {
   getPremadeDeck: (id: string) => PremadeDeck | undefined;
   getPremadeDecksByExpansion: (expansion: string) => PremadeDeck[];
   purchaseDeck: (id: string) => void;
+  initializePremadeDecks: () => void;
 }
 
 // Default premade decks data
@@ -127,6 +128,16 @@ export const usePremadeDecksStore = create<PremadeDecksStore>()(
             deck.id === id ? { ...deck, purchased: true } : deck
           )
         }));
+      },
+
+      initializePremadeDecks: () => {
+        const { premadeDecks } = get();
+        if (premadeDecks.length === 0) {
+          set({ premadeDecks: defaultPremadeDecks });
+          console.log('Initialized premade decks with default data');
+        } else {
+          console.log('Premade decks already initialized');
+        }
       }
     }),
     {
