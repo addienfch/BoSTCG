@@ -112,6 +112,14 @@ Book of Spektrum is a full-stack 3D trading card game built for the web, featuri
 
 ## Changelog
 
+- June 27, 2025. Comprehensive dev-tools implementation:
+  - Fixed card editing functionality with proper local state management
+  - Implemented complete expansion management system (create, edit, delete with persistence)
+  - Built full premade deck builder with form state and CRUD operations
+  - Added dev-tools documentation in dev-tools-guide.md
+  - Connected all forms to proper state management with live updates
+  - Added console logging for debugging operations
+  - **Issue Identified**: Shop and dev-tools use different expansion data sources (not synced)
 - June 27, 2025. Enhanced dev-tools and pack rarity system:
   - Added scroll functionality to dev-tools edit card and premade decks tabs (600px height containers)
   - Implemented differentiated pack rarity systems:
