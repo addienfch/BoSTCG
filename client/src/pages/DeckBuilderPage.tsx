@@ -78,19 +78,13 @@ const DeckBuilderPage: React.FC = () => {
   const hasReachedMaxCount = (card: Card) => {
     const currentCount = cardCounts[card.name] || 0;
     
-    // Level 2 avatars can only have 1 copy
-    if (card.type === 'avatar' && (card as AvatarCard).level === 2) {
-      return currentCount >= 1;
-    }
-    
-    // All other cards can have up to 4 copies
+    // All cards can have up to 4 copies (including Level 2 avatars)
     return currentCount >= 4;
   };
 
   // Get wallet card count - how many the user actually owns
   const getWalletCardCount = (cardName: string) => {
-    // Use the getAllCards() from deck store to get all available cards including CNFTs
-    const allCards = availableCards;
+    // Count all cards with this name from the available cards (before filtering)
     return allCards.filter(card => card.name === cardName).length;
   };
   
@@ -480,7 +474,7 @@ const DeckBuilderPage: React.FC = () => {
                 const deckCount = cardCounts[card.name] || 0; // Cards in current deck
                 const walletCount = getWalletCardCount(card.name); // Cards owned in wallet
                 const isMaxed = hasReachedMaxCount(card);
-                const maxAllowed = card.type === 'avatar' && (card as AvatarCard).level === 2 ? 1 : 4;
+                const maxAllowed = 4; // All cards can have up to 4 copies
                 
                 return (
                   <div 
