@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { cardNftService, WalletStatus } from '../blockchain/solana/cardNftService';
+import React, { useEffect } from 'react';
+import { useWalletStore } from '../game/stores/useWalletStore';
 import { toast } from 'sonner';
 
 interface SolanaWalletConnectProps {
@@ -7,179 +7,122 @@ interface SolanaWalletConnectProps {
 }
 
 const SolanaWalletConnect: React.FC<SolanaWalletConnectProps> = ({ onConnected }) => {
-  const [walletStatus, setWalletStatus] = useState<WalletStatus>({
-    connected: false,
-    address: null,
-    balance: 0
-  });
-  
-  const [isLoading, setIsLoading] = useState(false);
-  const [showCollection, setShowCollection] = useState(false);
-  
-  // Initialize and check wallet connection on component mount
+  const {
+    isConnected,
+    walletAddress,
+    balance,
+    connectionStatus,
+    lastConnectionError,
+    connectWallet,
+    disconnectWallet,
+    refreshWalletData
+  } = useWalletStore();
+
+  // Check for connection status changes
   useEffect(() => {
-    const checkWalletStatus = async () => {
-      try {
-        const status = await cardNftService.getWalletStatus();
-        setWalletStatus(status);
-      } catch (error) {
-        console.error('Error checking wallet status:', error);
-        // Set default disconnected state on error
-        setWalletStatus({
-          connected: false,
-          address: null,
-          balance: 0
-        });
-      }
-    };
-    
-    // Wrap async call to prevent unhandled promise rejection
-    checkWalletStatus().catch(error => {
-      console.error('Failed to initialize wallet status:', error);
-    });
-  }, []);
-  
-  // Handle wallet connection
+    if (isConnected && onConnected) {
+      onConnected();
+    }
+  }, [isConnected, onConnected]);
+
+  // Show error toast when connection fails
+  useEffect(() => {
+    if (lastConnectionError && connectionStatus === 'error') {
+      toast.error(`Wallet connection failed: ${lastConnectionError}`);
+    }
+  }, [lastConnectionError, connectionStatus]);
+
   const handleConnect = async () => {
-    setIsLoading(true);
-    try {
-      const status = await cardNftService.connect();
-      setWalletStatus(status);
-      toast.success('Wallet connected successfully');
-      if (onConnected) {
-        onConnected();
-      }
-    } catch (error) {
-      console.error('Error connecting wallet:', error);
-      toast.error('Failed to connect wallet');
-      // Reset wallet status on error
-      setWalletStatus({
-        connected: false,
-        address: null,
-        balance: 0
-      });
-    } finally {
-      setIsLoading(false);
+    const success = await connectWallet();
+    if (success) {
+      toast.success('Wallet connected successfully!');
     }
   };
-  
-  // Handle wallet disconnection
+
   const handleDisconnect = async () => {
-    setIsLoading(true);
-    try {
-      await cardNftService.disconnect();
-      setWalletStatus({
-        connected: false,
-        address: null,
-        balance: 0
-      });
-      setShowCollection(false);
-      toast.success('Wallet disconnected');
-    } catch (error) {
-      console.error('Error disconnecting wallet:', error);
-      toast.error('Failed to disconnect wallet');
-      // Force reset wallet status even on error
-      setWalletStatus({
-        connected: false,
-        address: null,
-        balance: 0
-      });
-    } finally {
-      setIsLoading(false);
-    }
+    await disconnectWallet();
+    toast.success('Wallet disconnected');
   };
-  
-  // Handle showing NFT collection
-  const handleViewCollection = async () => {
-    setShowCollection(!showCollection);
-    if (!showCollection) {
-      try {
-        const cards = await cardNftService.getOwnedCards();
-        if (cards.length === 0) {
-          toast.info('No NFT cards found in this wallet');
-        }
-      } catch (error) {
-        console.error('Error fetching NFT cards:', error);
-        toast.error('Failed to load NFT collection');
-      }
-    }
+
+  const formatAddress = (address: string) => {
+    return `${address.slice(0, 4)}...${address.slice(-4)}`;
   };
-  
-  // Display wallet address in a truncated format
-  const formatAddress = (address: string | null) => {
-    if (!address) return '';
-    return `${address.slice(0, 6)}...${address.slice(-4)}`;
-  };
-  
+
   return (
-    <div className="bg-gray-800 p-4 rounded-lg shadow-lg w-full">
-      <div className="mb-4">
-        <h2 className="text-lg font-bold text-white mb-2">Solana Wallet</h2>
-        <p className="text-gray-400 text-xs mb-3">Connect your Solana wallet to use your NFT cards in the game</p>
-        
-        {walletStatus.connected ? (
-          <div className="flex flex-col gap-2">
-            <div className="bg-gray-700 rounded p-2 text-sm text-white flex justify-between">
-              <span>Address:</span> 
-              <span className="font-mono">{formatAddress(walletStatus.address)}</span>
+    <div className="bg-gray-800 rounded-lg p-6">
+      <div className="flex items-center justify-between mb-4">
+        <h3 className="text-xl font-bold">Solana Wallet</h3>
+        <div className={`w-3 h-3 rounded-full ${
+          connectionStatus === 'connected' ? 'bg-green-500' :
+          connectionStatus === 'connecting' ? 'bg-yellow-500' :
+          connectionStatus === 'error' ? 'bg-red-500' :
+          'bg-gray-500'
+        }`} />
+      </div>
+
+      {!isConnected ? (
+        <div className="text-center">
+          <p className="text-gray-400 mb-4">
+            Connect your Solana wallet to manage your NFT cards
+          </p>
+          <button
+            onClick={handleConnect}
+            disabled={connectionStatus === 'connecting'}
+            className={`px-6 py-3 rounded-lg font-semibold transition-colors ${
+              connectionStatus === 'connecting'
+                ? 'bg-gray-600 text-gray-400 cursor-not-allowed'
+                : 'bg-spektrum-orange text-black hover:bg-orange-600'
+            }`}
+          >
+            {connectionStatus === 'connecting' ? (
+              <span className="flex items-center gap-2">
+                <div className="animate-spin rounded-full h-4 w-4 border-2 border-current border-t-transparent"></div>
+                Connecting...
+              </span>
+            ) : (
+              'Connect Wallet'
+            )}
+          </button>
+          
+          {lastConnectionError && (
+            <p className="text-red-400 text-sm mt-2">
+              {lastConnectionError}
+            </p>
+          )}
+        </div>
+      ) : (
+        <div className="space-y-4">
+          <div className="bg-gray-700 rounded-lg p-4">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-gray-400">Address:</span>
+              <span className="font-mono text-sm">
+                {walletAddress ? formatAddress(walletAddress) : 'Unknown'}
+              </span>
             </div>
-            
-            <div className="bg-gray-700 rounded p-2 text-sm text-white flex justify-between">
-              <span>Balance:</span> 
-              <span>{walletStatus.balance.toFixed(4)} SOL</span>
-            </div>
-            
-            <div className="flex gap-2 mt-2">
-              <button
-                onClick={handleViewCollection}
-                className={`${showCollection ? 'bg-purple-700' : 'bg-purple-600 hover:bg-purple-700'} text-white py-2 px-4 rounded flex-1`}
-              >
-                {showCollection ? 'Hide Collection' : 'View Collection'}
-              </button>
-              
-              <button
-                onClick={() => {
-                  handleDisconnect().catch(error => {
-                    console.error('Disconnect button error:', error);
-                  });
-                }}
-                disabled={isLoading}
-                className="bg-red-600 hover:bg-red-700 text-white py-2 px-4 rounded disabled:opacity-50"
-              >
-                {isLoading ? 'Disconnecting...' : 'Disconnect'}
-              </button>
+            <div className="flex items-center justify-between">
+              <span className="text-gray-400">Balance:</span>
+              <span className="font-semibold">
+                {balance.toFixed(4)} SOL
+              </span>
             </div>
           </div>
-        ) : (
-          <button
-            onClick={() => {
-              handleConnect().catch(error => {
-                console.error('Connect button error:', error);
-              });
-            }}
-            disabled={isLoading}
-            className="bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded w-full disabled:opacity-50"
-          >
-            {isLoading ? 'Connecting...' : 'Connect Wallet'}
-          </button>
-        )}
-      </div>
-      
-      {/* NFT Collection Section */}
-      {walletStatus.connected && showCollection && (
-        <div className="mt-4 border-t border-gray-700 pt-4">
-          <h3 className="text-md font-semibold text-white mb-2">NFT Card Collection</h3>
-          <div className="bg-gray-900 bg-opacity-50 rounded p-3 text-center">
-            <p className="text-gray-300 text-sm mb-2">This is where your NFT cards will appear</p>
-            <p className="text-gray-400 text-xs">You can use these cards in the game once connected</p>
+
+          <div className="flex gap-3">
+            <button
+              onClick={refreshWalletData}
+              className="flex-1 px-4 py-2 bg-gray-700 text-white rounded-lg hover:bg-gray-600 transition-colors"
+            >
+              Refresh
+            </button>
+            <button
+              onClick={handleDisconnect}
+              className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+            >
+              Disconnect
+            </button>
           </div>
         </div>
       )}
-      
-      {/* Informational section */}
-      <div className="mt-4 text-xs text-gray-400">
-        <p>cNFTs on Solana allow you to own unique cards that you can use across different games and platforms.</p>
-      </div>
     </div>
   );
 };
