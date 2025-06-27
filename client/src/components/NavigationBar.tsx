@@ -1,18 +1,19 @@
 import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { LineArtIcons } from './icons/LineArtIcons';
 
 const NavigationBar = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
   const navItems = [
-    { path: '/home', icon: '🏠', label: 'Home' },
-    { path: '/game-mode', icon: '🎮', label: 'Game' },
-    { path: '/deck-builder', icon: '📚', label: 'Deck' },
-    { path: '/library', icon: '📖', label: 'Library' },
-    { path: '/shop', icon: '🛒', label: 'Shop' },
-    { path: '/settings', icon: '⚙️', label: 'Settings' },
-    { path: '/dev-tools', icon: '🔧', label: 'Dev' }
+    { path: '/home', icon: 'Home', label: 'Home' },
+    { path: '/game-mode', icon: 'Game', label: 'Game' },
+    { path: '/deck-builder', icon: 'Deck', label: 'Deck' },
+    { path: '/library', icon: 'Library', label: 'Library' },
+    { path: '/shop', icon: 'Shop', label: 'Shop' },
+    { path: '/settings', icon: 'Settings', label: 'Settings' },
+    { path: '/dev-tools', icon: 'Edit', label: 'Dev' }
   ];
 
   return (

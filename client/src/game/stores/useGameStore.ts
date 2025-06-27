@@ -33,6 +33,16 @@ interface PlayerState {
   needsToDiscardCards?: boolean; // Flag to indicate player needs to discard cards at end of turn
 }
 
+interface DiscardChoiceState {
+  isOpen: boolean;
+  cardName: string;
+  discardPrompt: string;
+  bonusEffect: string;
+  normalEffect: string;
+  onYes: () => void;
+  onNo: () => void;
+}
+
 interface GameState {
   currentPlayer: Player;
   gamePhase: GamePhase;
@@ -46,6 +56,9 @@ interface GameState {
   // Selection state
   selectedCard: number | null;
   selectedTarget: string | null;
+  
+  // Discard choice popup state
+  discardChoice: DiscardChoiceState;
   
   // Event logs
   logs: string[];
@@ -83,6 +96,10 @@ interface GameState {
   
   // Log helpers
   addLog: (message: string) => void;
+  
+  // Discard choice popup
+  showDiscardChoice: (cardName: string, discardPrompt: string, bonusEffect: string, normalEffect: string, onYes: () => void, onNo: () => void) => void;
+  hideDiscardChoice: () => void;
   
   // AI actions
   performAIActions: () => void;
@@ -125,6 +142,17 @@ export const useGameStore = create<GameState>((set, get) => ({
   // Selection state
   selectedCard: null,
   selectedTarget: null,
+  
+  // Discard choice popup state
+  discardChoice: {
+    isOpen: false,
+    cardName: '',
+    discardPrompt: '',
+    bonusEffect: '',
+    normalEffect: '',
+    onYes: () => {},
+    onNo: () => {}
+  },
   
   // Event logs
   logs: [],
@@ -2692,6 +2720,35 @@ export const useGameStore = create<GameState>((set, get) => ({
         setTimeout(() => get().nextPhase(), 1000);
         break;
     }
+  },
+  
+  // Discard choice popup methods
+  showDiscardChoice: (cardName: string, discardPrompt: string, bonusEffect: string, normalEffect: string, onYes: () => void, onNo: () => void) => {
+    set({
+      discardChoice: {
+        isOpen: true,
+        cardName,
+        discardPrompt,
+        bonusEffect,
+        normalEffect,
+        onYes,
+        onNo
+      }
+    });
+  },
+  
+  hideDiscardChoice: () => {
+    set({
+      discardChoice: {
+        isOpen: false,
+        cardName: '',
+        discardPrompt: '',
+        bonusEffect: '',
+        normalEffect: '',
+        onYes: () => {},
+        onNo: () => {}
+      }
+    });
   }
 }));
 
