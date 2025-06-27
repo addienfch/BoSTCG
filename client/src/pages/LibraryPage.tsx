@@ -5,6 +5,7 @@ import { cardNftService } from '../blockchain/solana/cardNftService';
 import BackButton from '../components/BackButton';
 import NavigationBar from '../components/NavigationBar';
 import { ChevronDown } from 'lucide-react';
+import { getRarityColor, getRarityTextColor } from '../game/utils/rarityUtils';
 
 const LibraryPage: React.FC = () => {
   const { getAvailableCards } = useDeckStore();
@@ -76,7 +77,7 @@ const LibraryPage: React.FC = () => {
                           (card.description && card.description.toLowerCase().includes(searchTerm.toLowerCase()));
       const matchesElement = selectedElement === 'all' || card.element === selectedElement;
       const matchesType = selectedType === 'all' || card.type === selectedType;
-      const matchesRarity = selectedRarity === 'all'; // All cards shown for now
+      const matchesRarity = selectedRarity === 'all' || card.rarity === selectedRarity;
       const matchesExpansion = selectedExpansion === 'all'; // All expansions shown for now
       
       return matchesSearch && matchesElement && matchesType && matchesRarity && matchesExpansion;
@@ -208,11 +209,11 @@ const LibraryPage: React.FC = () => {
                 className="appearance-none px-4 py-2 pr-8 bg-gray-700 rounded-lg border border-gray-600 text-white cursor-pointer hover:bg-gray-600"
               >
                 <option value="all">All Rarities</option>
-                <option value="common">Common</option>
-                <option value="uncommon">Uncommon</option>
-                <option value="rare">Rare</option>
-                <option value="epic">Epic</option>
-                <option value="legendary">Legendary</option>
+                <option value="Common">Common</option>
+                <option value="Uncommon">Uncommon</option>
+                <option value="Rare">Rare</option>
+                <option value="Super Rare">Super Rare</option>
+                <option value="Mythic">Mythic</option>
               </select>
               <ChevronDown className="absolute right-2 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
             </div>
