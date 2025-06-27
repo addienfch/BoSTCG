@@ -112,6 +112,15 @@ Book of Spektrum is a full-stack 3D trading card game built for the web, featuri
 
 ## Changelog
 
+- June 27, 2025. Critical system fixes and enhanced synchronization:
+  - **CRITICAL FIX**: Resolved global error handler causing "null error" console spam
+  - **Battle Sets Sync**: Created useBattleSetsStore with 13 default items across 5 categories
+  - **Enhanced Booster Variants**: Implemented useBoosterVariantStore with rarity-based generation
+  - **Variant Pricing**: Added dynamic pricing system (1x to 10x multipliers)
+  - **Guaranteed Rarities**: Each variant now guarantees specific card rarities
+  - **Purchase Analytics**: Added variant purchase history and statistical tracking
+  - **Persistent Selection**: Variant choices now persist across navigation
+  - **Comprehensive Analysis**: Created detailed system analysis documentation
 - June 27, 2025. Complete data synchronization implementation:
   - **RESOLVED ALL SYNC ISSUES**: Unified all data sources with centralized stores
   - **Expansion Data**: Connected dev-tools, booster packs, and premade decks to single useExpansionStore

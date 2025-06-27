@@ -1,102 +1,52 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Card, ElementType } from '../game/data/cardTypes';
-import { useDeckStore } from '../game/stores/useDeckStore';
+import { Card } from '../game/data/cardTypes';
 import { toast } from 'sonner';
 import BackButton from '../components/BackButton';
 import NavigationBar from '../components/NavigationBar';
-
-interface BoosterPack {
-  id: string;
-  name: string;
-  element: ElementType | 'mixed';
-  price: number;
-  description: string;
-  guaranteedRarity: string;
-  cardCount: number;
-  emoji: string;
-  color: string;
-  artUrl: string;
-}
-
-interface BoosterVariant {
-  id: string;
-  name: string;
-  subtitle: string;
-  artUrl: string;
-  rarity: string;
-  description: string;
-}
+import { 
+  useBoosterVariantStore, 
+  type BoosterPack, 
+  type BoosterVariant 
+} from '../game/stores/useBoosterVariantStore';
 
 const BoosterSelectionPage: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { getAvailableCards } = useDeckStore();
+  const [isOpening, setIsOpening] = useState(false);
   
   // Get the selected pack from navigation state
   const selectedPack = location.state?.selectedPack as BoosterPack;
-  const [selectedVariant, setSelectedVariant] = useState<BoosterVariant | null>(null);
-  const [isOpening, setIsOpening] = useState(false);
+  
+  // Use centralized variant store
+  const {
+    selectedVariant,
+    setSelectedVariant,
+    generatePackVariants,
+    getVariantPrice,
+    purchaseVariant
+  } = useBoosterVariantStore();
+  
+  // Generate variants for the selected pack
+  const packVariants = selectedPack ? generatePackVariants(selectedPack) : [];
+
+  // Reset variant selection when pack changes
+  useEffect(() => {
+    if (selectedPack && (!selectedVariant || !selectedVariant.id.includes(selectedPack.id))) {
+      setSelectedVariant(null);
+    }
+  }, [selectedPack, selectedVariant, setSelectedVariant]);
 
   if (!selectedPack) {
     navigate('/shop/booster');
     return null;
   }
 
-  // Generate 9 booster pack variants based on the element
-  const generatePackVariants = (pack: BoosterPack): BoosterVariant[] => {
-    const baseVariants = [
-      { rarity: 'Starter', subtitle: 'Basic Collection', description: 'Common cards with 1 guaranteed uncommon' },
-      { rarity: 'Advanced', subtitle: 'Enhanced Power', description: 'Uncommon cards with 1 guaranteed rare' },
-      { rarity: 'Elite', subtitle: 'Superior Force', description: 'Rare cards with chance of epic' },
-      { rarity: 'Master', subtitle: 'Legendary Power', description: 'Epic cards with chance of legendary' },
-      { rarity: 'Champion', subtitle: 'Ultimate Collection', description: 'Guaranteed legendary card' },
-      { rarity: 'Mythic', subtitle: 'Divine Arsenal', description: 'Multiple rare+ cards guaranteed' },
-      { rarity: 'Cosmic', subtitle: 'Stellar Force', description: 'Enhanced drop rates for all rarities' },
-      { rarity: 'Eternal', subtitle: 'Timeless Power', description: 'Exclusive variant cards included' },
-      { rarity: 'Infinity', subtitle: 'Beyond Limits', description: 'Maximum rarity with bonus cards' }
-    ];
-
-    return baseVariants.map((variant, index) => ({
-      id: `${pack.id}-variant-${index + 1}`,
-      name: `${variant.rarity} ${pack.name}`,
-      subtitle: variant.subtitle,
-      artUrl: pack.artUrl,
-      rarity: variant.rarity,
-      description: variant.description
-    }));
-  };
-
-  const packVariants = generatePackVariants(selectedPack);
-
-  const generateRandomCards = (pack: BoosterPack, variant: BoosterVariant): Card[] => {
-    const availableCards = getAvailableCards();
-    const elementCards = pack.element === 'mixed' 
-      ? availableCards 
-      : availableCards.filter(card => card.element === pack.element);
-
-    const cards: Card[] = [];
-    const cardCount = pack.cardCount;
-
-    // Generate cards based on variant rarity
-    for (let i = 0; i < cardCount; i++) {
-      const randomCard = elementCards[Math.floor(Math.random() * elementCards.length)];
-      if (randomCard) {
-        cards.push({
-          ...randomCard,
-          id: `${randomCard.id}-pack-${Date.now()}-${i}`
-        });
-      }
-    }
-
-    return cards;
-  };
-
   const handleVariantSelect = (variant: BoosterVariant) => {
     setSelectedVariant(variant);
   };
 
-  const handleOpenPack = () => {
+  const handleOpenPack = async () => {
     if (!selectedVariant) {
       toast.error('Please select a booster pack variant first!');
       return;
@@ -104,18 +54,27 @@ const BoosterSelectionPage: React.FC = () => {
 
     setIsOpening(true);
     
-    // Simulate pack opening delay
-    setTimeout(() => {
-      const cards = generateRandomCards(selectedPack, selectedVariant);
+    try {
+      // Use enhanced variant system for card generation
+      const cards = await purchaseVariant(selectedVariant, selectedPack);
+      const finalPrice = getVariantPrice(selectedPack.price, selectedVariant);
       
+      toast.success(`Opened ${selectedVariant.name} for $${finalPrice}! Received ${cards.length} cards.`);
+      
+      // Navigate with enhanced data
       navigate('/shop/booster', {
         state: {
           openedCards: cards,
           packName: selectedVariant.name,
-          packVariant: selectedVariant
+          packVariant: selectedVariant,
+          purchasePrice: finalPrice
         }
       });
-    }, 2000);
+    } catch (error) {
+      console.error('Failed to open pack:', error);
+      toast.error('Failed to open pack. Please try again.');
+      setIsOpening(false);
+    }
   };
 
   return (
@@ -131,7 +90,7 @@ const BoosterSelectionPage: React.FC = () => {
           <h2 className="text-lg font-semibold mb-2">Choose Your Variant</h2>
           <p className="text-gray-400 text-sm">
             Each variant offers different rarity distributions and guaranteed cards. 
-            Select wisely to maximize your collection!
+            Higher tier variants cost more but offer better cards and guarantees.
           </p>
         </div>
 
@@ -153,7 +112,13 @@ const BoosterSelectionPage: React.FC = () => {
                 </div>
                 <h3 className="font-bold text-sm mb-1">{variant.rarity}</h3>
                 <p className="text-xs text-gray-400 mb-2">{variant.subtitle}</p>
-                <p className="text-xs text-gray-500">{variant.description}</p>
+                <p className="text-xs text-gray-500 mb-2">{variant.description}</p>
+                <div className="text-spektrum-orange font-semibold text-sm">
+                  ${getVariantPrice(selectedPack.price, variant)}
+                </div>
+                <div className="text-xs text-gray-600 mt-1">
+                  {variant.priceMultiplier}x base price
+                </div>
               </div>
             </div>
           ))}
@@ -164,13 +129,26 @@ const BoosterSelectionPage: React.FC = () => {
           <div className="mb-6 bg-gray-800 rounded-lg p-4">
             <h3 className="font-bold mb-2">Selected: {selectedVariant.name}</h3>
             <p className="text-gray-400 text-sm mb-2">{selectedVariant.description}</p>
-            <div className="flex justify-between items-center">
-              <span className="text-spektrum-orange font-semibold">
-                {selectedPack.cardCount} Cards • ${selectedPack.price}
-              </span>
-              <span className="text-xs text-gray-500">
-                Guaranteed: {selectedVariant.rarity} rarity
-              </span>
+            <div className="grid grid-cols-2 gap-4 mb-4">
+              <div>
+                <span className="text-spektrum-orange font-semibold">
+                  {selectedPack.cardCount} Cards • ${getVariantPrice(selectedPack.price, selectedVariant)}
+                </span>
+              </div>
+              <div className="text-xs text-gray-500">
+                Guaranteed: {selectedVariant.guaranteedRarities.join(', ')}
+              </div>
+            </div>
+            <div className="text-xs text-gray-600">
+              <strong>Rarity Chances:</strong>
+              <div className="grid grid-cols-5 gap-2 mt-1">
+                {Object.entries(selectedVariant.rarityWeights).map(([rarity, weight]) => (
+                  <div key={rarity} className="text-center">
+                    <div className="font-semibold">{rarity}</div>
+                    <div>{(weight * 100).toFixed(1)}%</div>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         )}
@@ -179,23 +157,44 @@ const BoosterSelectionPage: React.FC = () => {
         <div className="flex gap-4">
           <button
             onClick={() => navigate('/shop/booster')}
-            className="flex-1 bg-gray-600 hover:bg-gray-700 text-white py-3 rounded-lg transition-colors"
+            className="px-6 py-3 bg-gray-700 text-white rounded-lg hover:bg-gray-600 transition-colors"
           >
-            Back to Packs
+            Back to Booster Packs
           </button>
+          
           <button
             onClick={handleOpenPack}
             disabled={!selectedVariant || isOpening}
-            className="flex-1 bg-spektrum-orange hover:bg-orange-600 disabled:bg-gray-600 disabled:cursor-not-allowed text-white py-3 rounded-lg transition-colors"
+            className={`px-6 py-3 rounded-lg font-semibold transition-colors flex-1 ${
+              !selectedVariant || isOpening
+                ? 'bg-gray-600 text-gray-400 cursor-not-allowed'
+                : 'bg-spektrum-orange text-black hover:bg-orange-600'
+            }`}
           >
-            {isOpening ? 'Opening Pack...' : `Open Pack ($${selectedPack.price})`}
+            {isOpening ? (
+              <span className="flex items-center justify-center gap-2">
+                <div className="animate-spin rounded-full h-4 w-4 border-2 border-current border-t-transparent"></div>
+                Opening Pack...
+              </span>
+            ) : selectedVariant ? (
+              `Open Pack for $${getVariantPrice(selectedPack.price, selectedVariant)}`
+            ) : (
+              'Select a Variant First'
+            )}
           </button>
         </div>
 
+        {/* Pack Opening Animation */}
         {isOpening && (
-          <div className="mt-6 text-center">
-            <div className="animate-spin w-8 h-8 border-4 border-spektrum-orange border-t-transparent rounded-full mx-auto mb-2"></div>
-            <p className="text-gray-400">Opening your {selectedVariant?.name}...</p>
+          <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50">
+            <div className="text-center">
+              <div className="text-6xl mb-4 animate-bounce">{selectedPack.emoji}</div>
+              <h2 className="text-2xl font-bold mb-2">Opening Pack...</h2>
+              <p className="text-gray-400">Generating your cards</p>
+              <div className="mt-4">
+                <div className="animate-spin rounded-full h-8 w-8 border-4 border-spektrum-orange border-t-transparent mx-auto"></div>
+              </div>
+            </div>
           </div>
         )}
       </div>
