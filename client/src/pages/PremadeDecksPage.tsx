@@ -5,6 +5,7 @@ import { useDeckStore } from '../game/stores/useDeckStore';
 import { toast } from 'sonner';
 import BackButton from '../components/BackButton';
 import NavigationBar from '../components/NavigationBar';
+import CardRewardPopup from '../components/CardRewardPopup';
 import { Button } from '../components/ui/button';
 import { Badge } from '../components/ui/badge';
 import { 
@@ -13,6 +14,7 @@ import {
   kujanaKuhakaAvatarCards 
 } from '../game/data/kobarBorahCards';
 import { redElementalSpellCards } from '../game/data/redElementalCards';
+import { cardNftService } from '../blockchain/solana/cardNftService';
 
 interface Expansion {
   id: string;
@@ -42,6 +44,9 @@ const PremadeDecksPage: React.FC = () => {
   const [purchasedDecks, setPurchasedDecks] = useState<Set<string>>(new Set());
   const [selectedExpansion, setSelectedExpansion] = useState<Expansion | null>(null);
   const [currentStep, setCurrentStep] = useState<'expansion-selection' | 'deck-selection'>('expansion-selection');
+  const [showRewardPopup, setShowRewardPopup] = useState(false);
+  const [rewardCards, setRewardCards] = useState<Card[]>([]);
+  const [rewardTitle, setRewardTitle] = useState('');
 
   // Define expansions
   const expansions: Expansion[] = [
@@ -235,11 +240,33 @@ const PremadeDecksPage: React.FC = () => {
         return newSet;
       });
       
+      // Show reward popup
+      setRewardCards(deckCards);
+      setRewardTitle(`${deck.name} Purchased!`);
+      setShowRewardPopup(true);
+      
       toast.success(`Successfully purchased ${deck.name}! Added ${deckCards.length} cards to your collection.`);
       
     } catch (error) {
       console.error('Error purchasing deck:', error);
       toast.error('Failed to purchase deck. Please try again.');
+    }
+  };
+
+  const handleMintCards = async () => {
+    try {
+      const walletStatus = await cardNftService.getWalletStatus();
+      if (!walletStatus.connected) {
+        toast.error('Please connect your wallet first to mint NFTs');
+        return;
+      }
+      
+      // Mock minting process
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      toast.success(`Successfully minted ${rewardCards.length} cards as NFTs!`);
+    } catch (error) {
+      console.error('Minting error:', error);
+      toast.error('Failed to mint cards. Please try again.');
     }
   };
 
@@ -405,6 +432,17 @@ const PremadeDecksPage: React.FC = () => {
       </div>
       
       <NavigationBar />
+      
+      {/* Card Reward Popup */}
+      <CardRewardPopup
+        isOpen={showRewardPopup}
+        onClose={() => setShowRewardPopup(false)}
+        title={rewardTitle}
+        subtitle={`${selectedExpansion?.name} - Complete deck with all cards`}
+        cards={rewardCards}
+        onMintCards={handleMintCards}
+        showMintButton={true}
+      />
     </div>
   );
 };
