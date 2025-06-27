@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useDeckStore } from '../game/stores/useDeckStore';
 import { useExpansionStore, type Expansion } from '../game/stores/useExpansionStore';
+import { usePremadeDecksStore, type PremadeDeck } from '../game/stores/usePremadeDecksStore';
 import { Card, ElementType, AvatarCard, ActionCard, RarityType } from '../game/data/cardTypes';
 import { 
   kobarBorahAvatarCards, 
@@ -48,6 +49,7 @@ interface CardFormData {
 const DevToolsPage: React.FC = () => {
   const { addCard } = useDeckStore();
   const { expansions, addExpansion, updateExpansion, deleteExpansion } = useExpansionStore();
+  const { premadeDecks, addPremadeDeck, updatePremadeDeck, deletePremadeDeck } = usePremadeDecksStore();
   
   // Get complete database of cards for dev tools (not just owned cards)
   const allDatabaseCards = [
@@ -72,38 +74,7 @@ const DevToolsPage: React.FC = () => {
   
 
 
-  // Local state for premade decks
-  interface PremadeDeck {
-    id: string;
-    name: string;
-    expansion: string;
-    tribe: string;
-    description: string;
-    price: number;
-    cardCount: number;
-    strategy: string;
-    difficulty: 'Beginner' | 'Intermediate' | 'Advanced';
-    coverCardName: string;
-    keyCards: string[];
-    purchased: boolean;
-  }
-
-  const [localPremadeDecks, setLocalPremadeDecks] = useState<PremadeDeck[]>([
-    {
-      id: 'kobar-starter',
-      name: 'Kobar Fire Starter',
-      expansion: 'Kobar & Borah',
-      tribe: 'Kobar',
-      description: 'A balanced fire-based starter deck',
-      price: 1500,
-      cardCount: 40,
-      strategy: 'Aggressive gameplay with burn effects',
-      difficulty: 'Beginner',
-      coverCardName: 'Radja',
-      keyCards: ['Radja', 'Crimson', 'Spark'],
-      purchased: false
-    }
-  ]);
+  // Premade deck management now uses centralized store
   const [selectedCard, setSelectedCard] = useState<Card | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [activeTab, setActiveTab] = useState<'database' | 'edit' | 'expansion' | 'conditional' | 'premade-decks'>('database');
