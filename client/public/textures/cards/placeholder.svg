@@ -1,6 +1,7 @@
-<svg width="200" height="280" viewBox="0 0 200 280" fill="none" xmlns="http://www.w3.org/2000/svg">
-<rect width="200" height="280" fill="#374151"/>
-<rect x="10" y="10" width="180" height="260" stroke="#6B7280" stroke-width="2" fill="none"/>
-<text x="100" y="140" font-family="Arial" font-size="14" fill="#9CA3AF" text-anchor="middle">Card Image</text>
-<text x="100" y="160" font-family="Arial" font-size="12" fill="#6B7280" text-anchor="middle">Not Available</text>
+<svg width="200" height="280" xmlns="http://www.w3.org/2000/svg">
+  <rect width="200" height="280" fill="#2a2a2a" stroke="#555" stroke-width="2" rx="12"/>
+  <rect x="50" y="70" width="100" height="100" fill="#444" stroke="#666" stroke-width="1" rx="8"/>
+  <text x="100" y="125" text-anchor="middle" fill="#777" font-family="Arial" font-size="40">?</text>
+  <text x="100" y="200" text-anchor="middle" fill="#888" font-family="Arial" font-size="12">Image Loading...</text>
+  <text x="100" y="220" text-anchor="middle" fill="#666" font-family="Arial" font-size="10">Placeholder</text>
 </svg>
