@@ -335,13 +335,8 @@ const createKujanaKuhakaPureDeck = (): Deck => {
 export const useDeckStore = create<DeckStore>()(
   persist(
     (set, get) => ({
-      // Initialize with all our decks
-      decks: [
-        createKobarBorahDeck(),
-        createKujanaKuhakaDeck(),
-        createKobarDeck(),
-        createKujanaKuhakaPureDeck()
-      ],
+      // Start with empty collections for new users
+      decks: [],
       activeDeckId: null,
       ownedCards: [], // Initialize empty card collection
       
@@ -433,8 +428,8 @@ export const useDeckStore = create<DeckStore>()(
       
       getAvailableCards: () => {
         const state = get();
-        // Return base cards plus owned cards from booster packs and purchases
-        return [...allFireCards, ...allNeutralCards, ...state.ownedCards];
+        // Return only owned cards from booster packs and purchases - no base cards
+        return state.ownedCards;
       },
 
       getAvailableCardsWithCNFTs: async () => {

@@ -440,8 +440,7 @@ const PremadeDecksPage: React.FC = () => {
         title={rewardTitle}
         subtitle={`${selectedExpansion?.name} - Complete deck with all cards`}
         cards={rewardCards}
-        onMintCards={handleMintCards}
-        showMintButton={true}
+        showMintButton={false}
       />
     </div>
   );

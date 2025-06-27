@@ -148,20 +148,11 @@ const CardRewardPopup: React.FC<CardRewardPopupProps> = ({
         <div className="p-6 border-t border-gray-700 bg-gray-800">
           <div className="flex justify-between items-center">
             <div className="text-gray-300 text-sm">
-              All cards have been added to your collection
+              🎉 All cards automatically minted as cNFTs and added to your wallet
             </div>
             <div className="flex gap-3">
-              {showMintButton && (
-                <Button
-                  onClick={handleMint}
-                  disabled={isMinting}
-                  className="bg-spektrum-orange hover:bg-orange-600"
-                >
-                  {isMinting ? 'Minting...' : 'Mint as NFTs'}
-                </Button>
-              )}
-              <Button onClick={onClose} variant="outline">
-                Close
+              <Button onClick={onClose} className="bg-spektrum-orange hover:bg-orange-600">
+                View Collection
               </Button>
             </div>
           </div>

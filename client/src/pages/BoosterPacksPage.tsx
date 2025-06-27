@@ -388,31 +388,20 @@ const BoosterPacksPage: React.FC = () => {
           </div>
         </div>
         
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-3 gap-3 max-w-md mx-auto">
           {individualPacks.map((pack) => (
             <div
               key={pack.id}
-              className="relative aspect-[3/4] bg-gray-800 rounded-lg cursor-pointer transform hover:scale-105 transition-all duration-300 hover:shadow-xl border-2 border-gray-600 hover:border-spektrum-orange"
+              className="relative aspect-square bg-gray-800 rounded-lg cursor-pointer transform hover:scale-105 transition-all duration-300 hover:shadow-xl border-2 border-gray-600 hover:border-spektrum-orange"
               onClick={() => handlePackSelection(pack)}
             >
               <div className="absolute inset-0 bg-gradient-to-br from-gray-700 to-gray-900 rounded-lg">
-                <div className="p-4 h-full flex flex-col justify-between">
-                  <div className="text-center">
-                    <div className="text-2xl mb-2">{selectedExpansion.symbol}</div>
-                    <div className="text-xs text-gray-400">Pack #{pack.packNumber}</div>
-                  </div>
-                  
-                  <div className="text-center">
-                    <div className="text-lg">{selectedTier.emoji}</div>
-                    <div className="text-xs text-white font-medium">
-                      {selectedTier.name}
-                    </div>
-                  </div>
-                  
-                  <div className="text-center">
-                    <div className="text-xs text-spektrum-orange font-bold">
-                      ${selectedTier.price}
-                    </div>
+                <div className="p-2 h-full flex flex-col justify-center items-center">
+                  <div className="text-lg mb-1">{selectedExpansion.symbol}</div>
+                  <div className="text-xs text-gray-400 mb-1">#{pack.packNumber}</div>
+                  <div className="text-sm">{selectedTier.emoji}</div>
+                  <div className="text-xs text-spektrum-orange font-bold mt-1">
+                    ${selectedTier.price}
                   </div>
                 </div>
               </div>
@@ -553,8 +542,7 @@ const BoosterPacksPage: React.FC = () => {
         title={rewardTitle}
         subtitle={`${selectedPack?.expansion.name} - ${selectedTier?.name}`}
         cards={rewardCards}
-        onMintCards={handleMintCards}
-        showMintButton={true}
+        showMintButton={false}
       />
     </div>
   );
