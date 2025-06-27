@@ -40,8 +40,19 @@ const DeckBuilderPage: React.FC = () => {
     loadCards();
   }, [getAvailableCards, getAvailableCardsWithCNFTs]);
   
+  // Helper function to get unique cards (removing duplicates) 
+  const getUniqueCards = (cards: Card[]) => {
+    const seen = new Set();
+    return cards.filter(card => {
+      const key = `${card.name}-${card.type}-${card.element}`;
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+  };
+
   // Filter cards based on selected filters
-  const filteredCards = allCards.filter(card => {
+  const filteredCards = getUniqueCards(allCards).filter(card => {
     const elementMatch = elementFilter === 'all' || card.element === elementFilter;
     const typeMatch = typeFilter === 'all' || card.type === typeFilter;
     
@@ -56,16 +67,24 @@ const DeckBuilderPage: React.FC = () => {
     return elementMatch && typeMatch && tribeMatch;
   });
   
-  // Calculate card counts for the current selection
+  // Calculate card counts for the current selection by card name (more accurate)
   const cardCounts = selectedCards.reduce<Record<string, number>>((acc, card) => {
-    const baseId = card.id.split('-')[0] + '-' + card.id.split('-')[1]; // Get the base card ID without copy numbers
-    acc[baseId] = (acc[baseId] || 0) + 1;
+    const key = card.name; // Use card name for proper counting
+    acc[key] = (acc[key] || 0) + 1;
     return acc;
   }, {});
   
-  // Check if we've reached the max count for a specific card using rarity-based duplicate rules
+  // Check if we've reached the max count for a specific card using our own logic
   const hasReachedMaxCount = (card: Card) => {
-    return !canAddCardToDeck(card, selectedCards);
+    const currentCount = cardCounts[card.name] || 0;
+    
+    // Level 2 avatars can only have 1 copy
+    if (card.type === 'avatar' && (card as AvatarCard).level === 2) {
+      return currentCount >= 1;
+    }
+    
+    // All other cards can have up to 4 copies
+    return currentCount >= 4;
   };
   
   // Load a deck into the editor
@@ -149,14 +168,16 @@ const DeckBuilderPage: React.FC = () => {
   // Add a card to the deck
   const handleAddCard = (card: Card) => {
     if (hasReachedMaxCount(card)) {
-      toast.error(`You've reached the maximum number of copies for this card`);
+      const currentCount = cardCounts[card.name] || 0;
+      const maxAllowed = card.type === 'avatar' && (card as AvatarCard).level === 2 ? 1 : 4;
+      toast.error(`Maximum ${maxAllowed} copies allowed for "${card.name}" (currently have ${currentCount})`);
       return;
     }
     
-    // Create a new copy of the card with a unique ID
-    const baseId = card.id.split('-')[0] + '-' + card.id.split('-')[1];
-    const count = cardCounts[baseId] || 0;
-    const newCard = { ...card, id: `${baseId}-${count + 1}` };
+    // Create a new copy of the card with a unique timestamp-based ID to ensure uniqueness
+    const timestamp = Date.now();
+    const currentCount = cardCounts[card.name] || 0;
+    const newCard = { ...card, id: `${card.id}-copy-${currentCount + 1}-${timestamp}` };
     
     setSelectedCards([...selectedCards, newCard]);
   };

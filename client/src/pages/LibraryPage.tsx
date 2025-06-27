@@ -9,8 +9,8 @@ import { ChevronDown } from 'lucide-react';
 import { getRarityColor, getRarityTextColor } from '../game/utils/rarityUtils';
 
 const LibraryPage: React.FC = () => {
-  const { getAvailableCards } = useDeckStore();
-  const allCards = getAvailableCards();
+  const { getAvailableCardsWithCNFTs } = useDeckStore();
+  const [allCards, setAllCards] = useState<Card[]>([]);
   
   const [selectedCard, setSelectedCard] = useState<Card | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
@@ -21,34 +21,40 @@ const LibraryPage: React.FC = () => {
   const [cNftCards, setCNftCards] = useState<Card[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Load cNFT cards on component mount and sync library
+  // Load all cards including cNFTs on component mount - same as Deck Builder
   useEffect(() => {
-    const loadCNftCards = async () => {
+    const loadAllCards = async () => {
       try {
+        const cardsWithCNFTs = await getAvailableCardsWithCNFTs();
+        setAllCards(cardsWithCNFTs);
+        
+        // Also load separate cNFT cards for display purposes
         const walletStatus = await cardNftService.getWalletStatus();
         if (walletStatus.connected) {
           const ownedCards = await cardNftService.getOwnedCards();
           setCNftCards(ownedCards);
         }
       } catch (error) {
-        console.error('Error loading cNFT cards:', error);
+        console.error('Error loading cards:', error);
+        // Fallback to empty array
+        setAllCards([]);
       } finally {
         setIsLoading(false);
       }
     };
 
-    loadCNftCards();
+    loadAllCards();
     
     // Auto-refresh every 30 seconds to keep library in sync
-    const refreshInterval = setInterval(loadCNftCards, 30000);
+    const refreshInterval = setInterval(loadAllCards, 30000);
     
     return () => clearInterval(refreshInterval);
-  }, []);
+  }, [getAvailableCardsWithCNFTs]);
 
-  // Combine regular cards and cNFT cards
+  // Use allCards directly as it already includes everything
   const combinedCards = useMemo(() => {
-    return [...allCards, ...cNftCards];
-  }, [allCards, cNftCards]);
+    return allCards;
+  }, [allCards]);
 
   // Create card counts for the library (including cNFTs)
   const cardCounts = useMemo(() => {
