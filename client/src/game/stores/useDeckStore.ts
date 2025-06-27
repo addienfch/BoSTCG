@@ -29,12 +29,18 @@ export interface Deck {
 interface DeckStore {
   decks: Deck[];
   activeDeckId: string | null;
+  ownedCards: Card[]; // Player's card collection from booster packs
   
   // Actions
   addDeck: (name: string, cards: Card[], tribe?: string) => Deck;
   updateDeck: (id: string, updates: Partial<Omit<Deck, 'id' | 'createdAt'>>) => void;
   deleteDeck: (id: string) => void;
   setActiveDeck: (id: string) => void;
+  
+  // Card collection management
+  addCard: (card: Card) => void;
+  addCards: (cards: Card[]) => void;
+  removeCard: (cardId: string) => void;
   
   // Card management helpers
   getAvailableCards: () => Card[];
@@ -337,6 +343,7 @@ export const useDeckStore = create<DeckStore>()(
         createKujanaKuhakaPureDeck()
       ],
       activeDeckId: null,
+      ownedCards: [], // Initialize empty card collection
       
       addDeck: (name, cards, tribe) => {
         // Check if we've reached the maximum number of decks (5)
@@ -397,6 +404,31 @@ export const useDeckStore = create<DeckStore>()(
         }
         
         set({ activeDeckId: id });
+      },
+
+      // Card collection management
+      addCard: (card) => {
+        set(state => ({
+          ownedCards: [...state.ownedCards, { ...card, id: `owned-${card.id}-${Date.now()}` }]
+        }));
+      },
+
+      addCards: (cards) => {
+        const timestamp = Date.now();
+        const ownedCards = cards.map((card, index) => ({
+          ...card,
+          id: `owned-${card.id}-${timestamp}-${index}`
+        }));
+        
+        set(state => ({
+          ownedCards: [...state.ownedCards, ...ownedCards]
+        }));
+      },
+
+      removeCard: (cardId) => {
+        set(state => ({
+          ownedCards: state.ownedCards.filter(card => card.id !== cardId)
+        }));
       },
       
       getAvailableCards: () => {
