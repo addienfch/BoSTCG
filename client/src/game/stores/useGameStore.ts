@@ -33,16 +33,6 @@ interface PlayerState {
   needsToDiscardCards?: boolean; // Flag to indicate player needs to discard cards at end of turn
 }
 
-interface DiscardChoiceState {
-  isOpen: boolean;
-  cardName: string;
-  discardPrompt: string;
-  bonusEffect: string;
-  normalEffect: string;
-  onYes: () => void;
-  onNo: () => void;
-}
-
 interface GameState {
   currentPlayer: Player;
   gamePhase: GamePhase;
@@ -56,9 +46,6 @@ interface GameState {
   // Selection state
   selectedCard: number | null;
   selectedTarget: string | null;
-  
-  // Discard choice popup state
-  discardChoice: DiscardChoiceState;
   
   // Event logs
   logs: string[];
@@ -96,13 +83,6 @@ interface GameState {
   
   // Log helpers
   addLog: (message: string) => void;
-  
-  // Discard choice popup
-  showDiscardChoice: (cardName: string, discardPrompt: string, bonusEffect: string, normalEffect: string, onYes: () => void, onNo: () => void) => void;
-  hideDiscardChoice: () => void;
-  
-  // Helper for applying skill damage
-  applySkillDamage: (damageAmount: number, skill: any, avatar: AvatarCard, targetAvatar: AvatarCard, player: Player, skillTriggerResult: any) => void;
   
   // AI actions
   performAIActions: () => void;
@@ -145,17 +125,6 @@ export const useGameStore = create<GameState>((set, get) => ({
   // Selection state
   selectedCard: null,
   selectedTarget: null,
-  
-  // Discard choice popup state
-  discardChoice: {
-    isOpen: false,
-    cardName: '',
-    discardPrompt: '',
-    bonusEffect: '',
-    normalEffect: '',
-    onYes: () => {},
-    onNo: () => {}
-  },
   
   // Event logs
   logs: [],
@@ -809,71 +778,13 @@ export const useGameStore = create<GameState>((set, get) => ({
       player
     );
     
-    // Check for "you may discard" effects in the skill description
-    const hasDiscardChoice = skill.effect && skill.effect.toLowerCase().includes('player may discard');
-    
-    if (hasDiscardChoice) {
-      // Show the discard choice popup for conditional effects
-      const cardName = avatar.name;
-      const skillName = skill.name;
-      const normalDamage = skill.damage || 0;
-      const bonusDamage = 19; // Example: enhanced damage if player discards
-      
-      const discardPrompt = `${cardName} wants to use ${skillName}. You may discard an energy card to enhance this attack.`;
-      const bonusEffect = `Deal ${bonusDamage} damage and apply additional effects`;
-      const normalEffect = `Deal ${normalDamage} damage normally`;
-      
-      // Handle the choice
-      const handleDiscardYes = () => {
-        // Player chooses to discard for bonus effect
-        if (playerState.energyPile.length > 0) {
-          // Discard an energy card
-          state.useEnergy(['fire'], player); // Example: discard one energy
-          state.addLog(`${cardName} discarded an energy card for enhanced effect!`);
-          
-          // Apply enhanced damage
-          get().applySkillDamage(bonusDamage, skill, avatar, targetAvatar, player, skillTriggerResult);
-        } else {
-          toast.error("No energy cards to discard!");
-          // Apply normal damage instead
-          get().applySkillDamage(normalDamage, skill, avatar, targetAvatar, player, skillTriggerResult);
-        }
-      };
-      
-      const handleDiscardNo = () => {
-        // Player chooses normal effect
-        get().addLog(`${cardName} used ${skillName} normally.`);
-        get().applySkillDamage(normalDamage, skill, avatar, targetAvatar, player, skillTriggerResult);
-      };
-      
-      // Show the discard choice popup
-      state.showDiscardChoice(
-        cardName,
-        discardPrompt,
-        bonusEffect,
-        normalEffect,
-        handleDiscardYes,
-        handleDiscardNo
-      );
-      
-      return; // Exit early, damage will be applied based on choice
-    }
-    
     // Calculate damage with triggers
     let damageAmount = getModifiedDamage(skill.damage || 0, skillTriggerResult);
     
     console.log("Applying skill with damage:", damageAmount);
     
-    // Apply normal damage for skills without discard choices  
-    get().applySkillDamage(damageAmount, skill, avatar, targetAvatar, player, skillTriggerResult);
-  },
-  
-  // Helper function to apply skill damage
-  applySkillDamage: (damageAmount: number, skill: any, avatar: AvatarCard, targetAvatar: AvatarCard, player: Player, skillTriggerResult: any) => {
-    const state = get();
-    
     // Apply damage to target and any special effects
-    set(currentState => {
+    set(state => {
       const opponent = player === 'player' ? 'opponent' : 'player';
       const opponentState = state[opponent];
       
@@ -2781,35 +2692,6 @@ export const useGameStore = create<GameState>((set, get) => ({
         setTimeout(() => get().nextPhase(), 1000);
         break;
     }
-  },
-  
-  // Discard choice popup methods
-  showDiscardChoice: (cardName: string, discardPrompt: string, bonusEffect: string, normalEffect: string, onYes: () => void, onNo: () => void) => {
-    set({
-      discardChoice: {
-        isOpen: true,
-        cardName,
-        discardPrompt,
-        bonusEffect,
-        normalEffect,
-        onYes,
-        onNo
-      }
-    });
-  },
-  
-  hideDiscardChoice: () => {
-    set({
-      discardChoice: {
-        isOpen: false,
-        cardName: '',
-        discardPrompt: '',
-        bonusEffect: '',
-        normalEffect: '',
-        onYes: () => {},
-        onNo: () => {}
-      }
-    });
   }
 }));
 

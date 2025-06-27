@@ -7,7 +7,6 @@ import { AvatarCard, Card } from '../data/cardTypes';
 import { SimpleGameAI, AIGameState } from '../ai/SimpleGameAI';
 import { useNavigate } from 'react-router-dom';
 import { processGameEffect, processBleedDamage } from '../utils/gameEffectProcessor';
-import DiscardChoicePopup from '../../components/DiscardChoicePopup';
 
 // Card Preview Component
 const CardPreview = ({ 
@@ -1621,24 +1620,6 @@ const GameBoard2D: React.FC<GameBoard2DProps> = ({ onAction }) => {
           </div>
         </div>
       )}
-      
-      {/* Discard Choice Popup */}
-      <DiscardChoicePopup
-        isOpen={game.discardChoice.isOpen}
-        onClose={game.hideDiscardChoice}
-        onYes={() => {
-          game.discardChoice.onYes();
-          game.hideDiscardChoice();
-        }}
-        onNo={() => {
-          game.discardChoice.onNo();
-          game.hideDiscardChoice();
-        }}
-        cardName={game.discardChoice.cardName}
-        discardPrompt={game.discardChoice.discardPrompt}
-        bonusEffect={game.discardChoice.bonusEffect}
-        normalEffect={game.discardChoice.normalEffect}
-      />
     </div>
   );
 };
