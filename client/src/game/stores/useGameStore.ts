@@ -4,6 +4,7 @@ import { ActionCard, AvatarCard, Card, ElementType, GamePhase, Player } from '..
 import { useDeckStore } from './useDeckStore';
 import { useGameMode } from './useGameMode';
 import { checkSkillTrigger, getModifiedDamage, applySkillTriggerEffects, SkillEffect } from '../utils/skillTriggerChecker';
+import { shouldShowDiscardConfirmation, getDiscardBonusEffect } from '../utils/discardMechanicChecker';
 
 // Helper function to shuffle an array (Fisher-Yates algorithm)
 const shuffleArray = <T extends any>(array: T[]): T[] => {
@@ -419,6 +420,13 @@ export const useGameStore = create<GameState>((set, get) => ({
       return;
     }
     const card = player.hand[handIndex];
+    
+    // Check if this card has "you may discard" mechanics
+    if (shouldShowDiscardConfirmation(card)) {
+      const bonusEffect = getDiscardBonusEffect(card);
+      get().showDiscardConfirmation(handIndex, bonusEffect || undefined);
+      return; // Stop execution and wait for user choice
+    }
     
     // Quick spells can be played anytime as long as player has an active avatar and enough energy
     const isQuickSpell = card.type === 'quickSpell';
