@@ -251,7 +251,7 @@ const BattleSetsPage: React.FC = () => {
               className={`bg-gray-800 rounded-lg overflow-hidden border-2 ${getRarityColor(item.rarity)} transition-all hover:scale-105`}
             >
               {/* Preview Image */}
-              <div className="h-40 bg-gray-700 flex items-center justify-center">
+              <div className="h-24 bg-gray-700 flex items-center justify-center">
                 <img
                   src={item.preview}
                   alt={item.name}
@@ -265,39 +265,39 @@ const BattleSetsPage: React.FC = () => {
               </div>
 
               {/* Item Details */}
-              <div className="p-4">
-                <div className="flex justify-between items-start mb-2">
-                  <h3 className="font-bold text-lg">{item.name}</h3>
-                  <span className="text-2xl">{getTypeIcon(item.type)}</span>
+              <div className="p-3">
+                <div className="flex justify-between items-start mb-1">
+                  <h3 className="font-bold text-sm">{item.name}</h3>
+                  <span className="text-lg">{getTypeIcon(item.type)}</span>
                 </div>
 
-                <div className="flex items-center gap-2 mb-2">
-                  <span className={`px-2 py-1 rounded text-xs font-semibold ${getRarityColor(item.rarity)}`}>
+                <div className="flex items-center gap-1 mb-2">
+                  <span className={`px-1 py-0.5 rounded text-xs font-semibold ${getRarityColor(item.rarity)}`}>
                     {item.rarity}
                   </span>
                   {item.element && (
-                    <span className="px-2 py-1 bg-gray-700 rounded text-xs capitalize">
+                    <span className="px-1 py-0.5 bg-gray-700 rounded text-xs capitalize">
                       {item.element}
                     </span>
                   )}
                 </div>
 
-                <p className="text-gray-400 text-sm mb-4">{item.description}</p>
+                <p className="text-gray-400 text-xs mb-2 line-clamp-2">{item.description}</p>
 
                 <div className="flex justify-between items-center">
-                  <span className="text-spektrum-orange font-bold text-lg">
+                  <span className="text-spektrum-orange font-bold text-sm">
                     ${item.price}
                   </span>
                   <button
                     onClick={() => handlePurchase(item)}
                     disabled={ownedItems.has(item.id)}
-                    className={`px-4 py-2 rounded-lg transition-colors ${
+                    className={`px-2 py-1 rounded text-xs transition-colors ${
                       ownedItems.has(item.id)
                         ? 'bg-gray-600 text-gray-400 cursor-not-allowed'
                         : 'bg-spektrum-orange hover:bg-orange-600 text-white'
                     }`}
                   >
-                    {ownedItems.has(item.id) ? 'Owned' : 'Purchase'}
+                    {ownedItems.has(item.id) ? 'Owned' : 'Buy'}
                   </button>
                 </div>
               </div>
