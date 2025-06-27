@@ -1,9 +1,11 @@
 import { create } from 'zustand';
 
 export type GameMode = 'playerVsAI' | 'playerVsPlayer' | 'singlePlayer';
+export type AIDifficulty = 'newbie' | 'regular' | 'advanced';
 
 interface GameModeState {
   mode: GameMode;
+  aiDifficulty: AIDifficulty;
   isOnline: boolean;
   isWaitingForOpponent: boolean;
   roomCode: string | null;
@@ -12,6 +14,7 @@ interface GameModeState {
   
   // Actions
   setMode: (mode: GameMode) => void;
+  setAIDifficulty: (difficulty: AIDifficulty) => void;
   setIsOnline: (isOnline: boolean) => void;
   setWaitingForOpponent: (isWaiting: boolean) => void;
   setRoomCode: (roomCode: string | null) => void;
@@ -30,6 +33,7 @@ interface GameModeState {
 
 export const useGameMode = create<GameModeState>((set, get) => ({
   mode: 'singlePlayer',
+  aiDifficulty: 'regular',
   isOnline: false,
   isWaitingForOpponent: false,
   roomCode: null,
@@ -37,6 +41,7 @@ export const useGameMode = create<GameModeState>((set, get) => ({
   opponentName: null,
   
   setMode: (mode) => set({ mode }),
+  setAIDifficulty: (difficulty) => set({ aiDifficulty: difficulty }),
   setIsOnline: (isOnline) => set({ isOnline }),
   setWaitingForOpponent: (isWaiting) => set({ isWaitingForOpponent: isWaiting }),
   setRoomCode: (roomCode) => set({ roomCode }),

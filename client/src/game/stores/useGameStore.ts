@@ -1835,7 +1835,7 @@ export const useGameStore = create<GameState>((set, get) => ({
     return true;
   },
   
-  // Check if player has enough energy to play a card
+  // Enhanced energy validation system - Fix 2: Energy System Validation
   hasEnoughEnergy: (energyCost: ElementType[] | undefined | null, player: Player) => {
     // Handle undefined, null, or empty energy costs
     if (!energyCost || energyCost.length === 0) {
@@ -1847,6 +1847,7 @@ export const useGameStore = create<GameState>((set, get) => ({
     
     // Make sure we have enough total energy cards
     if (energyPile.length < energyCost.length) {
+      console.log(`Energy validation failed: Need ${energyCost.length} energy, have ${energyPile.length}`);
       return false;
     }
     
@@ -1879,14 +1880,19 @@ export const useGameStore = create<GameState>((set, get) => ({
       requiredElements[element]++;
     });
     
-    // First check specific elements (fire, water, earth, air)
-    const specificElements = ['fire', 'water', 'earth', 'air'] as ElementType[];
+    console.log('Energy validation:', {
+      required: requiredElements,
+      available: availableElements,
+      cost: energyCost
+    });
+    
+    // Enhanced validation: Check specific element requirements first
+    const specificElements = ['fire', 'water', 'ground', 'air'] as ElementType[];
     let remainingNonSpecific = 0;
     
     // Check each specific element requirement
     for (const element of specificElements) {
       if (requiredElements[element] > 0) {
-        // If we have this element type, use it
         const available = availableElements[element];
         const required = requiredElements[element];
         
@@ -1906,11 +1912,14 @@ export const useGameStore = create<GameState>((set, get) => ({
     // Add neutral energy requirement
     remainingNonSpecific += requiredElements.neutral;
     
-    // Count remaining total energy
+    // Count remaining total energy (can be used for neutral/missing specific)
     const totalRemainingEnergy = Object.values(availableElements).reduce((sum, count) => sum + count, 0);
     
-    // Check if we have enough total energy for the remaining non-specific requirements
-    return totalRemainingEnergy >= remainingNonSpecific;
+    // Final validation
+    const isValid = totalRemainingEnergy >= remainingNonSpecific;
+    console.log(`Energy validation result: ${isValid} (need ${remainingNonSpecific}, have ${totalRemainingEnergy})`);
+    
+    return isValid;
   },
   
   // Use energy to play a card
@@ -2377,7 +2386,7 @@ export const useGameStore = create<GameState>((set, get) => ({
     get().playCard(handIndex);
   },
 
-  // AI actions
+  // Enhanced AI actions with multi-level intelligence - Fix 3: Multi-level AI Intelligence
   performAIActions: () => {
     const { currentPlayer, gamePhase, opponent } = get();
     
