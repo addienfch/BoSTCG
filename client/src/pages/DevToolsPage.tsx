@@ -333,24 +333,23 @@ const DevToolsPage: React.FC = () => {
         </div>
         
         {activeTab === 'database' && (
-          <div className="bg-gray-800 rounded-lg p-4">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-lg font-semibold">Card Database</h2>
+          <div className="bg-gray-800 rounded-lg p-2">
+            <div className="flex justify-between items-center mb-2">
+              <h3 className="text-md font-medium">Card Database</h3>
               <button
                 onClick={handleNewCard}
-                className="bg-green-600 hover:bg-green-700 px-3 py-1 rounded text-sm"
+                className="bg-green-600 hover:bg-green-700 px-2 py-1 rounded text-xs"
               >
-                Add New Card
+                + New
               </button>
             </div>
             
             {/* Expansion Filter */}
-            <div className="mb-4">
-              <label className="block text-sm font-medium mb-2">Filter by Expansion</label>
+            <div className="mb-2">
               <select
                 value={selectedExpansionFilter}
                 onChange={(e) => setSelectedExpansionFilter(e.target.value)}
-                className="px-3 py-2 bg-gray-700 border border-gray-600 rounded text-sm"
+                className="w-full px-2 py-1 bg-gray-700 border border-gray-600 rounded text-xs"
               >
                 <option value="all">All Expansions</option>
                 {mockExpansions.map(expansion => (
@@ -361,13 +360,13 @@ const DevToolsPage: React.FC = () => {
               </select>
             </div>
             
-            <div className="max-h-[600px] overflow-y-auto space-y-2">
+            <div className="max-h-[500px] overflow-y-auto space-y-1">
               {cards
                 .filter(card => selectedExpansionFilter === 'all' || (card as any).expansion === selectedExpansionFilter)
                 .map((card, index) => (
-                <div key={`${card.id}-${index}`} className="bg-gray-700 p-3 rounded flex gap-3 items-center">
+                <div key={`${card.id}-${index}`} className="bg-gray-700 p-2 rounded flex gap-2 items-center">
                   {/* Card Image */}
-                  <div className="w-16 h-20 bg-gray-600 rounded border border-gray-500 flex-shrink-0 overflow-hidden">
+                  <div className="w-12 h-16 bg-gray-600 rounded border border-gray-500 flex-shrink-0 overflow-hidden">
                     {card.art ? (
                       <img 
                         src={card.art.startsWith('/textures/') ? card.art : `/textures/cards/${card.art}`} 
@@ -379,41 +378,41 @@ const DevToolsPage: React.FC = () => {
                       />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center text-gray-400 text-xs">
-                        No Image
+                        No
                       </div>
                     )}
                   </div>
                   
                   {/* Card Info */}
-                  <div className="flex-1">
-                    <div className="font-medium text-sm">{card.name}</div>
-                    <div className="text-xs text-gray-400">
+                  <div className="flex-1 min-w-0">
+                    <div className="font-medium text-xs truncate">{card.name}</div>
+                    <div className="text-xs text-gray-400 truncate">
                       {card.type} - {card.element}
-                      {card.type === 'avatar' && ` - Level ${(card as AvatarCard).level}`}
+                      {card.type === 'avatar' && ` - L${(card as AvatarCard).level}`}
                     </div>
-                    <div className="flex items-center gap-2 mt-1">
-                      <span className={`px-2 py-0.5 rounded text-xs ${getRarityTextColor(card.rarity || 'Common')}`}>
-                        {card.rarity || 'Common'}
+                    <div className="flex items-center gap-1 mt-0.5">
+                      <span className={`px-1 py-0.5 rounded text-xs ${getRarityTextColor(card.rarity || 'Common')}`}>
+                        {(card.rarity || 'Common').charAt(0)}
                       </span>
-                      <span className="text-xs text-gray-500">
-                        {(card as any).expansion || 'Core Set'}
+                      <span className="text-xs text-gray-500 truncate">
+                        {((card as any).expansion || 'Core').substring(0, 8)}
                       </span>
                     </div>
                   </div>
                   
                   {/* Action Buttons */}
-                  <div className="flex gap-1">
+                  <div className="flex flex-col gap-1">
                     <button
                       onClick={() => handleEditCard(card)}
-                      className="bg-blue-600 hover:bg-blue-700 px-2 py-1 rounded text-xs"
+                      className="bg-blue-600 hover:bg-blue-700 px-1 py-0.5 rounded text-xs"
                     >
                       Edit
                     </button>
                     <button
                       onClick={() => handleDeleteCard(card)}
-                      className="bg-red-600 hover:bg-red-700 px-2 py-1 rounded text-xs"
+                      className="bg-red-600 hover:bg-red-700 px-1 py-0.5 rounded text-xs"
                     >
-                      Delete
+                      Del
                     </button>
                   </div>
                 </div>
@@ -423,31 +422,31 @@ const DevToolsPage: React.FC = () => {
         )}
 
         {activeTab === 'edit' && (
-          <div className="bg-gray-800 rounded-lg p-4">
-            <h2 className="text-lg font-semibold mb-4">
+          <div className="bg-gray-800 rounded-lg p-2">
+            <h3 className="text-md font-medium mb-2">
               {selectedCard ? 'Edit Card' : 'Create New Card'}
-            </h2>
+            </h3>
             
-            {/* Landscape Layout - Two Columns */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Compact Layout - Three Columns */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
               {/* Left Column - Basic Info */}
-              <div className="space-y-3">
-                <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-2">
+                <div className="grid grid-cols-1 gap-2">
                   <div>
-                    <label className="block text-sm font-medium mb-1">Name</label>
+                    <label className="block text-xs font-medium mb-1">Name</label>
                     <input
                       type="text"
                       value={formData.name}
                       onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-                      className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded"
+                      className="w-full px-2 py-1 bg-gray-700 border border-gray-600 rounded text-sm"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium mb-1">Type</label>
+                    <label className="block text-xs font-medium mb-1">Type</label>
                     <select
                       value={formData.type}
                       onChange={(e) => setFormData(prev => ({ ...prev, type: e.target.value as any }))}
-                      className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded"
+                      className="w-full px-2 py-1 bg-gray-700 border border-gray-600 rounded text-sm"
                     >
                       <option value="avatar">Avatar</option>
                       <option value="spell">Spell</option>
