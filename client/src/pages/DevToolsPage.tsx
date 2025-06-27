@@ -53,6 +53,7 @@ interface CardFormData {
 
 const DevToolsPage: React.FC = () => {
   const { addCard } = useDeckStore();
+  
   // Get complete database of cards for dev tools (not just owned cards)
   const allDatabaseCards = [
     ...kobarBorahAvatarCards,
@@ -67,7 +68,12 @@ const DevToolsPage: React.FC = () => {
     index === self.findIndex(c => c.name === card.name && c.type === card.type)
   );
   
-  const cards = uniqueCards;
+  // Local state for managing edited cards in dev-tools
+  const [localCards, setLocalCards] = useState<Card[]>(uniqueCards);
+  const [customCards, setCustomCards] = useState<Card[]>([]);
+  
+  // Combine original cards, local edits, and custom cards
+  const cards = [...localCards, ...customCards];
   const [selectedCard, setSelectedCard] = useState<Card | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [activeTab, setActiveTab] = useState<'database' | 'edit' | 'expansion' | 'conditional' | 'premade-decks'>('database');
@@ -248,6 +254,9 @@ const DevToolsPage: React.FC = () => {
 
   const handleDeleteCard = (card: Card) => {
     if (confirm(`Delete ${card.name}?`)) {
+      // Remove from local cards and custom cards
+      setLocalCards(prev => prev.filter(c => c.id !== card.id));
+      setCustomCards(prev => prev.filter(c => c.id !== card.id));
       toast.success(`${card.name} deleted`);
     }
   };
@@ -272,31 +281,30 @@ const DevToolsPage: React.FC = () => {
         rarity: formData.rarity,
         energyCost: formData.energyCost,
         expansion: formData.expansion || 'dev-tools',
-        level: formData.level as 1 | 2,
+        level: (formData.level === 1 || formData.level === 2) ? formData.level : 1,
         health: formData.health,
         subType: formData.subType as any,
-      };
-      
-      // Add skills if they exist
-      if (formData.skill1Name) {
-        avatarCard.skill1 = {
+        skill1: formData.skill1Name ? {
           name: formData.skill1Name,
           effect: formData.skill1Effect,
           additionalEffect: formData.skill1AdditionalEffect,
           damage: formData.skill1Damage,
           energyCost: formData.skill1EnergyCost
-        };
-      }
-      
-      if (formData.skill2Name) {
-        avatarCard.skill2 = {
+        } : {
+          name: '',
+          effect: '',
+          additionalEffect: '',
+          damage: 0,
+          energyCost: []
+        },
+        skill2: formData.skill2Name ? {
           name: formData.skill2Name,
           effect: formData.skill2Effect,
           additionalEffect: formData.skill2AdditionalEffect,
           damage: formData.skill2Damage,
           energyCost: formData.skill2EnergyCost
-        };
-      }
+        } : undefined
+      };
       
       newCard = avatarCard;
     } else {
@@ -310,16 +318,49 @@ const DevToolsPage: React.FC = () => {
         description: formData.description,
         rarity: formData.rarity,
         energyCost: formData.energyCost,
-        expansion: formData.expansion || 'dev-tools',
-        effect: formData.description,
-        damage: 0
+        expansion: formData.expansion || 'dev-tools'
       };
       
       newCard = actionCard;
     }
 
-    // Add the card to the collection
+    console.log('Saving card:', {
+      selectedCard: selectedCard?.id,
+      newCard: newCard.name,
+      isEditing: !!selectedCard
+    });
+
+    // Update local state for dev-tools
+    if (selectedCard) {
+      // Editing existing card
+      console.log('Updating existing card in local state');
+      setLocalCards(prev => {
+        const updated = prev.map(card => 
+          card.id === selectedCard.id ? newCard : card
+        );
+        console.log('Local cards updated:', updated.length);
+        return updated;
+      });
+      setCustomCards(prev => {
+        const updated = prev.map(card => 
+          card.id === selectedCard.id ? newCard : card
+        );
+        console.log('Custom cards updated:', updated.length);
+        return updated;
+      });
+    } else {
+      // Creating new card
+      console.log('Adding new card to custom cards');
+      setCustomCards(prev => {
+        const updated = [...prev, newCard];
+        console.log('Custom cards now has:', updated.length, 'cards');
+        return updated;
+      });
+    }
+    
+    // Also add to user's collection
     addCard(newCard);
+    console.log('Card added to user collection');
     
     toast.success(selectedCard ? 'Card updated successfully' : 'Card created successfully');
     setIsEditing(false);
