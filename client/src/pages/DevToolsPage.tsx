@@ -759,10 +759,10 @@ const DevToolsPage: React.FC = () => {
 
               {/* Right Column - Skills */}
               {formData.type === 'avatar' && (
-                <div className="space-y-2">
-                  <div className="grid grid-cols-2 gap-3">
-                  {/* Skill 1 - Takes 1 column */}
-                  <div className="bg-gray-700 p-2 rounded">
+                <div className="space-y-3">
+                  <div className="space-y-3">
+                  {/* Skill 1 - Full width */}
+                  <div className="bg-gray-700 p-3 rounded">
                     <h3 className="font-medium mb-2 text-sm">Skill 1</h3>
                     <div className="space-y-2">
                       <div className="grid grid-cols-1 gap-2">
@@ -973,8 +973,8 @@ const DevToolsPage: React.FC = () => {
                     </div>
                   </div>
 
-                  {/* Skill 2 - Takes 1 column */}
-                  <div className="bg-gray-700 p-2 rounded">
+                  {/* Skill 2 - Full width */}
+                  <div className="bg-gray-700 p-3 rounded">
                     <h3 className="font-medium mb-2 text-sm">Skill 2</h3>
                     <div className="space-y-2">
                       <div className="grid grid-cols-1 gap-2">
