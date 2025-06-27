@@ -428,116 +428,111 @@ const DevToolsPage: React.FC = () => {
               {selectedCard ? 'Edit Card' : 'Create New Card'}
             </h2>
             
-            {/* Landscape Layout - Two Columns */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* Left Column - Basic Info */}
-              <div className="space-y-3">
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="block text-sm font-medium mb-1">Name</label>
-                    <input
-                      type="text"
-                      value={formData.name}
-                      onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-                      className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium mb-1">Type</label>
-                    <select
-                      value={formData.type}
-                      onChange={(e) => setFormData(prev => ({ ...prev, type: e.target.value as any }))}
-                      className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded"
-                    >
-                      <option value="avatar">Avatar</option>
-                      <option value="spell">Spell</option>
-                      <option value="quickSpell">Quick Spell</option>
-                      <option value="ritualArmor">Ritual Armor</option>
-                      <option value="field">Field</option>
-                      <option value="equipment">Equipment</option>
-                      <option value="item">Item</option>
-                    </select>
-                  </div>
+            {/* Compact Layout - 4 Columns */}
+            <div className="space-y-3">
+              {/* Row 1: Basic Info */}
+              <div className="grid grid-cols-4 gap-2">
+                <div>
+                  <label className="block text-xs font-medium mb-1">Name</label>
+                  <input
+                    type="text"
+                    value={formData.name}
+                    onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+                    className="w-full px-2 py-1 text-sm bg-gray-700 border border-gray-600 rounded"
+                  />
                 </div>
-
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="block text-sm font-medium mb-1">Element</label>
-                    <select
-                      value={formData.element}
-                      onChange={(e) => setFormData(prev => ({ ...prev, element: e.target.value as ElementType }))}
-                      className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded"
-                    >
-                      <option value="fire">Fire</option>
-                      <option value="water">Water</option>
-                      <option value="ground">Ground</option>
-                      <option value="air">Air</option>
-                      <option value="neutral">Neutral</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium mb-1">Rarity</label>
-                    <select
-                      value={formData.rarity}
-                      onChange={(e) => setFormData(prev => ({ ...prev, rarity: e.target.value as RarityType }))}
-                      className={`w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded ${getRarityTextColor(formData.rarity)}`}
-                    >
-                      <option value="Common" className="text-gray-400">Common</option>
-                      <option value="Uncommon" className="text-green-400">Uncommon</option>
-                      <option value="Rare" className="text-blue-400">Rare</option>
-                      <option value="Super Rare" className="text-purple-400">Super Rare</option>
-                      <option value="Mythic" className="text-yellow-400">Mythic</option>
-                    </select>
-                  </div>
+                <div>
+                  <label className="block text-xs font-medium mb-1">Type</label>
+                  <select
+                    value={formData.type}
+                    onChange={(e) => setFormData(prev => ({ ...prev, type: e.target.value as any }))}
+                    className="w-full px-2 py-1 text-sm bg-gray-700 border border-gray-600 rounded"
+                  >
+                    <option value="avatar">Avatar</option>
+                    <option value="spell">Spell</option>
+                    <option value="quickSpell">Quick Spell</option>
+                    <option value="ritualArmor">Ritual Armor</option>
+                    <option value="field">Field</option>
+                    <option value="equipment">Equipment</option>
+                    <option value="item">Item</option>
+                  </select>
                 </div>
-
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="block text-sm font-medium mb-1">Expansion Pack</label>
-                    <select
-                      value={formData.expansion}
-                      onChange={(e) => setFormData(prev => ({ ...prev, expansion: e.target.value }))}
-                      className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded"
-                    >
-                      <option value="">Select Expansion</option>
-                      {mockExpansions.map(expansion => (
-                        <option key={expansion.id} value={expansion.name}>
-                          {expansion.name}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
+                <div>
+                  <label className="block text-xs font-medium mb-1">Element</label>
+                  <select
+                    value={formData.element}
+                    onChange={(e) => setFormData(prev => ({ ...prev, element: e.target.value as ElementType }))}
+                    className="w-full px-2 py-1 text-sm bg-gray-700 border border-gray-600 rounded"
+                  >
+                    <option value="fire">Fire</option>
+                    <option value="water">Water</option>
+                    <option value="ground">Ground</option>
+                    <option value="air">Air</option>
+                    <option value="neutral">Neutral</option>
+                  </select>
                 </div>
+                <div>
+                  <label className="block text-xs font-medium mb-1">Rarity</label>
+                  <select
+                    value={formData.rarity}
+                    onChange={(e) => setFormData(prev => ({ ...prev, rarity: e.target.value as RarityType }))}
+                    className={`w-full px-2 py-1 text-sm bg-gray-700 border border-gray-600 rounded ${getRarityTextColor(formData.rarity)}`}
+                  >
+                    <option value="Common">Common</option>
+                    <option value="Uncommon">Uncommon</option>
+                    <option value="Rare">Rare</option>
+                    <option value="Super Rare">Super Rare</option>
+                    <option value="Mythic">Mythic</option>
+                  </select>
+                </div>
+              </div>
 
+              {/* Row 2: Expansion and Avatar-specific */}
+              <div className="grid grid-cols-4 gap-2">
+                <div>
+                  <label className="block text-xs font-medium mb-1">Expansion</label>
+                  <select
+                    value={formData.expansion}
+                    onChange={(e) => setFormData(prev => ({ ...prev, expansion: e.target.value }))}
+                    className="w-full px-2 py-1 text-sm bg-gray-700 border border-gray-600 rounded"
+                  >
+                    <option value="">Select Expansion</option>
+                    {mockExpansions.map(expansion => (
+                      <option key={expansion.id} value={expansion.name}>
+                        {expansion.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
                 {formData.type === 'avatar' && (
-                  <div className="grid grid-cols-3 gap-3">
+                  <>
                     <div>
-                      <label className="block text-sm font-medium mb-1">Level</label>
+                      <label className="block text-xs font-medium mb-1">Level</label>
                       <input
                         type="number"
                         min="1"
                         max="10"
                         value={formData.level}
                         onChange={(e) => setFormData(prev => ({ ...prev, level: parseInt(e.target.value) || 1 }))}
-                        className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded"
+                        className="w-full px-2 py-1 text-sm bg-gray-700 border border-gray-600 rounded"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium mb-1">Health</label>
+                      <label className="block text-xs font-medium mb-1">Health</label>
                       <input
                         type="number"
                         min="1"
                         value={formData.health}
                         onChange={(e) => setFormData(prev => ({ ...prev, health: parseInt(e.target.value) || 1 }))}
-                        className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded"
+                        className="w-full px-2 py-1 text-sm bg-gray-700 border border-gray-600 rounded"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium mb-1">Sub Type</label>
+                      <label className="block text-xs font-medium mb-1">Sub Type</label>
                       <select
                         value={formData.subType}
                         onChange={(e) => setFormData(prev => ({ ...prev, subType: e.target.value }))}
-                        className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded"
+                        className="w-full px-2 py-1 text-sm bg-gray-700 border border-gray-600 rounded"
                       >
                         <option value="">Select Sub Type</option>
                         <option value="kobar">Kobar</option>
@@ -547,8 +542,9 @@ const DevToolsPage: React.FC = () => {
                         <option value="kuku">Kuku</option>
                       </select>
                     </div>
-                  </div>
+                  </>
                 )}
+              </div>
 
                 <div>
                   <label className="block text-sm font-medium mb-1">Main Energy Cost</label>
@@ -1122,21 +1118,22 @@ const DevToolsPage: React.FC = () => {
                   </div>
                 </div>
               )}
-            </div>
-
-            <div className="flex gap-2 mt-6">
-              <button
-                onClick={handleSaveCard}
-                className="bg-green-600 hover:bg-green-700 px-4 py-2 rounded"
-              >
-                Save Card
-              </button>
-              <button
-                onClick={() => setActiveTab('database')}
-                className="bg-gray-600 hover:bg-gray-700 px-4 py-2 rounded"
-              >
-                Cancel
-              </button>
+              
+              {/* Action Buttons */}
+              <div className="flex gap-2 mt-6">
+                <button
+                  onClick={handleSaveCard}
+                  className="bg-green-600 hover:bg-green-700 px-4 py-2 rounded"
+                >
+                  Save Card
+                </button>
+                <button
+                  onClick={() => setActiveTab('database')}
+                  className="bg-gray-600 hover:bg-gray-700 px-4 py-2 rounded"
+                >
+                  Cancel
+                </button>
+              </div>
             </div>
           </div>
         )}
