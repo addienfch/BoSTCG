@@ -19,6 +19,7 @@ const GameModePage: React.FC<GameModePageProps> = ({ onStartGame }) => {
   const [roomCode, setRoomCode] = useState('');
   const [playerName, setPlayerName] = useState(gameMode.playerName);
   const [selectedDeckId, setSelectedDeckId] = useState<string | null>(activeDeckId);
+  const [showAIDifficultySelector, setShowAIDifficultySelector] = useState(false);
   
   // If no deck is selected, select the first one by default
   useEffect(() => {

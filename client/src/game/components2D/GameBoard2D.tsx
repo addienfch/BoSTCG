@@ -130,6 +130,16 @@ const GameBoard2D: React.FC<GameBoard2DProps> = ({ onAction }) => {
   const [evolutionCard, setEvolutionCard] = useState<Card | null>(null);
   const [evolvableAvatars, setEvolvableAvatars] = useState<Array<{avatar: AvatarCard, location: 'active' | number}>>([]);
   
+  // Game log auto-scroll ref
+  const gameLogRef = useRef<HTMLDivElement>(null);
+  
+  // Auto-scroll game log when new messages are added
+  useEffect(() => {
+    if (gameLogRef.current) {
+      gameLogRef.current.scrollTop = gameLogRef.current.scrollHeight;
+    }
+  }, [game.logs]);
+  
   // Handle evolution selection
   const handleEvolutionSelection = (targetLocation: 'active' | number) => {
     if (evolutionCard) {
@@ -1481,7 +1491,7 @@ const GameBoard2D: React.FC<GameBoard2DProps> = ({ onAction }) => {
       </div>
       
       {/* Game logs */}
-      <div className="mt-4 bg-black bg-opacity-50 p-2 rounded h-32 overflow-y-auto">
+      <div ref={gameLogRef} className="mt-4 bg-black bg-opacity-50 p-2 rounded h-32 overflow-y-auto">
         <h3 className="text-xs font-bold mb-1">Game Log</h3>
         {game.logs.map((log, index) => (
           <div key={index} className="text-xs text-gray-300 mb-0.5">
