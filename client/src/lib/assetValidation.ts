@@ -42,7 +42,7 @@ export const validateCardImage = async (imagePath: string): Promise<string> => {
   }
 
   // Fallback to default card image
-  const fallbackPath = '/images/cards/default-card.png';
+  const fallbackPath = '/textures/cards/default_avatar.svg';
   const fallbackValid = await validateAssetPath(fallbackPath);
   
   if (fallbackValid) {
@@ -94,9 +94,9 @@ const generateCardPlaceholder = (): string => {
  */
 export const preloadCriticalAssets = async (): Promise<void> => {
   const criticalAssets = [
-    '/images/cards/default-card.png',
-    '/textures/asphalt.png',
-    '/images/ui/logo.png'
+    '/textures/cards/default_avatar.svg',
+    '/textures/cards/placeholder.svg',
+    '/textures/asphalt.png'
   ];
 
   const validationPromises = criticalAssets.map(async (asset) => {
