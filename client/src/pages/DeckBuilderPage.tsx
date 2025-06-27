@@ -89,9 +89,9 @@ const DeckBuilderPage: React.FC = () => {
 
   // Get wallet card count - how many the user actually owns
   const getWalletCardCount = (cardName: string) => {
-    // Use the current available cards from state instead of calling async function
-    const availableCards = filteredCards.length > 0 ? filteredCards : [];
-    return availableCards.filter(card => card.name === cardName).length;
+    // Use the getAllCards() from deck store to get all available cards including CNFTs
+    const allCards = availableCards;
+    return allCards.filter(card => card.name === cardName).length;
   };
   
   // Load a deck into the editor
