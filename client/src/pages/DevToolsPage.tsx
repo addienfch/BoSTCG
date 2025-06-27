@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useDeckStore } from '../game/stores/useDeckStore';
 import { useExpansionStore, type Expansion } from '../game/stores/useExpansionStore';
 import { usePremadeDecksStore, type PremadeDeck } from '../game/stores/usePremadeDecksStore';
+import { useDataSyncStore } from '../game/stores/useDataSyncStore';
 import { Card, ElementType, AvatarCard, ActionCard, RarityType } from '../game/data/cardTypes';
 import { 
   kobarBorahAvatarCards, 
@@ -50,6 +51,7 @@ const DevToolsPage: React.FC = () => {
   const { addCard } = useDeckStore();
   const { expansions, addExpansion, updateExpansion, deleteExpansion } = useExpansionStore();
   const { premadeDecks, addPremadeDeck, updatePremadeDeck, deletePremadeDeck } = usePremadeDecksStore();
+  const { syncAllData, validateDataConsistency } = useDataSyncStore();
   
   // Get complete database of cards for dev tools (not just owned cards)
   const allDatabaseCards = [
@@ -137,29 +139,7 @@ const DevToolsPage: React.FC = () => {
     symbol: ''
   });
 
-  const mockExpansions: Expansion[] = [
-    {
-      id: 'core-set',
-      name: 'Core Set',
-      description: 'The original Book of Spektrum card collection',
-      releaseDate: '2024-01-15',
-      cardCount: 150
-    },
-    {
-      id: 'elemental-fury',
-      name: 'Elemental Fury',
-      description: 'Enhanced elemental powers and new avatar abilities',
-      releaseDate: '2024-06-01',
-      cardCount: 100
-    },
-    {
-      id: 'shadows-awakening',
-      name: 'Shadows Awakening',
-      description: 'Mysterious new cards with powerful effects',
-      releaseDate: '2024-09-15',
-      cardCount: 80
-    }
-  ];
+  // Mock expansions are now replaced by centralized store data
 
   const skillEffectTypes = [
     { value: 'basic_damage', label: 'Basic Damage' },
@@ -425,7 +405,8 @@ const DevToolsPage: React.FC = () => {
       description: '',
       releaseDate: '',
       cardCount: 0,
-      artUrl: ''
+      artUrl: '',
+      symbol: ''
     });
   };
 
@@ -437,7 +418,8 @@ const DevToolsPage: React.FC = () => {
       description: expansion.description,
       releaseDate: expansion.releaseDate,
       cardCount: expansion.cardCount,
-      artUrl: expansion.artUrl || ''
+      artUrl: expansion.artUrl || '',
+      symbol: expansion.symbol || ''
     });
   };
 
@@ -453,7 +435,8 @@ const DevToolsPage: React.FC = () => {
       description: expansionForm.description.trim(),
       releaseDate: expansionForm.releaseDate,
       cardCount: expansionForm.cardCount,
-      artUrl: expansionForm.artUrl || ''
+      artUrl: expansionForm.artUrl || '',
+      symbol: expansionForm.symbol || '⚡'
     };
 
     console.log('Saving expansion:', expansionData);
@@ -1543,6 +1526,18 @@ const DevToolsPage: React.FC = () => {
                     value={expansionForm.cardCount}
                     onChange={(e) => setExpansionForm(prev => ({ ...prev, cardCount: parseInt(e.target.value) || 0 }))}
                     className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium mb-1">Symbol</label>
+                  <input
+                    type="text"
+                    value={expansionForm.symbol}
+                    onChange={(e) => setExpansionForm(prev => ({ ...prev, symbol: e.target.value }))}
+                    className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded"
+                    placeholder="Enter expansion symbol (e.g., 🔥, ⚡, 💧)"
+                    maxLength={2}
                   />
                 </div>
 
