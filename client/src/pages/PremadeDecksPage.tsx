@@ -32,66 +32,7 @@ const PremadeDecksPage: React.FC = () => {
   const [rewardCards, setRewardCards] = useState<Card[]>([]);
   const [rewardTitle, setRewardTitle] = useState('');
 
-  // Using centralized expansion data
-
-  const premadeDecks: PremadeDeck[] = [
-    {
-      id: 'kobar-borah-starter',
-      name: 'Kobar-Borah Tribal',
-      expansion: expansions[0],
-      tribe: 'kobar-borah',
-      description: 'Complete tribal deck featuring Kobar and Borah avatars with supporting spells.',
-      price: 35,
-      cardCount: 42,
-      strategy: 'Tribal synergy with avatar evolution and equipment support',
-      difficulty: 'Beginner',
-      coverCardName: 'Radja',
-      keyCards: ['Radja', 'Crimson', 'Boar Berserker', 'Banaspati'],
-      purchased: false
-    },
-    {
-      id: 'kujana-kuhaka-starter',
-      name: 'Kujana-Kuhaka Tribal',
-      expansion: expansions[0],
-      tribe: 'kujana-kuhaka',
-      description: 'Aggressive tribal deck with Kujana and Kuhaka avatars plus fire spells.',
-      price: 40,
-      cardCount: 45,
-      strategy: 'Fast aggro with spell support and avatar synergies',
-      difficulty: 'Intermediate',
-      coverCardName: 'Boar Witch',
-      keyCards: ['Boar Witch', 'Daisy', 'Spark', 'Burn Ball'],
-      purchased: false
-    },
-    {
-      id: 'kobar-pure',
-      name: 'Pure Kobar Deck',
-      expansion: expansions[1],
-      tribe: 'kobar',
-      description: 'Specialized deck focusing only on Kobar tribe avatars and equipment.',
-      price: 50,
-      cardCount: 40,
-      strategy: 'Pure tribal with equipment synergy',
-      difficulty: 'Advanced',
-      coverCardName: 'Kobar Trainee A',
-      keyCards: ['Kobar Trainee A', 'Kobar Trainee B', 'Cracking Sword'],
-      purchased: false
-    },
-    {
-      id: 'kujana-pure',
-      name: 'Pure Kujana Deck',
-      expansion: expansions[1],
-      tribe: 'kujana',
-      description: 'Elite Kujana-only deck with advanced fire magic combinations.',
-      price: 55,
-      cardCount: 40,
-      strategy: 'Elite tribal with advanced spell combos',
-      difficulty: 'Advanced',
-      coverCardName: 'Witch Trainee',
-      keyCards: ['Witch Trainee', 'Burning Up!', 'Flaming Body'],
-      purchased: false
-    }
-  ];
+  // Using centralized expansion and premade deck data
 
   // Generate deck cards based on the premade deck configuration
   const generateDeckCards = (deckTemplate: PremadeDeck): Card[] => {
@@ -226,7 +167,7 @@ const PremadeDecksPage: React.FC = () => {
 
 
   const getExpansionDecks = (expansion: Expansion) => {
-    return premadeDecks.filter(deck => deck.expansion.id === expansion.id);
+    return premadeDecks.filter(deck => deck.expansion === expansion.name);
   };
 
   const getDifficultyColor = (difficulty: string) => {
