@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, ElementType, AvatarCard } from '../game/data/cardTypes';
 import { useDeckStore } from '../game/stores/useDeckStore';
+import { useExpansionStore, type Expansion } from '../game/stores/useExpansionStore';
+import { usePremadeDecksStore, type PremadeDeck } from '../game/stores/usePremadeDecksStore';
 import { toast } from 'sonner';
 import BackButton from '../components/BackButton';
 import NavigationBar from '../components/NavigationBar';
@@ -16,31 +18,13 @@ import {
 import { redElementalSpellCards } from '../game/data/redElementalCards';
 import { cardNftService } from '../blockchain/solana/cardNftService';
 
-interface Expansion {
-  id: string;
-  name: string;
-  description: string;
-  symbol: string;
-}
-
-interface PremadeDeck {
-  id: string;
-  name: string;
-  expansion: Expansion;
-  tribe: string;
-  description: string;
-  price: number;
-  cardCount: number;
-  strategy: string;
-  difficulty: 'Beginner' | 'Intermediate' | 'Advanced';
-  coverCardName: string;
-  keyCards: string[];
-  purchased: boolean;
-}
+// Using centralized stores for data management
 
 const PremadeDecksPage: React.FC = () => {
   const navigate = useNavigate();
   const { addDeck, getAvailableCards, addCards } = useDeckStore();
+  const { expansions } = useExpansionStore();
+  const { premadeDecks, purchaseDeck } = usePremadeDecksStore();
   const [purchasedDecks, setPurchasedDecks] = useState<Set<string>>(new Set());
   const [selectedExpansion, setSelectedExpansion] = useState<Expansion | null>(null);
   const [currentStep, setCurrentStep] = useState<'expansion-selection' | 'deck-selection'>('expansion-selection');
@@ -48,21 +32,7 @@ const PremadeDecksPage: React.FC = () => {
   const [rewardCards, setRewardCards] = useState<Card[]>([]);
   const [rewardTitle, setRewardTitle] = useState('');
 
-  // Define expansions
-  const expansions: Expansion[] = [
-    {
-      id: 'genesis',
-      name: 'Genesis Set',
-      description: 'The foundational tribal decks',
-      symbol: '⚡'
-    },
-    {
-      id: 'elemental-fury',
-      name: 'Elemental Fury',
-      description: 'Advanced elemental combinations',
-      symbol: '🔥'
-    }
-  ];
+  // Using centralized expansion data
 
   const premadeDecks: PremadeDeck[] = [
     {

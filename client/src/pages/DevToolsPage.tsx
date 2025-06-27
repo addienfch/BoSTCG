@@ -531,13 +531,11 @@ const DevToolsPage: React.FC = () => {
 
     if (selectedDeck) {
       // Update existing deck
-      setLocalPremadeDecks(prev => prev.map(deck => 
-        deck.id === selectedDeck.id ? deckData : deck
-      ));
+      updatePremadeDeck(selectedDeck.id, deckData);
       toast.success(`${deckForm.name} deck updated`);
     } else {
       // Create new deck
-      setLocalPremadeDecks(prev => [...prev, deckData]);
+      addPremadeDeck(deckData);
       toast.success(`${deckForm.name} deck created`);
     }
     
@@ -547,7 +545,7 @@ const DevToolsPage: React.FC = () => {
 
   const handleDeleteDeck = (deck: PremadeDeck) => {
     if (confirm(`Delete ${deck.name} deck?`)) {
-      setLocalPremadeDecks(prev => prev.filter(d => d.id !== deck.id));
+      deletePremadeDeck(deck.id);
       toast.success(`${deck.name} deleted`);
     }
   };
@@ -1795,7 +1793,7 @@ const DevToolsPage: React.FC = () => {
                 <h4 className="font-medium mb-3">Existing Deck Templates</h4>
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                  {localPremadeDecks.map(deck => (
+                  {premadeDecks.map(deck => (
                     <div key={deck.id} className="bg-gray-600 p-3 rounded border border-gray-500">
                       <div className="flex justify-between items-start mb-2">
                         <h5 className="font-medium text-sm">{deck.name}</h5>
