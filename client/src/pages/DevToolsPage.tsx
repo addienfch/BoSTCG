@@ -68,7 +68,7 @@ const DevToolsPage: React.FC = () => {
   const cards = uniqueCards;
   const [selectedCard, setSelectedCard] = useState<Card | null>(null);
   const [isEditing, setIsEditing] = useState(false);
-  const [activeTab, setActiveTab] = useState<'database' | 'edit' | 'expansion' | 'conditional'>('database');
+  const [activeTab, setActiveTab] = useState<'database' | 'edit' | 'expansion' | 'conditional' | 'premade-decks'>('database');
   const [selectedExpansion, setSelectedExpansion] = useState<Expansion | null>(null);
   const [isEditingExpansion, setIsEditingExpansion] = useState(false);
   const [selectedExpansionFilter, setSelectedExpansionFilter] = useState<string>('all');
@@ -353,6 +353,17 @@ const DevToolsPage: React.FC = () => {
             }`}
           >
             Expansions
+          </button>
+
+          <button
+            onClick={() => setActiveTab('premade-decks')}
+            className={`flex-1 py-2 px-4 rounded text-sm font-medium transition-colors ${
+              activeTab === 'premade-decks' 
+                ? 'bg-spektrum-orange text-spektrum-dark' 
+                : 'text-gray-400 hover:text-white'
+            }`}
+          >
+            Premade Decks
           </button>
 
         </div>
@@ -1300,6 +1311,166 @@ const DevToolsPage: React.FC = () => {
                 </div>
               </div>
             )}
+          </div>
+        )}
+
+        {activeTab === 'premade-decks' && (
+          <div className="bg-gray-800 rounded-lg p-4">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-medium">Premade Decks Configuration</h3>
+              <button
+                className="bg-green-600 hover:bg-green-700 px-4 py-2 rounded text-sm"
+              >
+                + New Deck Template
+              </button>
+            </div>
+
+            <div className="space-y-4">
+              {/* Deck Creation Form */}
+              <div className="bg-gray-700 p-4 rounded">
+                <h4 className="font-medium mb-3">Create New Premade Deck</h4>
+                
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                  {/* Basic Info */}
+                  <div className="space-y-3">
+                    <div>
+                      <label className="block text-sm font-medium mb-1">Deck Name</label>
+                      <input
+                        type="text"
+                        placeholder="Enter deck name..."
+                        className="w-full px-3 py-2 bg-gray-600 border border-gray-500 rounded"
+                      />
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium mb-1">Expansion</label>
+                      <select className="w-full px-3 py-2 bg-gray-600 border border-gray-500 rounded">
+                        <option value="">Select Expansion</option>
+                        {expansions.map(exp => (
+                          <option key={exp.id} value={exp.id}>{exp.name}</option>
+                        ))}
+                      </select>
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium mb-1">Tribe/Theme</label>
+                      <input
+                        type="text"
+                        placeholder="e.g., Kobar Warriors, Fire Elementals..."
+                        className="w-full px-3 py-2 bg-gray-600 border border-gray-500 rounded"
+                      />
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium mb-1">Difficulty</label>
+                      <select className="w-full px-3 py-2 bg-gray-600 border border-gray-500 rounded">
+                        <option value="Beginner">Beginner</option>
+                        <option value="Intermediate">Intermediate</option>
+                        <option value="Advanced">Advanced</option>
+                      </select>
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium mb-1">Price (USD)</label>
+                      <input
+                        type="number"
+                        step="0.01"
+                        placeholder="9.99"
+                        className="w-full px-3 py-2 bg-gray-600 border border-gray-500 rounded"
+                      />
+                    </div>
+                  </div>
+                  
+                  {/* Strategy & Description */}
+                  <div className="space-y-3">
+                    <div>
+                      <label className="block text-sm font-medium mb-1">Description</label>
+                      <textarea
+                        rows={3}
+                        placeholder="Describe the deck's playstyle and theme..."
+                        className="w-full px-3 py-2 bg-gray-600 border border-gray-500 rounded"
+                      />
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium mb-1">Strategy Guide</label>
+                      <textarea
+                        rows={3}
+                        placeholder="Explain how to play this deck effectively..."
+                        className="w-full px-3 py-2 bg-gray-600 border border-gray-500 rounded"
+                      />
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium mb-1">Key Cards (comma separated)</label>
+                      <input
+                        type="text"
+                        placeholder="Crimson, Radja, Spark..."
+                        className="w-full px-3 py-2 bg-gray-600 border border-gray-500 rounded"
+                      />
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium mb-1">Cover Card Name</label>
+                      <input
+                        type="text"
+                        placeholder="Name of the deck's featured card..."
+                        className="w-full px-3 py-2 bg-gray-600 border border-gray-500 rounded"
+                      />
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="mt-4 flex gap-2">
+                  <button className="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded">
+                    Save Deck Template
+                  </button>
+                  <button className="bg-gray-600 hover:bg-gray-700 px-4 py-2 rounded">
+                    Preview Deck
+                  </button>
+                </div>
+              </div>
+
+              {/* Existing Deck Templates */}
+              <div className="bg-gray-700 p-4 rounded">
+                <h4 className="font-medium mb-3">Existing Deck Templates</h4>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                  {/* Sample deck template cards */}
+                  <div className="bg-gray-600 p-3 rounded border border-gray-500">
+                    <div className="flex justify-between items-start mb-2">
+                      <h5 className="font-medium text-sm">Fire Starter Deck</h5>
+                      <span className="text-xs bg-green-500 px-2 py-1 rounded">Beginner</span>
+                    </div>
+                    <p className="text-xs text-gray-300 mb-2">Kobar Borah • $12.99</p>
+                    <p className="text-xs text-gray-400 mb-3">Basic fire-based strategy focusing on direct damage and aggressive plays.</p>
+                    <div className="flex gap-1">
+                      <button className="flex-1 bg-blue-600 hover:bg-blue-700 px-2 py-1 rounded text-xs">Edit</button>
+                      <button className="flex-1 bg-red-600 hover:bg-red-700 px-2 py-1 rounded text-xs">Delete</button>
+                    </div>
+                  </div>
+                  
+                  <div className="bg-gray-600 p-3 rounded border border-gray-500">
+                    <div className="flex justify-between items-start mb-2">
+                      <h5 className="font-medium text-sm">Control Masters</h5>
+                      <span className="text-xs bg-purple-500 px-2 py-1 rounded">Advanced</span>
+                    </div>
+                    <p className="text-xs text-gray-300 mb-2">Kujana Kuhaka • $19.99</p>
+                    <p className="text-xs text-gray-400 mb-3">Advanced control deck with counter strategies and late-game power.</p>
+                    <div className="flex gap-1">
+                      <button className="flex-1 bg-blue-600 hover:bg-blue-700 px-2 py-1 rounded text-xs">Edit</button>
+                      <button className="flex-1 bg-red-600 hover:bg-red-700 px-2 py-1 rounded text-xs">Delete</button>
+                    </div>
+                  </div>
+                  
+                  <div className="bg-gray-600 p-3 rounded border border-gray-500 border-dashed opacity-75">
+                    <div className="text-center text-gray-400 py-6">
+                      <p className="text-sm">Click "New Deck Template" to add more premade decks</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         )}
 
