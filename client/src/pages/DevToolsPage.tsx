@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useDeckStore } from '../game/stores/useDeckStore';
+import { useExpansionStore, type Expansion } from '../game/stores/useExpansionStore';
 import { Card, ElementType, AvatarCard, ActionCard, RarityType } from '../game/data/cardTypes';
 import { 
   kobarBorahAvatarCards, 
@@ -14,14 +15,7 @@ import BackButton from '../components/BackButton';
 import NavigationBar from '../components/NavigationBar';
 import { getRarityColor, getRarityTextColor } from '../game/utils/rarityUtils';
 
-interface Expansion {
-  id: string;
-  name: string;
-  description: string;
-  releaseDate: string;
-  cardCount: number;
-  artUrl?: string;
-}
+
 
 interface CardFormData {
   name: string;
@@ -53,6 +47,7 @@ interface CardFormData {
 
 const DevToolsPage: React.FC = () => {
   const { addCard } = useDeckStore();
+  const { expansions, addExpansion, updateExpansion, deleteExpansion } = useExpansionStore();
   
   // Get complete database of cards for dev tools (not just owned cards)
   const allDatabaseCards = [
@@ -75,12 +70,7 @@ const DevToolsPage: React.FC = () => {
   // Combine original cards, local edits, and custom cards
   const cards = [...localCards, ...customCards];
   
-  // Local state for expansions
-  const [localExpansions, setLocalExpansions] = useState<Expansion[]>([
-    { id: 'kobar-borah', name: 'Kobar & Borah', description: 'Fire and Earth tribes clash', releaseDate: '2024-01-01', cardCount: 120, artUrl: '' },
-    { id: 'kujana-kuhaka', name: 'Kujana & Kuhaka', description: 'Water and Air tribes unite', releaseDate: '2024-03-01', cardCount: 115, artUrl: '' },
-    { id: 'neutral-spells', name: 'Neutral Spells', description: 'Universal magic cards', releaseDate: '2024-02-01', cardCount: 80, artUrl: '' }
-  ]);
+
 
   // Local state for premade decks
   interface PremadeDeck {
@@ -121,33 +111,7 @@ const DevToolsPage: React.FC = () => {
   const [isEditingExpansion, setIsEditingExpansion] = useState(false);
   const [selectedExpansionFilter, setSelectedExpansionFilter] = useState<string>('all');
   
-  // Expansions data
-  const [expansions, setExpansions] = useState<Expansion[]>([
-    {
-      id: 'kobar-borah',
-      name: 'Kobar Borah',
-      description: 'The first expansion featuring fire and ground tribal cards',
-      releaseDate: '2024-01-01',
-      cardCount: 50,
-      artUrl: '/attached_assets/Red Elemental Avatar_Ava - Crimson.png'
-    },
-    {
-      id: 'kujana-kuhaka',
-      name: 'Kujana Kuhaka',
-      description: 'Water and air tribal cards with new mechanics',
-      releaseDate: '2024-06-01',
-      cardCount: 45,
-      artUrl: '/attached_assets/Non Elemental - Spell_Kencur.png'
-    },
-    {
-      id: 'neutral-base',
-      name: 'Neutral Base Set',
-      description: 'Core neutral cards and spell effects',
-      releaseDate: '2024-03-01',
-      cardCount: 30,
-      artUrl: '/attached_assets/Non Elemental (1)-15.png'
-    }
-  ]);
+
 
   // Premade deck form state
   const [deckForm, setDeckForm] = useState({
@@ -524,13 +488,11 @@ const DevToolsPage: React.FC = () => {
 
     if (selectedExpansion) {
       // Update existing expansion
-      setLocalExpansions(prev => prev.map(exp => 
-        exp.id === selectedExpansion.id ? expansionData : exp
-      ));
+      updateExpansion(selectedExpansion.id, expansionData);
       toast.success(`${expansionForm.name} expansion updated`);
     } else {
       // Create new expansion
-      setLocalExpansions(prev => [...prev, expansionData]);
+      addExpansion(expansionData);
       toast.success(`${expansionForm.name} expansion created`);
     }
     
