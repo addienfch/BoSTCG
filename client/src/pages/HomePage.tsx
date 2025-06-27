@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import NavigationBar from '../components/NavigationBar';
+import ProgressTracker from '../components/ProgressTracker';
 
 const HomePage: React.FC = () => {
   const navigate = useNavigate();
@@ -128,20 +129,8 @@ const HomePage: React.FC = () => {
           </p>
         </div>
 
-        {/* Stats overview */}
-        <div className="bg-gray-800 rounded-lg p-4 border border-gray-700">
-          <h3 className="font-bold text-spektrum-orange mb-3 text-sm">Your Progress</h3>
-          <div className="grid grid-cols-2 gap-4 text-center">
-            <div>
-              <div className="text-lg font-bold text-spektrum-light">0</div>
-              <div className="text-xs text-gray-400">NFT Cards</div>
-            </div>
-            <div>
-              <div className="text-lg font-bold text-spektrum-light">3</div>
-              <div className="text-xs text-gray-400">Decks</div>
-            </div>
-          </div>
-        </div>
+        {/* Progress Tracker */}
+        <ProgressTracker />
       </div>
 
       <NavigationBar />

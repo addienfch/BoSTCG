@@ -75,7 +75,7 @@ const ProgressTracker: React.FC<ProgressTrackerProps> = ({ className = '' }) => 
     // Update progress every 30 seconds
     const interval = setInterval(updateProgress, 30000);
     return () => clearInterval(interval);
-  }, [ownedCards, savedDecks]);
+  }, [ownedCards, decks]);
 
   const getProgressColor = (percentage: number) => {
     if (percentage >= 80) return 'bg-green-500';
