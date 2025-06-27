@@ -13,6 +13,7 @@ import { redElementalSpellCards } from '../data/redElementalCards';
 import { allNeutralCards } from '../data/neutralCards';
 import { cardNftService } from '../../blockchain/solana/cardNftService';
 import { toast } from 'sonner';
+import { isSameBaseCard, getBaseCardId } from '../utils/rarityUtils';
 
 // Define the deck interface
 export interface Deck {
@@ -48,6 +49,10 @@ interface DeckStore {
   findCard: (id: string) => Card | undefined;
   getAvailableCardsByElement: (element: string) => Card[];
   getAvailableCardsByTribe: (tribe: string) => Card[];
+  
+  // Rarity-based duplicate checking
+  canAddCardToDeck: (card: Card, deckCards: Card[]) => boolean;
+  getBaseCardCount: (baseName: string, deckCards: Card[]) => number;
   refreshLibrary: () => void;
   syncWithNFTs: () => Promise<void>;
 }
@@ -512,6 +517,23 @@ export const useDeckStore = create<DeckStore>()(
         } catch (error) {
           console.error('Error syncing with NFTs:', error);
         }
+      },
+
+      // Rarity-based duplicate checking
+      canAddCardToDeck: (card, deckCards) => {
+        const baseCardCount = get().getBaseCardCount(card.name, deckCards);
+        
+        // Level 2 avatars can only have 1 copy
+        if (card.type === 'avatar' && (card as AvatarCard).level === 2) {
+          return baseCardCount === 0;
+        }
+        
+        // All other cards can have up to 4 copies (regardless of rarity)
+        return baseCardCount < 4;
+      },
+
+      getBaseCardCount: (baseName, deckCards) => {
+        return deckCards.filter(card => card.name === baseName).length;
       }
     }),
     {
