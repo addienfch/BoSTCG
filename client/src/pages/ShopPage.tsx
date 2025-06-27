@@ -60,7 +60,9 @@ const ShopPage: React.FC = () => {
             onClick={handleBattleSets}
             className="w-full bg-gradient-to-r from-pink-600 to-pink-800 hover:from-pink-700 hover:to-pink-900 text-white py-6 px-6 rounded-lg shadow-lg transition-all transform hover:scale-105 flex flex-col items-center"
           >
-            <div className="text-4xl mb-2">🎨</div>
+            <svg className="w-8 h-8 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zM21 5a2 2 0 00-2-2h-4a2 2 0 00-2 2v12a4 4 0 004 4 4 4 0 004-4V5z"/>
+            </svg>
             <div className="text-xl font-bold mb-1">Battle Sets</div>
             <div className="text-sm opacity-90">Card backs, covers & battlefield themes</div>
           </button>
@@ -70,7 +72,9 @@ const ShopPage: React.FC = () => {
             onClick={handleMarketplace}
             className="w-full bg-gradient-to-r from-green-600 to-green-800 hover:from-green-700 hover:to-green-900 text-white py-6 px-6 rounded-lg shadow-lg transition-all transform hover:scale-105 flex flex-col items-center"
           >
-            <div className="text-4xl mb-2">🏪</div>
+            <svg className="w-8 h-8 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13 10V3L4 14h7v7l9-11h-7z"/>
+            </svg>
             <div className="text-xl font-bold mb-1">NFT Marketplace</div>
             <div className="text-sm opacity-90">Trade on Tensor</div>
           </button>
