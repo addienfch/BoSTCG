@@ -83,6 +83,7 @@ const DevToolsPage: React.FC = () => {
     art: '',
     description: '',
     expansion: '',
+    rarity: 'Common' as RarityType,
     energyCost: [] as ElementType[],
     skill1Name: '',
     skill1Effect: '',
@@ -160,6 +161,7 @@ const DevToolsPage: React.FC = () => {
       art: '',
       description: '',
       expansion: '',
+      rarity: 'Common',
       energyCost: [],
       skill1Name: '',
       skill1Effect: '',
@@ -194,6 +196,7 @@ const DevToolsPage: React.FC = () => {
       art: card.art || '',
       description: card.description || '',
       expansion: '',
+      rarity: card.rarity || 'Common',
       energyCost: [...(card.energyCost || [])],
       skill1Name: avatarCard.skill1?.name || '',
       skill1Effect: avatarCard.skill1?.effect || '',
@@ -388,8 +391,13 @@ const DevToolsPage: React.FC = () => {
                       {card.type} - {card.element}
                       {card.type === 'avatar' && ` - Level ${(card as AvatarCard).level}`}
                     </div>
-                    <div className="text-xs text-gray-500">
-                      Expansion: {(card as any).expansion || 'Core Set'}
+                    <div className="flex items-center gap-2 mt-1">
+                      <span className={`px-2 py-0.5 rounded text-xs ${getRarityTextColor(card.rarity || 'Common')}`}>
+                        {card.rarity || 'Common'}
+                      </span>
+                      <span className="text-xs text-gray-500">
+                        {(card as any).expansion || 'Core Set'}
+                      </span>
                     </div>
                   </div>
                   
@@ -467,6 +475,23 @@ const DevToolsPage: React.FC = () => {
                       <option value="neutral">Neutral</option>
                     </select>
                   </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Rarity</label>
+                    <select
+                      value={formData.rarity}
+                      onChange={(e) => setFormData(prev => ({ ...prev, rarity: e.target.value as RarityType }))}
+                      className={`w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded ${getRarityTextColor(formData.rarity)}`}
+                    >
+                      <option value="Common" className="text-gray-400">Common</option>
+                      <option value="Uncommon" className="text-green-400">Uncommon</option>
+                      <option value="Rare" className="text-blue-400">Rare</option>
+                      <option value="Super Rare" className="text-purple-400">Super Rare</option>
+                      <option value="Mythic" className="text-yellow-400">Mythic</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
                   <div>
                     <label className="block text-sm font-medium mb-1">Expansion Pack</label>
                     <select
