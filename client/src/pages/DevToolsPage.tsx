@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useDeckStore } from '../game/stores/useDeckStore';
-import { Card, ElementType, AvatarCard, ActionCard } from '../game/data/cardTypes';
+import { Card, ElementType, AvatarCard, ActionCard, RarityType } from '../game/data/cardTypes';
 import { 
   kobarBorahAvatarCards, 
   kobarBorahActionCards, 
@@ -12,6 +12,7 @@ import { allNeutralCards } from '../game/data/neutralCards';
 import { toast } from 'sonner';
 import BackButton from '../components/BackButton';
 import NavigationBar from '../components/NavigationBar';
+import { getRarityColor, getRarityTextColor } from '../game/utils/rarityUtils';
 
 interface Expansion {
   id: string;
@@ -31,6 +32,7 @@ interface CardFormData {
   art: string;
   description: string;
   expansion: string;
+  rarity: RarityType;
   energyCost: ElementType[];
   skill1Name: string;
   skill1Effect: string;

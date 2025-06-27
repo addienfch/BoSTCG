@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { useDeckStore, Deck } from '../game/stores/useDeckStore';
-import { Card, ElementType, AvatarCard } from '../game/data/cardTypes';
+import { Card, ElementType, AvatarCard, RarityType } from '../game/data/cardTypes';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
 import BackButton from '../components/BackButton';
 import NavigationBar from '../components/NavigationBar';
+import { getRarityColor, getRarityTextColor } from '../game/utils/rarityUtils';
 
 const DeckBuilderPage: React.FC = () => {
-  const { decks, activeDeckId, getAvailableCards, getAvailableCardsWithCNFTs, addDeck, updateDeck, deleteDeck, setActiveDeck } = useDeckStore();
+  const { decks, activeDeckId, getAvailableCards, getAvailableCardsWithCNFTs, addDeck, updateDeck, deleteDeck, setActiveDeck, canAddCardToDeck, getBaseCardCount } = useDeckStore();
   const navigate = useNavigate();
   
   // Local state for the deck builder
@@ -62,24 +63,9 @@ const DeckBuilderPage: React.FC = () => {
     return acc;
   }, {});
   
-  // Check if we've reached the max count for a specific card (4 copies for all cards except level 2 avatars)
+  // Check if we've reached the max count for a specific card using rarity-based duplicate rules
   const hasReachedMaxCount = (card: Card) => {
-    const baseId = card.id.split('-')[0] + '-' + card.id.split('-')[1];
-    const count = cardCounts[baseId] || 0;
-    
-    // Different limits based on card type
-    if (card.type === 'avatar') {
-      if ((card as AvatarCard).level === 2) {
-        // Only 1 copy of level 2 avatars
-        return count >= 1;
-      } else {
-        // 4 copies of level 1 avatars
-        return count >= 4;
-      }
-    } else {
-      // 4 copies of spells and other cards
-      return count >= 4;
-    }
+    return !canAddCardToDeck(card, selectedCards);
   };
   
   // Load a deck into the editor
@@ -329,7 +315,7 @@ const DeckBuilderPage: React.FC = () => {
                       >
                         <div className="flex items-center">
                           {card.art ? (
-                            <div className="w-8 h-8 mr-2 rounded overflow-hidden">
+                            <div className={`w-8 h-8 mr-2 rounded overflow-hidden border-2 ${card.rarity ? getRarityColor(card.rarity) : 'border-gray-400'}`}>
                               <img src={card.art} alt={card.name} className="w-full h-full object-cover" />
                             </div>
                           ) : (
