@@ -193,38 +193,43 @@ export const useBattleSetsStore = create<BattleSetsStore>()(
       },
 
       purchaseItem: (itemId: string) => {
-        const { battleSets, ownedItems } = get();
-        
-        if (ownedItems.has(itemId)) {
-          console.warn(`Item ${itemId} already owned`);
+        try {
+          const { battleSets, ownedItems } = get();
+          
+          if (ownedItems.has(itemId)) {
+            console.warn(`Item ${itemId} already owned`);
+            return false;
+          }
+
+          const item = battleSets.find(item => item.id === itemId);
+          if (!item) {
+            console.error(`Item ${itemId} not found`);
+            return false;
+          }
+
+          // TODO: Integrate with payment system
+          // For now, simulate successful purchase
+          
+          const newOwnedItems = new Set(ownedItems);
+          newOwnedItems.add(itemId);
+          
+          const updatedBattleSets = battleSets.map(battleItem =>
+            battleItem.id === itemId 
+              ? { ...battleItem, owned: true }
+              : battleItem
+          );
+
+          set({ 
+            ownedItems: newOwnedItems,
+            battleSets: updatedBattleSets
+          });
+
+          console.log(`Successfully purchased item: ${item.name}`);
+          return true;
+        } catch (error) {
+          console.error('Error purchasing battle set item:', error);
           return false;
         }
-
-        const item = battleSets.find(item => item.id === itemId);
-        if (!item) {
-          console.error(`Item ${itemId} not found`);
-          return false;
-        }
-
-        // TODO: Integrate with payment system
-        // For now, simulate successful purchase
-        
-        const newOwnedItems = new Set(ownedItems);
-        newOwnedItems.add(itemId);
-        
-        const updatedBattleSets = battleSets.map(battleItem =>
-          battleItem.id === itemId 
-            ? { ...battleItem, owned: true }
-            : battleItem
-        );
-
-        set({ 
-          ownedItems: newOwnedItems,
-          battleSets: updatedBattleSets
-        });
-
-        console.log(`Successfully purchased item: ${item.name}`);
-        return true;
       },
 
       getItemsByCategory: (type: string) => {

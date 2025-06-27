@@ -4,6 +4,7 @@ import { toast } from 'sonner';
 import { Card, ElementType, AvatarCard } from '../game/data/cardTypes';
 import { useDeckStore } from '../game/stores/useDeckStore';
 import { useExpansionStore, type Expansion } from '../game/stores/useExpansionStore';
+import { usePackTierStore, type PackTier } from '../game/stores/usePackTierStore';
 import { cardNftService } from '../blockchain/solana/cardNftService';
 import BackButton from '../components/BackButton';
 import NavigationBar from '../components/NavigationBar';
@@ -14,16 +15,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../components/
 
 
 
-interface PackTier {
-  id: 'beginner' | 'advanced';
-  name: string;
-  description: string;
-  price: number;
-  cardCount: number;
-  guaranteedRarity: string[];
-  color: string;
-  emoji: string;
-}
+// PackTier interface now imported from store
 
 interface IndividualPack {
   id: string;
@@ -44,7 +36,13 @@ const BoosterPacksPage: React.FC = () => {
   const navigate = useNavigate();
   const { getAvailableCards, addCard } = useDeckStore();
   const { expansions } = useExpansionStore();
+  const { getAllPackTiers, initializePackTiers } = usePackTierStore();
   const allCards = getAvailableCards();
+
+  // Initialize pack tiers on component mount
+  useEffect(() => {
+    initializePackTiers();
+  }, [initializePackTiers]);
   
   // State management
   const [currentStep, setCurrentStep] = useState<'expansion-selection' | 'tier-selection' | 'pack-selection' | 'opening' | 'results'>('expansion-selection');
@@ -58,30 +56,8 @@ const BoosterPacksPage: React.FC = () => {
   const [rewardCards, setRewardCards] = useState<Card[]>([]);
   const [rewardTitle, setRewardTitle] = useState('');
 
-  // Pack data definitions
-
-  const packTiers: PackTier[] = [
-    {
-      id: 'beginner',
-      name: 'Beginner Pack',
-      description: 'Perfect for new players - 80% Common, 15% Uncommon, 3% Rare, 1.5% Super Rare, 0.5% Mythic',
-      price: 3,
-      cardCount: 5,
-      guaranteedRarity: ['Common', 'Uncommon'],
-      color: 'from-green-500 to-green-700',
-      emoji: '🌱'
-    },
-    {
-      id: 'advanced',
-      name: 'Advanced Pack',
-      description: 'For experienced players - 60% Common, 27% Uncommon, 8% Rare, 4% Super Rare, 1% Mythic',
-      price: 8,
-      cardCount: 8,
-      guaranteedRarity: ['Rare', 'Epic'],
-      color: 'from-purple-500 to-purple-700',
-      emoji: '💎'
-    }
-  ];
+  // Get pack tiers from centralized store
+  const packTiers = getAllPackTiers();
 
   // Generate individual packs for selection
   const generateIndividualPacks = (expansion: Expansion, tier: PackTier): IndividualPack[] => {
