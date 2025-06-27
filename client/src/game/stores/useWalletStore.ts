@@ -53,7 +53,12 @@ export const useWalletStore = create<WalletStore>()(
             });
             
             // Sync NFT cards after successful connection
-            await get().syncNftCards();
+            try {
+              await get().syncNftCards();
+            } catch (syncError) {
+              console.warn('NFT sync failed during connection, continuing without NFTs:', syncError);
+              // Don't fail the connection if NFT sync fails
+            }
             
             console.log(`Wallet connected: ${walletStatus.address}`);
             return true;
@@ -112,7 +117,12 @@ export const useWalletStore = create<WalletStore>()(
             });
             
             // Also refresh NFT cards
-            await get().syncNftCards();
+            try {
+              await get().syncNftCards();
+            } catch (syncError) {
+              console.warn('NFT sync failed during refresh, continuing without NFTs:', syncError);
+              // Don't fail the refresh if NFT sync fails
+            }
             
             console.log('Wallet data refreshed');
           } else {
