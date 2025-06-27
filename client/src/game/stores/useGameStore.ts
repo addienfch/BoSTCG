@@ -5,6 +5,7 @@ import { useDeckStore } from './useDeckStore';
 import { useGameMode } from './useGameMode';
 import { checkSkillTrigger, getModifiedDamage, applySkillTriggerEffects, SkillEffect } from '../utils/skillTriggerChecker';
 import { shouldShowDiscardConfirmation, getDiscardBonusEffect } from '../utils/discardMechanicChecker';
+import { GameAI } from '../ai/GameAI';
 
 // Helper function to shuffle an array (Fisher-Yates algorithm)
 const shuffleArray = <T extends any>(array: T[]): T[] => {
