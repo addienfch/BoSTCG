@@ -458,7 +458,7 @@ const DevToolsPage: React.FC = () => {
         )}
 
         {activeTab === 'edit' && (
-          <div className="bg-gray-800 rounded-lg p-2">
+          <div className="bg-gray-800 rounded-lg p-2 h-[600px] overflow-y-auto">
             <h3 className="text-md font-medium mb-2">
               {selectedCard ? 'Edit Card' : 'Create New Card'}
             </h3>
