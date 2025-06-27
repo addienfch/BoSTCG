@@ -463,8 +463,10 @@ const DevToolsPage: React.FC = () => {
               {selectedCard ? 'Edit Card' : 'Create New Card'}
             </h3>
             
-            {/* Compact Layout - Two Columns */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
+            {/* Scrollable Content */}
+            <div className="max-h-[600px] overflow-y-auto">
+              {/* Compact Layout - Two Columns */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
               {/* Left Column - Basic Info */}
               <div className="space-y-2">
                 <div className="grid grid-cols-1 gap-2">
@@ -1203,6 +1205,7 @@ const DevToolsPage: React.FC = () => {
               >
                 Cancel
               </button>
+            </div>
             </div>
           </div>
         )}
