@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { Card, ElementType, AvatarCard } from '../game/data/cardTypes';
 import { useDeckStore } from '../game/stores/useDeckStore';
+import { useExpansionStore, type Expansion } from '../game/stores/useExpansionStore';
 import { cardNftService } from '../blockchain/solana/cardNftService';
 import BackButton from '../components/BackButton';
 import NavigationBar from '../components/NavigationBar';
@@ -11,15 +12,7 @@ import { Button } from '../components/ui/button';
 import { Badge } from '../components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../components/ui/dialog';
 
-interface Expansion {
-  id: string;
-  name: string;
-  description: string;
-  releaseDate: string;
-  cardCount: number;
-  artUrl: string;
-  symbol: string;
-}
+
 
 interface PackTier {
   id: 'beginner' | 'advanced';
@@ -50,6 +43,7 @@ interface PackReward {
 const BoosterPacksPage: React.FC = () => {
   const navigate = useNavigate();
   const { getAvailableCards, addCard } = useDeckStore();
+  const { expansions } = useExpansionStore();
   const allCards = getAvailableCards();
   
   // State management
@@ -64,36 +58,7 @@ const BoosterPacksPage: React.FC = () => {
   const [rewardCards, setRewardCards] = useState<Card[]>([]);
   const [rewardTitle, setRewardTitle] = useState('');
 
-  // Data definitions
-  const expansions: Expansion[] = [
-    {
-      id: 'genesis',
-      name: 'Genesis Set',
-      description: 'The foundational cards that started it all',
-      releaseDate: '2024-01-01',
-      cardCount: 150,
-      artUrl: '/attached_assets/Non Elemental (1)-15.png',
-      symbol: '⚡'
-    },
-    {
-      id: 'elemental-fury',
-      name: 'Elemental Fury',
-      description: 'Harness the power of the elements',
-      releaseDate: '2024-06-01',
-      cardCount: 120,
-      artUrl: '/attached_assets/Red Elemental Avatar_Ava - Crimson.png',
-      symbol: '🔥'
-    },
-    {
-      id: 'ancient-wisdom',
-      name: 'Ancient Wisdom',
-      description: 'Discover the secrets of the past',
-      releaseDate: '2024-12-01',
-      cardCount: 100,
-      artUrl: '/attached_assets/Non Elemental - Spell_Kencur.png',
-      symbol: '📚'
-    }
-  ];
+  // Pack data definitions
 
   const packTiers: PackTier[] = [
     {

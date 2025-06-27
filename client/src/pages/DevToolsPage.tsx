@@ -653,7 +653,7 @@ const DevToolsPage: React.FC = () => {
                 className="w-full px-2 py-1 bg-gray-700 border border-gray-600 rounded text-xs"
               >
                 <option value="all">All Expansions</option>
-                {localExpansions.map(expansion => (
+                {expansions.map(expansion => (
                   <option key={expansion.id} value={expansion.id}>
                     {expansion.name}
                   </option>
@@ -800,7 +800,7 @@ const DevToolsPage: React.FC = () => {
                       className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded"
                     >
                       <option value="">Select Expansion</option>
-                      {localExpansions.map(expansion => (
+                      {expansions.map(expansion => (
                         <option key={expansion.id} value={expansion.name}>
                           {expansion.name}
                         </option>
@@ -1486,7 +1486,7 @@ const DevToolsPage: React.FC = () => {
             
             {!isEditingExpansion ? (
               <div className="space-y-3">
-                {localExpansions.map(expansion => (
+                {expansions.map(expansion => (
                   <div key={expansion.id} className="bg-gray-700 p-4 rounded flex justify-between items-start">
                     <div className="flex gap-3">
                       {/* Expansion Icon */}
@@ -1526,7 +1526,7 @@ const DevToolsPage: React.FC = () => {
                       <button
                         onClick={() => {
                           if (confirm(`Delete ${expansion.name} expansion?`)) {
-                            setLocalExpansions(prev => prev.filter(exp => exp.id !== expansion.id));
+                            deleteExpansion(expansion.id);
                             toast.success(`${expansion.name} deleted`);
                           }
                         }}
@@ -1658,7 +1658,7 @@ const DevToolsPage: React.FC = () => {
                         className="w-full px-3 py-2 bg-gray-600 border border-gray-500 rounded"
                       >
                         <option value="">Select Expansion</option>
-                        {localExpansions.map(exp => (
+                        {expansions.map(exp => (
                           <option key={exp.id} value={exp.name}>{exp.name}</option>
                         ))}
                       </select>
