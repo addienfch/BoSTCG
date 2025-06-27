@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Card } from '../game/data/cardTypes';
-import { NavigationBar } from '../components/NavigationBar';
+import NavigationBar from '../components/NavigationBar';
 import BackButton from '../components/BackButton';
 import { toast } from 'sonner';
 
