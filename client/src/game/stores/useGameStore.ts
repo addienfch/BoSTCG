@@ -47,6 +47,14 @@ interface GameState {
   selectedCard: number | null;
   selectedTarget: string | null;
   
+  // Discard confirmation state
+  discardConfirmation: {
+    isOpen: boolean;
+    card: Card | null;
+    handIndex: number | null;
+    bonusEffect: string | null;
+  };
+  
   // Event logs
   logs: string[];
   
@@ -80,6 +88,11 @@ interface GameState {
   // Selection helpers
   selectCard: (handIndex: number) => void;
   selectTarget: (targetId: string) => void;
+  
+  // Discard confirmation
+  showDiscardConfirmation: (handIndex: number, bonusEffect?: string) => void;
+  confirmDiscard: () => void;
+  cancelDiscard: () => void;
   
   // Log helpers
   addLog: (message: string) => void;
@@ -125,6 +138,14 @@ export const useGameStore = create<GameState>((set, get) => ({
   // Selection state
   selectedCard: null,
   selectedTarget: null,
+  
+  // Discard confirmation state
+  discardConfirmation: {
+    isOpen: false,
+    card: null,
+    handIndex: null,
+    bonusEffect: null,
+  },
   
   // Event logs
   logs: [],
@@ -2253,6 +2274,68 @@ export const useGameStore = create<GameState>((set, get) => ({
     }));
   },
   
+  // Discard confirmation
+  showDiscardConfirmation: (handIndex: number, bonusEffect?: string) => {
+    const state = get();
+    const card = state.player.hand[handIndex];
+    if (!card) return;
+
+    set({
+      discardConfirmation: {
+        isOpen: true,
+        card,
+        handIndex,
+        bonusEffect: bonusEffect || null,
+      }
+    });
+  },
+
+  confirmDiscard: () => {
+    const state = get();
+    const { handIndex, bonusEffect } = state.discardConfirmation;
+    
+    if (handIndex === null) return;
+
+    // Close the confirmation popup
+    set({
+      discardConfirmation: {
+        isOpen: false,
+        card: null,
+        handIndex: null,
+        bonusEffect: null,
+      }
+    });
+
+    // If there's a bonus effect, apply it
+    if (bonusEffect) {
+      get().addLog(`Discarded card for bonus effect: ${bonusEffect}`);
+      // Add bonus effect logic here based on the specific card
+    }
+
+    // Discard the card
+    get().discardCard(handIndex, 'player');
+  },
+
+  cancelDiscard: () => {
+    const state = get();
+    const { handIndex } = state.discardConfirmation;
+    
+    if (handIndex === null) return;
+
+    // Close the confirmation popup
+    set({
+      discardConfirmation: {
+        isOpen: false,
+        card: null,
+        handIndex: null,
+        bonusEffect: null,
+      }
+    });
+
+    // Play the card normally
+    get().playCard(handIndex);
+  },
+
   // AI actions
   performAIActions: () => {
     const { currentPlayer, gamePhase, opponent } = get();
