@@ -776,22 +776,22 @@ const DevToolsPage: React.FC = () => {
                   <div className="bg-gray-700 p-3 rounded">
                     <h3 className="font-medium mb-2 text-sm">Skill 1</h3>
                     <div className="space-y-2">
-                      <div className="grid grid-cols-1 gap-2">
+                      <div className="grid grid-cols-2 gap-3">
                         <div>
-                          <label className="block text-xs font-medium mb-1">Name</label>
+                          <label className="block text-sm font-medium mb-1">Name</label>
                           <input
                             type="text"
                             value={formData.skill1Name}
                             onChange={(e) => setFormData(prev => ({ ...prev, skill1Name: e.target.value }))}
-                            className="w-full px-2 py-1 bg-gray-600 border border-gray-500 rounded text-sm"
+                            className="w-full px-3 py-2 bg-gray-600 border border-gray-500 rounded"
                           />
                         </div>
                         <div>
-                          <label className="block text-xs font-medium mb-1">Effect Type</label>
+                          <label className="block text-sm font-medium mb-1">Effect Type</label>
                           <select
                             value={formData.skill1EffectType}
                             onChange={(e) => setFormData(prev => ({ ...prev, skill1EffectType: e.target.value }))}
-                            className="w-full px-2 py-1 bg-gray-600 border border-gray-500 rounded text-sm"
+                            className="w-full px-3 py-2 bg-gray-600 border border-gray-500 rounded"
                           >
                             {skillEffectTypes.map(type => (
                               <option key={type.value} value={type.value}>{type.label}</option>
@@ -800,23 +800,23 @@ const DevToolsPage: React.FC = () => {
                         </div>
                       </div>
 
-                      <div className="grid grid-cols-2 gap-2">
+                      <div className="grid grid-cols-2 gap-3">
                         <div>
-                          <label className="block text-xs font-medium mb-1">Damage</label>
+                          <label className="block text-sm font-medium mb-1">Damage</label>
                           <input
                             type="number"
                             min="0"
                             value={formData.skill1Damage}
                             onChange={(e) => setFormData(prev => ({ ...prev, skill1Damage: parseInt(e.target.value) || 0 }))}
-                            className="w-full px-2 py-1 bg-gray-600 border border-gray-500 rounded text-sm"
+                            className="w-full px-3 py-2 bg-gray-600 border border-gray-500 rounded"
                           />
                         </div>
                         <div>
-                          <label className="block text-xs font-medium mb-1">Type</label>
+                          <label className="block text-sm font-medium mb-1">Type</label>
                           <select
                             value={formData.skill1Type}
                             onChange={(e) => setFormData(prev => ({ ...prev, skill1Type: e.target.value as 'active' | 'passive' }))}
-                            className="w-full px-2 py-1 bg-gray-600 border border-gray-500 rounded text-sm"
+                            className="w-full px-3 py-2 bg-gray-600 border border-gray-500 rounded"
                           >
                             <option value="active">Active</option>
                             <option value="passive">Passive</option>
@@ -988,22 +988,22 @@ const DevToolsPage: React.FC = () => {
                   <div className="bg-gray-700 p-3 rounded">
                     <h3 className="font-medium mb-2 text-sm">Skill 2</h3>
                     <div className="space-y-2">
-                      <div className="grid grid-cols-1 gap-2">
+                      <div className="grid grid-cols-2 gap-3">
                         <div>
-                          <label className="block text-xs font-medium mb-1">Name</label>
+                          <label className="block text-sm font-medium mb-1">Name</label>
                           <input
                             type="text"
                             value={formData.skill2Name}
                             onChange={(e) => setFormData(prev => ({ ...prev, skill2Name: e.target.value }))}
-                            className="w-full px-2 py-1 bg-gray-600 border border-gray-500 rounded text-sm"
+                            className="w-full px-3 py-2 bg-gray-600 border border-gray-500 rounded"
                           />
                         </div>
                         <div>
-                          <label className="block text-xs font-medium mb-1">Effect Type</label>
+                          <label className="block text-sm font-medium mb-1">Effect Type</label>
                           <select
                             value={formData.skill2EffectType}
                             onChange={(e) => setFormData(prev => ({ ...prev, skill2EffectType: e.target.value }))}
-                            className="w-full px-2 py-1 bg-gray-600 border border-gray-500 rounded text-sm"
+                            className="w-full px-3 py-2 bg-gray-600 border border-gray-500 rounded"
                           >
                             {skillEffectTypes.map(type => (
                               <option key={type.value} value={type.value}>{type.label}</option>
@@ -1012,23 +1012,23 @@ const DevToolsPage: React.FC = () => {
                         </div>
                       </div>
 
-                      <div className="grid grid-cols-2 gap-2">
+                      <div className="grid grid-cols-2 gap-3">
                         <div>
-                          <label className="block text-xs font-medium mb-1">Damage</label>
+                          <label className="block text-sm font-medium mb-1">Damage</label>
                           <input
                             type="number"
                             min="0"
                             value={formData.skill2Damage}
                             onChange={(e) => setFormData(prev => ({ ...prev, skill2Damage: parseInt(e.target.value) || 0 }))}
-                            className="w-full px-2 py-1 bg-gray-600 border border-gray-500 rounded text-sm"
+                            className="w-full px-3 py-2 bg-gray-600 border border-gray-500 rounded"
                           />
                         </div>
                         <div>
-                          <label className="block text-xs font-medium mb-1">Type</label>
+                          <label className="block text-sm font-medium mb-1">Type</label>
                           <select
                             value={formData.skill2Type}
                             onChange={(e) => setFormData(prev => ({ ...prev, skill2Type: e.target.value as 'active' | 'passive' }))}
-                            className="w-full px-2 py-1 bg-gray-600 border border-gray-500 rounded text-sm"
+                            className="w-full px-3 py-2 bg-gray-600 border border-gray-500 rounded"
                           >
                             <option value="active">Active</option>
                             <option value="passive">Passive</option>
@@ -1420,6 +1420,76 @@ const DevToolsPage: React.FC = () => {
                     </div>
                   </div>
                 </div>
+
+                {/* Card Selection System */}
+                <div className="mt-6 bg-gray-600 p-4 rounded">
+                  <h5 className="font-medium mb-3">Deck Cards (40-60 cards required)</h5>
+                  
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                    {/* Available Cards */}
+                    <div>
+                      <div className="flex justify-between items-center mb-2">
+                        <h6 className="text-sm font-medium">Available Cards</h6>
+                        <input
+                          type="text"
+                          placeholder="Search cards..."
+                          className="px-2 py-1 bg-gray-700 border border-gray-500 rounded text-xs w-32"
+                        />
+                      </div>
+                      <div className="bg-gray-700 p-2 rounded max-h-48 overflow-y-auto">
+                        <div className="space-y-1">
+                          {cards.slice(0, 10).map((card, index) => (
+                            <div key={index} className="flex justify-between items-center p-2 bg-gray-600 rounded hover:bg-gray-500 cursor-pointer">
+                              <div className="flex-1">
+                                <div className="text-xs font-medium">{card.name}</div>
+                                <div className="text-xs text-gray-400">{card.type} • {card.element}</div>
+                              </div>
+                              <button className="bg-green-600 hover:bg-green-700 px-2 py-1 rounded text-xs">
+                                Add
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Selected Cards */}
+                    <div>
+                      <div className="flex justify-between items-center mb-2">
+                        <h6 className="text-sm font-medium">Selected Cards (0/40)</h6>
+                        <button className="bg-red-600 hover:bg-red-700 px-2 py-1 rounded text-xs">
+                          Clear All
+                        </button>
+                      </div>
+                      <div className="bg-gray-700 p-2 rounded max-h-48 overflow-y-auto">
+                        <div className="text-center text-gray-400 py-8">
+                          <p className="text-sm">No cards selected</p>
+                          <p className="text-xs">Add cards from the left panel</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Deck Statistics */}
+                  <div className="mt-4 grid grid-cols-2 md:grid-cols-4 gap-2">
+                    <div className="bg-gray-700 p-2 rounded text-center">
+                      <div className="text-lg font-bold">0</div>
+                      <div className="text-xs text-gray-400">Total Cards</div>
+                    </div>
+                    <div className="bg-gray-700 p-2 rounded text-center">
+                      <div className="text-lg font-bold">0</div>
+                      <div className="text-xs text-gray-400">Avatar Cards</div>
+                    </div>
+                    <div className="bg-gray-700 p-2 rounded text-center">
+                      <div className="text-lg font-bold">0</div>
+                      <div className="text-xs text-gray-400">Action Cards</div>
+                    </div>
+                    <div className="bg-gray-700 p-2 rounded text-center">
+                      <div className="text-lg font-bold">Invalid</div>
+                      <div className="text-xs text-gray-400">Deck Status</div>
+                    </div>
+                  </div>
+                </div>
                 
                 <div className="mt-4 flex gap-2">
                   <button className="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded">
@@ -1427,6 +1497,9 @@ const DevToolsPage: React.FC = () => {
                   </button>
                   <button className="bg-gray-600 hover:bg-gray-700 px-4 py-2 rounded">
                     Preview Deck
+                  </button>
+                  <button className="bg-spektrum-orange hover:bg-orange-600 px-4 py-2 rounded">
+                    Auto-Build Deck
                   </button>
                 </div>
               </div>
