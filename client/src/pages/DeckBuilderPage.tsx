@@ -470,9 +470,9 @@ const DeckBuilderPage: React.FC = () => {
             {/* Card grid */}
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 max-h-[500px] overflow-y-auto p-2">
               {filteredCards.map((card, index) => {
-                const baseId = card.id.split('-')[0] + '-' + card.id.split('-')[1];
-                const count = cardCounts[baseId] || 0;
+                const count = cardCounts[card.name] || 0;
                 const isMaxed = hasReachedMaxCount(card);
+                const maxAllowed = card.type === 'avatar' && (card as AvatarCard).level === 2 ? 1 : 4;
                 
                 return (
                   <div 
@@ -627,7 +627,7 @@ const DeckBuilderPage: React.FC = () => {
                         onClick={() => handleAddCard(card)}
                         disabled={isMaxed}
                       >
-                        {isMaxed ? 'Max Copies' : 'Add to Deck'}
+                        {isMaxed ? `Max (${count}/${maxAllowed})` : `Add (${count}/${maxAllowed})`}
                       </button>
                     </div>
                   </div>

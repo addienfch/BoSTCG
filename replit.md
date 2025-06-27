@@ -112,6 +112,13 @@ Book of Spektrum is a full-stack 3D trading card game built for the web, featuri
 
 ## Changelog
 
+- June 27, 2025. DECK BUILDER & LIBRARY SYNCHRONIZATION FIXES - Production Ready:
+  - **Fix 1: Library/Deck Builder Sync RESOLVED**: Both pages now use getAvailableCardsWithCNFTs() for consistent card collections including base cards, owned cards, and cNFTs
+  - **Fix 2: Duplicate Card Compilation IMPLEMENTED**: Added getUniqueCards() helper to remove duplicate cards in deck builder display, proper card counting by name
+  - **Fix 3: 4-Copy Rule Enforcement ENHANCED**: Strict enforcement of max 4 copies per card (1 copy for Level 2 avatars), clear visual feedback with count displays (X/4)
+  - **Improved Card Management**: Timestamp-based unique IDs for deck cards, better error messages showing current/max copy counts
+  - **UI Enhancement**: Card add buttons now show current copy count vs maximum allowed (e.g., "Add (2/4)", "Max (4/4)")
+  - **Data Consistency**: Library and Deck Builder now perfectly synchronized with same data sources and filtering logic
 - June 27, 2025. CRITICAL GAMEPLAY FIXES IMPLEMENTATION - Production Ready:
   - **Fix 1: Avatar Evolution Counter Preservation VERIFIED**: Evolution system correctly preserves damage counters during level 1→2 upgrades with explicit counter cloning
   - **Fix 2: Auto-Scrolling Game Log IMPLEMENTED**: Added automatic scrolling to game log when new messages appear for better user experience
