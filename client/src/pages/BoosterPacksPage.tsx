@@ -99,7 +99,7 @@ const BoosterPacksPage: React.FC = () => {
     {
       id: 'beginner',
       name: 'Beginner Pack',
-      description: 'Perfect for new players starting their journey',
+      description: 'Perfect for new players - 80% Common, 15% Uncommon, 3% Rare, 1.5% Super Rare, 0.5% Mythic',
       price: 3,
       cardCount: 5,
       guaranteedRarity: ['Common', 'Uncommon'],
@@ -109,7 +109,7 @@ const BoosterPacksPage: React.FC = () => {
     {
       id: 'advanced',
       name: 'Advanced Pack',
-      description: 'For experienced players seeking rare treasures',
+      description: 'For experienced players - 60% Common, 27% Uncommon, 8% Rare, 4% Super Rare, 1% Mythic',
       price: 8,
       cardCount: 8,
       guaranteedRarity: ['Rare', 'Epic'],
@@ -165,9 +165,13 @@ const BoosterPacksPage: React.FC = () => {
       }
     }
     
-    // Fill remaining slots with random cards (weighted by rarity)
+    // Fill remaining slots with random cards (tier-specific rarity distribution)
     while (cards.length < cardCount) {
-      const weights = { 'Common': 50, 'Uncommon': 30, 'Rare': 15, 'Epic': 4, 'Legendary': 1 };
+      // Define rarity weights based on tier
+      const weights = pack.tier.id === 'beginner' 
+        ? { 'Common': 80, 'Uncommon': 15, 'Rare': 3, 'Super Rare': 1.5, 'Mythic': 0.5 }
+        : { 'Common': 60, 'Uncommon': 27, 'Rare': 8, 'Super Rare': 4, 'Mythic': 1 };
+      
       const totalWeight = Object.values(weights).reduce((sum, weight) => sum + weight, 0);
       const random = Math.random() * totalWeight;
       

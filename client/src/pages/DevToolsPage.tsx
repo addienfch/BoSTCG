@@ -1315,7 +1315,7 @@ const DevToolsPage: React.FC = () => {
         )}
 
         {activeTab === 'premade-decks' && (
-          <div className="bg-gray-800 rounded-lg p-4">
+          <div className="bg-gray-800 rounded-lg p-4 h-[600px] overflow-y-auto">
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-lg font-medium">Premade Decks Configuration</h3>
               <button

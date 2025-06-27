@@ -112,6 +112,13 @@ Book of Spektrum is a full-stack 3D trading card game built for the web, featuri
 
 ## Changelog
 
+- June 27, 2025. Enhanced dev-tools and pack rarity system:
+  - Added scroll functionality to dev-tools edit card and premade decks tabs (600px height containers)
+  - Implemented differentiated pack rarity systems:
+    - Beginner Pack: 80% Common, 15% Uncommon, 3% Rare, 1.5% Super Rare, 0.5% Mythic
+    - Advanced Pack: 60% Common, 27% Uncommon, 8% Rare, 4% Super Rare, 1% Mythic
+  - Updated pack tier descriptions to clearly show rarity percentages
+  - Improved skills layout in edit card tab with wider 2-column grid spacing
 - June 27, 2025. Initial setup
 - December 27, 2024. UI improvements and discard mechanics:
   - Made dev-tools UI more compact while preserving all functionality
