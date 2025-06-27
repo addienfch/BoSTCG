@@ -6,16 +6,17 @@ import { toast } from 'sonner';
 import { useDeckStore } from '../game/stores/useDeckStore';
 
 const DevToolsPage: React.FC = () => {
-  const { cards } = useDeckStore();
+  const { getAvailableCards } = useDeckStore();
   const [activeTab, setActiveTab] = useState<'database' | 'create'>('database');
   const [filterElement, setFilterElement] = useState<ElementType | 'all'>('all');
   const [filterType, setFilterType] = useState<string>('all');
 
-  const filteredCards = cards.filter(card => {
+  const allCards = getAvailableCards();
+  const filteredCards = allCards?.filter(card => {
     const elementMatch = filterElement === 'all' || card.element === filterElement;
     const typeMatch = filterType === 'all' || card.type === filterType;
     return elementMatch && typeMatch;
-  });
+  }) || [];
 
   return (
     <div className="min-h-screen bg-spektrum-dark text-spektrum-light pb-20" style={{ fontFamily: 'Noto Sans, Inter, sans-serif' }}>
@@ -51,7 +52,7 @@ const DevToolsPage: React.FC = () => {
           <div className="bg-gray-800 rounded-lg p-4">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-lg font-semibold">Card Database</h2>
-              <p className="text-gray-400">Showing {filteredCards.length} of {cards.length} cards</p>
+              <p className="text-gray-400">Showing {filteredCards.length} of {allCards.length} cards</p>
             </div>
             
             {/* Filters */}
@@ -88,11 +89,11 @@ const DevToolsPage: React.FC = () => {
             <div className="mt-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-h-96 overflow-y-auto">
               {filteredCards.length === 0 && (
                 <div className="col-span-full text-center text-gray-400 py-8">
-                  {cards.length === 0 ? 'No cards in database' : 'No cards match the current filters'}
+                  {allCards.length === 0 ? 'No cards in database' : 'No cards match the current filters'}
                 </div>
               )}
               
-              {filteredCards.map((card) => (
+              {filteredCards.map((card: Card) => (
                 <div key={card.id} className="bg-gray-700 rounded-lg p-3 border border-gray-600">
                   <div className="flex justify-between items-start mb-2">
                     <h3 className="font-semibold text-sm">{card.name}</h3>
@@ -109,8 +110,8 @@ const DevToolsPage: React.FC = () => {
                   
                   <div className="text-xs text-gray-300 mb-2">
                     <div>Type: {card.type}</div>
-                    {card.level && <div>Level: {card.level}</div>}
-                    {card.health && <div>Health: {card.health}</div>}
+                    {card.type === 'avatar' && (card as any).level && <div>Level: {(card as any).level}</div>}
+                    {card.type === 'avatar' && (card as any).health && <div>Health: {(card as any).health}</div>}
                     {card.rarity && <div>Rarity: {card.rarity}</div>}
                   </div>
                   
