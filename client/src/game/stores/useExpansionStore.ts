@@ -7,8 +7,8 @@ export interface Expansion {
   description: string;
   releaseDate: string;
   cardCount: number;
-  artUrl?: string;
-  symbol?: string;
+  artUrl: string;
+  symbol: string;
 }
 
 interface ExpansionStore {

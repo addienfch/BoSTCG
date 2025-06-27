@@ -98,7 +98,7 @@ const BoosterPacksPage: React.FC = () => {
         expansion,
         tier,
         packNumber: i,
-        artUrl: expansion.artUrl,
+        artUrl: expansion.artUrl ?? '/attached_assets/Non Elemental (1)-15.png',
         uniqueArt: `/attached_assets/Non Elemental (1)_${artVariations[i - 1] || 'Battle Preparation'}.png`
       });
     }

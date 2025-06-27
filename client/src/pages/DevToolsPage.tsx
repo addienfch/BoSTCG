@@ -133,7 +133,8 @@ const DevToolsPage: React.FC = () => {
     description: '',
     releaseDate: '',
     cardCount: 0,
-    artUrl: ''
+    artUrl: '',
+    symbol: ''
   });
 
   const mockExpansions: Expansion[] = [

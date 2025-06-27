@@ -250,7 +250,7 @@ const PremadeDecksPage: React.FC = () => {
         <div className="text-center">
           <h1 className="text-3xl font-bold text-white mb-2">Premade Decks</h1>
           <p className="text-gray-300">
-            {selectedExpansion.name} ({selectedExpansion.symbol}) - Choose your deck
+            {selectedExpansion.name} ({selectedExpansion.symbol || '⚡'}) - Choose your deck
           </p>
         </div>
         
