@@ -52,6 +52,7 @@ interface CardFormData {
 }
 
 const DevToolsPage: React.FC = () => {
+  const { addCard } = useDeckStore();
   // Get complete database of cards for dev tools (not just owned cards)
   const allDatabaseCards = [
     ...kobarBorahAvatarCards,
@@ -257,9 +258,102 @@ const DevToolsPage: React.FC = () => {
       return;
     }
 
-    toast.success(selectedCard ? 'Card updated' : 'Card created');
+    // Create the card object based on form data
+    let newCard: Card;
+
+    if (formData.type === 'avatar') {
+      const avatarCard: AvatarCard = {
+        id: selectedCard?.id || `dev-${Date.now()}`,
+        name: formData.name,
+        type: 'avatar',
+        element: formData.element,
+        art: formData.art,
+        description: formData.description,
+        rarity: formData.rarity,
+        energyCost: formData.energyCost,
+        expansion: formData.expansion || 'dev-tools',
+        level: formData.level as 1 | 2,
+        health: formData.health,
+        subType: formData.subType as any,
+      };
+      
+      // Add skills if they exist
+      if (formData.skill1Name) {
+        avatarCard.skill1 = {
+          name: formData.skill1Name,
+          effect: formData.skill1Effect,
+          additionalEffect: formData.skill1AdditionalEffect,
+          damage: formData.skill1Damage,
+          energyCost: formData.skill1EnergyCost
+        };
+      }
+      
+      if (formData.skill2Name) {
+        avatarCard.skill2 = {
+          name: formData.skill2Name,
+          effect: formData.skill2Effect,
+          additionalEffect: formData.skill2AdditionalEffect,
+          damage: formData.skill2Damage,
+          energyCost: formData.skill2EnergyCost
+        };
+      }
+      
+      newCard = avatarCard;
+    } else {
+      // Handle action cards
+      const actionCard: ActionCard = {
+        id: selectedCard?.id || `dev-${Date.now()}`,
+        name: formData.name,
+        type: formData.type as any,
+        element: formData.element,
+        art: formData.art,
+        description: formData.description,
+        rarity: formData.rarity,
+        energyCost: formData.energyCost,
+        expansion: formData.expansion || 'dev-tools',
+        effect: formData.description,
+        damage: 0
+      };
+      
+      newCard = actionCard;
+    }
+
+    // Add the card to the collection
+    addCard(newCard);
+    
+    toast.success(selectedCard ? 'Card updated successfully' : 'Card created successfully');
     setIsEditing(false);
+    setSelectedCard(null);
     setActiveTab('database');
+    
+    // Reset form
+    setFormData({
+      name: '',
+      type: 'avatar',
+      element: 'fire',
+      level: 1,
+      health: 1,
+      subType: '',
+      art: '',
+      description: '',
+      expansion: '',
+      rarity: 'Common',
+      energyCost: [],
+      skill1Name: '',
+      skill1Effect: '',
+      skill1AdditionalEffect: '',
+      skill1EffectType: 'basic_damage',
+      skill1Damage: 0,
+      skill1Type: 'active',
+      skill1EnergyCost: [],
+      skill2Name: '',
+      skill2Effect: '',
+      skill2AdditionalEffect: '',
+      skill2EffectType: 'basic_damage',
+      skill2Damage: 0,
+      skill2Type: 'active',
+      skill2EnergyCost: []
+    });
   };
 
   const addEnergyToCost = (energyType: ElementType, costType: 'main' | 'skill1' | 'skill2') => {
@@ -297,7 +391,8 @@ const DevToolsPage: React.FC = () => {
       name: '',
       description: '',
       releaseDate: '',
-      cardCount: 0
+      cardCount: 0,
+      artUrl: ''
     });
   };
 
@@ -308,7 +403,8 @@ const DevToolsPage: React.FC = () => {
       name: expansion.name,
       description: expansion.description,
       releaseDate: expansion.releaseDate,
-      cardCount: expansion.cardCount
+      cardCount: expansion.cardCount,
+      artUrl: expansion.artUrl || ''
     });
   };
 
