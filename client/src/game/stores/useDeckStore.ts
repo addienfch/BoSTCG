@@ -449,13 +449,22 @@ export const useDeckStore = create<DeckStore>()(
             cNftCards = await cardNftService.getOwnedCards();
           }
           
-          // Return all available cards including cNFTs, owned cards, and neutral cards
-          return [...allFireCards, ...allNeutralCards, ...state.ownedCards, ...cNftCards];
+          // If user has no owned cards and no cNFTs, they're a new user - only show what they own
+          const hasOwnedCards = state.ownedCards.length > 0;
+          const hasCNftCards = cNftCards.length > 0;
+          
+          if (!hasOwnedCards && !hasCNftCards) {
+            // New user with no cards - return empty array
+            return [];
+          }
+          
+          // Return owned cards and cNFTs only (no base cards for new users)
+          return [...state.ownedCards, ...cNftCards];
         } catch (error) {
           console.error('Error loading cNFT cards in deck store:', error);
-          // Fallback to regular cards plus owned cards if cNFT loading fails
+          // Fallback to owned cards only if cNFT loading fails
           const state = get();
-          return [...allFireCards, ...allNeutralCards, ...state.ownedCards];
+          return state.ownedCards;
         }
       },
       

@@ -230,7 +230,7 @@ const BoosterPacksPage: React.FC = () => {
         </p>
       </div>
       
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {packTiers.map((tier) => (
           <div
             key={tier.id}

@@ -2011,10 +2011,14 @@ const DevToolsPage: React.FC = () => {
                       await walletStore.refreshWalletData();
                       console.log("✅ Wallet store refreshed");
                       
-                      // Clear owned cards in deck store
+                      // Clear all decks and owned cards in deck store
                       const setDeckState = useDeckStore.setState;
-                      setDeckState({ ownedCards: [] });
-                      console.log("✅ Deck store cleared");
+                      setDeckState({ 
+                        ownedCards: [], 
+                        decks: [], 
+                        activeDeckId: null 
+                      });
+                      console.log("✅ Deck store cleared - all decks and cards removed");
                       
                       toast.success("🔄 Complete reset performed - wallet cleared, NFTs removed!");
                       console.log("Dev Action: Complete user data reset performed");

@@ -112,6 +112,14 @@ Book of Spektrum is a full-stack 3D trading card game built for the web, featuri
 
 ## Changelog
 
+- June 28, 2025. CRITICAL RESET & UI FIXES - Production Ready:
+  - **Fixed Full Reset Functionality**: Enhanced dev tools full reset to completely clear all decks, owned cards, and cNFTs from wallet
+  - **New User Experience**: Modified deck store to show zero cards for new users (no base cards) until they purchase packs
+  - **Welcome Screen Fix**: Removed duplicate wallet connect buttons - now shows single clean connection interface
+  - **Booster Grid Layout**: Changed booster pack tier selection from 2x2 grid to 3-column layout as requested
+  - **Enhanced Reset Logging**: Added comprehensive logging for all reset operations with step-by-step confirmation
+  - **Store Synchronization**: Full reset now properly clears decks array, activeDeckId, ownedCards, and wallet cNFTs
+  - **Zero-State Library**: Library page now correctly shows empty state for new users after full reset
 - June 28, 2025. BOOSTER PACK SYSTEM STANDARDIZATION - All Packs Limited to 5 Cards:
   - **Fixed All Card Generation Systems**: Enforced exactly 5 cards per pack across all booster systems (BoosterVariantStore, BoosterPacksPage, BoosterPackSystem, cardRarityVariants)
   - **Removed "Master" References**: Updated Expert variant subtitle from "Master Collection" to "Superior Collection" to eliminate confusion
