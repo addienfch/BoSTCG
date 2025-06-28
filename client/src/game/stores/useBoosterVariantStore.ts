@@ -60,9 +60,9 @@ interface BoosterVariantStore {
 
 const variantTemplates: Omit<BoosterVariant, 'id' | 'name' | 'artUrl'>[] = [
   {
-    rarity: 'Starter',
+    rarity: 'Beginner',
     subtitle: 'Basic Collection',
-    description: 'Common cards with 1 guaranteed uncommon',
+    description: '5 cards - 4 Common + 1 Uncommon guaranteed',
     priceMultiplier: 1.0,
     guaranteedRarities: ['Common', 'Uncommon'],
     rarityWeights: { 'Common': 0.80, 'Uncommon': 0.18, 'Rare': 0.02, 'Super Rare': 0.00, 'Mythic': 0.00 }
@@ -70,66 +70,18 @@ const variantTemplates: Omit<BoosterVariant, 'id' | 'name' | 'artUrl'>[] = [
   {
     rarity: 'Advanced',
     subtitle: 'Enhanced Power', 
-    description: 'Uncommon cards with 1 guaranteed rare',
-    priceMultiplier: 1.5,
+    description: '5 cards - 3 Common + 1 Uncommon + 1 Rare guaranteed',
+    priceMultiplier: 2.0,
     guaranteedRarities: ['Uncommon', 'Rare'],
     rarityWeights: { 'Common': 0.60, 'Uncommon': 0.27, 'Rare': 0.10, 'Super Rare': 0.02, 'Mythic': 0.01 }
   },
   {
-    rarity: 'Elite',
-    subtitle: 'Superior Force',
-    description: 'Rare cards with chance of epic',
-    priceMultiplier: 2.0,
+    rarity: 'Expert',
+    subtitle: 'Master Collection',
+    description: '5 cards - 2 Common + 2 Uncommon + 1 Rare (chance for Super Rare)',
+    priceMultiplier: 3.5,
     guaranteedRarities: ['Rare'],
     rarityWeights: { 'Common': 0.40, 'Uncommon': 0.35, 'Rare': 0.20, 'Super Rare': 0.04, 'Mythic': 0.01 }
-  },
-  {
-    rarity: 'Master',
-    subtitle: 'Legendary Power',
-    description: 'Epic cards with chance of legendary',
-    priceMultiplier: 3.0,
-    guaranteedRarities: ['Super Rare'],
-    rarityWeights: { 'Common': 0.30, 'Uncommon': 0.30, 'Rare': 0.25, 'Super Rare': 0.12, 'Mythic': 0.03 }
-  },
-  {
-    rarity: 'Champion',
-    subtitle: 'Ultimate Collection',
-    description: 'Guaranteed legendary card',
-    priceMultiplier: 4.0,
-    guaranteedRarities: ['Mythic'],
-    rarityWeights: { 'Common': 0.20, 'Uncommon': 0.25, 'Rare': 0.30, 'Super Rare': 0.20, 'Mythic': 0.05 }
-  },
-  {
-    rarity: 'Mythic',
-    subtitle: 'Divine Arsenal',
-    description: 'Multiple rare+ cards guaranteed',
-    priceMultiplier: 5.0,
-    guaranteedRarities: ['Rare', 'Super Rare'],
-    rarityWeights: { 'Common': 0.15, 'Uncommon': 0.20, 'Rare': 0.35, 'Super Rare': 0.25, 'Mythic': 0.05 }
-  },
-  {
-    rarity: 'Cosmic',
-    subtitle: 'Stellar Force', 
-    description: 'Enhanced drop rates for all rarities',
-    priceMultiplier: 6.0,
-    guaranteedRarities: ['Super Rare'],
-    rarityWeights: { 'Common': 0.10, 'Uncommon': 0.20, 'Rare': 0.30, 'Super Rare': 0.30, 'Mythic': 0.10 }
-  },
-  {
-    rarity: 'Eternal',
-    subtitle: 'Timeless Power',
-    description: 'Exclusive variant cards included',
-    priceMultiplier: 8.0,
-    guaranteedRarities: ['Super Rare', 'Mythic'],
-    rarityWeights: { 'Common': 0.05, 'Uncommon': 0.15, 'Rare': 0.30, 'Super Rare': 0.35, 'Mythic': 0.15 }
-  },
-  {
-    rarity: 'Infinity',
-    subtitle: 'Beyond Limits',
-    description: 'Maximum rarity with bonus cards',
-    priceMultiplier: 10.0,
-    guaranteedRarities: ['Mythic'],
-    rarityWeights: { 'Common': 0.05, 'Uncommon': 0.10, 'Rare': 0.25, 'Super Rare': 0.40, 'Mythic': 0.20 }
   }
 ];
 

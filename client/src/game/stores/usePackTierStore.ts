@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
 export interface PackTier {
-  id: 'beginner' | 'advanced' | 'expert' | 'master';
+  id: 'beginner' | 'advanced' | 'expert';
   name: string;
   description: string;
   price: number;
@@ -35,7 +35,7 @@ const defaultPackTiers: PackTier[] = [
   {
     id: 'beginner',
     name: 'Beginner Pack',
-    description: 'Perfect for new players - 80% Common, 15% Uncommon, 3% Rare, 1.5% Super Rare, 0.5% Mythic',
+    description: '5 cards - 4 Common + 1 Uncommon guaranteed',
     price: 3,
     cardCount: 5,
     guaranteedRarity: ['Common', 'Uncommon'],
@@ -43,61 +43,44 @@ const defaultPackTiers: PackTier[] = [
     emoji: '🌱',
     rarityWeights: {
       Common: 0.80,
-      Uncommon: 0.15,
-      Rare: 0.03,
-      'Super Rare': 0.015,
-      Mythic: 0.005
+      Uncommon: 0.18,
+      Rare: 0.02,
+      'Super Rare': 0.00,
+      Mythic: 0.00
     }
   },
   {
     id: 'advanced',
     name: 'Advanced Pack',
-    description: 'For experienced players - 60% Common, 27% Uncommon, 8% Rare, 4% Super Rare, 1% Mythic',
+    description: '5 cards - 3 Common + 1 Uncommon + 1 Rare guaranteed',
     price: 8,
-    cardCount: 8,
-    guaranteedRarity: ['Rare', 'Super Rare'],
+    cardCount: 5,
+    guaranteedRarity: ['Uncommon', 'Rare'],
     color: 'from-purple-500 to-purple-700',
     emoji: '💎',
     rarityWeights: {
       Common: 0.60,
       Uncommon: 0.27,
-      Rare: 0.08,
-      'Super Rare': 0.04,
+      Rare: 0.10,
+      'Super Rare': 0.02,
       Mythic: 0.01
     }
   },
   {
     id: 'expert',
     name: 'Expert Pack',
-    description: 'For veteran players - 40% Common, 30% Uncommon, 20% Rare, 8% Super Rare, 2% Mythic',
+    description: '5 cards - 2 Common + 2 Uncommon + 1 Rare (chance for Super Rare)',
     price: 15,
-    cardCount: 10,
-    guaranteedRarity: ['Rare', 'Super Rare'],
+    cardCount: 5,
+    guaranteedRarity: ['Rare'],
     color: 'from-orange-500 to-red-700',
     emoji: '🔥',
     rarityWeights: {
       Common: 0.40,
-      Uncommon: 0.30,
+      Uncommon: 0.35,
       Rare: 0.20,
-      'Super Rare': 0.08,
-      Mythic: 0.02
-    }
-  },
-  {
-    id: 'master',
-    name: 'Master Pack',
-    description: 'Ultimate pack - 20% Common, 25% Uncommon, 30% Rare, 20% Super Rare, 5% Mythic',
-    price: 25,
-    cardCount: 12,
-    guaranteedRarity: ['Super Rare', 'Mythic'],
-    color: 'from-yellow-500 to-yellow-700',
-    emoji: '👑',
-    rarityWeights: {
-      Common: 0.20,
-      Uncommon: 0.25,
-      Rare: 0.30,
-      'Super Rare': 0.20,
-      Mythic: 0.05
+      'Super Rare': 0.04,
+      Mythic: 0.01
     }
   }
 ];
