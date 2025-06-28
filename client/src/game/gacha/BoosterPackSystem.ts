@@ -131,8 +131,10 @@ const shuffleArray = <T>(array: T[]): T[] => {
   return shuffled;
 };
 
-// Function to open a booster pack and get cards
+// Function to open a booster pack and get cards (always 5 cards)
 export const openBoosterPack = (packType: BoosterPackType, cardCount: number = 5): Card[] => {
+  // Enforce exactly 5 cards per pack
+  const maxCards = 5;
   // Get all cards for this pack type
   const allCards = getCardPoolByPackType(packType);
   

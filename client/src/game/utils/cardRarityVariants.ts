@@ -76,10 +76,13 @@ export function isSameBaseCard(card1: Card, card2: Card): boolean {
          card1.element === card2.element;
 }
 
-// Generate booster pack with rarity distribution
+// Generate booster pack with rarity distribution (always 5 cards)
 export function generateBoosterPackCards(allCards: Card[], packSize: number = 5): Card[] {
   const boosterCards: Card[] = [];
   const cardsByRarity = groupCardsByRarity(allCards);
+  
+  // Enforce exactly 5 cards per pack
+  const maxCards = 5;
   
   // Typical booster pack distribution
   const distribution = [
@@ -90,19 +93,19 @@ export function generateBoosterPackCards(allCards: Card[], packSize: number = 5)
   
   distribution.forEach(({ rarity, count }) => {
     const availableCards = cardsByRarity[rarity as RarityType] || [];
-    for (let i = 0; i < count && availableCards.length > 0; i++) {
+    for (let i = 0; i < count && availableCards.length > 0 && boosterCards.length < maxCards; i++) {
       const randomCard = availableCards[Math.floor(Math.random() * availableCards.length)];
       boosterCards.push(randomCard);
     }
   });
   
-  // Fill remaining slots with random cards if needed
-  while (boosterCards.length < packSize) {
+  // Fill remaining slots with random cards if needed (limit to 5 total)
+  while (boosterCards.length < Math.min(maxCards, packSize)) {
     const randomCard = allCards[Math.floor(Math.random() * allCards.length)];
     boosterCards.push(randomCard);
   }
   
-  return boosterCards;
+  return boosterCards.slice(0, maxCards); // Ensure exactly 5 cards
 }
 
 function groupCardsByRarity(cards: Card[]): Record<RarityType, Card[]> {

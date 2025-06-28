@@ -77,7 +77,7 @@ const variantTemplates: Omit<BoosterVariant, 'id' | 'name' | 'artUrl'>[] = [
   },
   {
     rarity: 'Expert',
-    subtitle: 'Master Collection',
+    subtitle: 'Superior Collection',
     description: '5 cards - 2 Common + 2 Uncommon + 1 Rare (chance for Super Rare)',
     priceMultiplier: 3.5,
     guaranteedRarities: ['Rare'],
@@ -136,8 +136,8 @@ export const useBoosterVariantStore = create<BoosterVariantStore>()(
           }
         });
 
-        // Fill remaining slots with weighted random selection
-        const remainingSlots = pack.cardCount - cards.length;
+        // Fill remaining slots with weighted random selection (always 5 cards total)
+        const remainingSlots = 5 - cards.length;
         
         for (let i = 0; i < remainingSlots; i++) {
           const randomValue = Math.random();

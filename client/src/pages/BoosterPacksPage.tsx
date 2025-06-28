@@ -94,9 +94,10 @@ const BoosterPacksPage: React.FC = () => {
       expansion: card.expansion || pack.expansion.id
     }));
 
-    // Generate random cards based on tier guarantees
+    // Generate random cards based on tier guarantees (always 5 cards)
     const cards: Card[] = [];
-    const { cardCount, guaranteedRarity } = pack.tier;
+    const cardCount = 5; // Always 5 cards per pack
+    const { guaranteedRarity } = pack.tier;
     
     // Guarantee specific rarities
     for (const rarity of guaranteedRarity) {
@@ -108,7 +109,7 @@ const BoosterPacksPage: React.FC = () => {
     }
     
     // Fill remaining slots with random cards (tier-specific rarity distribution)
-    while (cards.length < cardCount) {
+    while (cards.length < 5) {
       // Define rarity weights based on tier
       const weights = pack.tier.id === 'beginner' 
         ? { 'Common': 80, 'Uncommon': 15, 'Rare': 3, 'Super Rare': 1.5, 'Mythic': 0.5 }
