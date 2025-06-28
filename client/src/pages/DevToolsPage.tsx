@@ -1903,10 +1903,28 @@ const DevToolsPage: React.FC = () => {
               <h4 className="text-md font-medium mb-3 text-blue-400">🃏 Card Collection Management</h4>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                 <button
-                  onClick={() => {
-                    // Simulate clearing user collection
-                    toast.success("🗑️ Card collection cleared - simulating new user!");
-                    console.log("Dev Action: Card collection reset to simulate new user");
+                  onClick={async () => {
+                    try {
+                      // Clear user collection and reset to new user state
+                      const { useDeckStore } = await import('../game/stores/useDeckStore');
+                      const { useWalletStore } = await import('../game/stores/useWalletStore');
+                      
+                      const deckStore = useDeckStore.getState();
+                      const walletStore = useWalletStore.getState();
+                      
+                      // Clear owned cards by directly calling setState
+                      const setState = useDeckStore.setState;
+                      setState({ ownedCards: [] });
+                      walletStore.setNftCards([]);
+                      
+                      toast.success("🗑️ Card collection cleared - simulating new user!");
+                      console.log("Dev Action: Card collection reset to simulate new user");
+                      console.log("- Owned cards cleared from deck store");
+                      console.log("- NFT cards cleared from wallet store");
+                    } catch (error) {
+                      console.error("Error clearing collection:", error);
+                      toast.error("Error clearing collection. Check console.");
+                    }
                   }}
                   className="bg-orange-600 hover:bg-orange-700 px-4 py-3 rounded text-sm font-medium"
                 >
@@ -1980,13 +1998,28 @@ const DevToolsPage: React.FC = () => {
                     try {
                       // Import and use the cardNftService
                       const { cardNftService } = await import('../blockchain/solana/cardNftService');
+                      const { useWalletStore } = await import('../game/stores/useWalletStore');
+                      const { useDeckStore } = await import('../game/stores/useDeckStore');
                       
                       // Clear NFTs from wallet
                       await cardNftService.clearAllNfts();
+                      console.log("✅ All NFTs cleared from wallet");
+                      
+                      // Reset wallet store
+                      const walletStore = useWalletStore.getState();
+                      walletStore.setNftCards([]);
+                      await walletStore.refreshWalletData();
+                      console.log("✅ Wallet store refreshed");
+                      
+                      // Clear owned cards in deck store
+                      const setDeckState = useDeckStore.setState;
+                      setDeckState({ ownedCards: [] });
+                      console.log("✅ Deck store cleared");
                       
                       toast.success("🔄 Complete reset performed - wallet cleared, NFTs removed!");
                       console.log("Dev Action: Complete user data reset performed");
                       console.log("- All NFTs cleared from wallet");
+                      console.log("- Wallet store refreshed");
                       console.log("- Local data reset");
                     } catch (error) {
                       console.error("Error during full reset:", error);

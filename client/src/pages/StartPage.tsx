@@ -28,22 +28,12 @@ const StartPage: React.FC = () => {
           </h1>
         </div>
 
-        {/* Two main buttons */}
+        {/* Main connection interface */}
         <div className="space-y-4">
           {!isConnected ? (
             <>
-              {/* Button 1: Connect your wallet to sign in */}
-              <div onClick={handleWalletConnected}>
-                <SolanaWalletConnect onConnected={handleWalletConnected} />
-              </div>
-              
-              {/* Button 2: Connect Wallet (Solana) */}
-              <button
-                onClick={handleWalletConnected}
-                className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white font-bold py-4 px-8 rounded-lg shadow-lg hover:from-blue-700 hover:to-purple-700 transition-all duration-200"
-              >
-                Connect Wallet (Solana)
-              </button>
+              {/* Single wallet connect component */}
+              <SolanaWalletConnect onConnected={handleWalletConnected} />
             </>
           ) : (
             <>
