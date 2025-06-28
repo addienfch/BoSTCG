@@ -79,7 +79,7 @@ const DevToolsPage: React.FC = () => {
   // Premade deck management now uses centralized store
   const [selectedCard, setSelectedCard] = useState<Card | null>(null);
   const [isEditing, setIsEditing] = useState(false);
-  const [activeTab, setActiveTab] = useState<'database' | 'edit' | 'expansion' | 'conditional' | 'premade-decks'>('database');
+  const [activeTab, setActiveTab] = useState<'database' | 'edit' | 'expansion' | 'conditional' | 'premade-decks' | 'dev-utils'>('database');
   const [selectedExpansion, setSelectedExpansion] = useState<Expansion | null>(null);
   const [isEditingExpansion, setIsEditingExpansion] = useState(false);
   const [selectedExpansionFilter, setSelectedExpansionFilter] = useState<string>('all');
@@ -582,6 +582,17 @@ const DevToolsPage: React.FC = () => {
             }`}
           >
             Premade Decks
+          </button>
+
+          <button
+            onClick={() => setActiveTab('dev-utils')}
+            className={`flex-1 py-2 px-4 rounded text-sm font-medium transition-colors ${
+              activeTab === 'dev-utils' 
+                ? 'bg-spektrum-orange text-spektrum-dark' 
+                : 'text-gray-400 hover:text-white'
+            }`}
+          >
+            Dev Utils
           </button>
 
         </div>
@@ -1839,6 +1850,137 @@ const DevToolsPage: React.FC = () => {
                   </div>
                 </div>
               </div>
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'dev-utils' && (
+          <div className="bg-gray-800 rounded-lg p-4">
+            <h3 className="text-lg font-medium mb-4">Development Utilities</h3>
+            
+            {/* USDC Refill Section */}
+            <div className="bg-gray-700 p-4 rounded-lg mb-4">
+              <h4 className="text-md font-medium mb-3 text-green-400">💰 USDC Wallet Management</h4>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                <button
+                  onClick={() => {
+                    // Simulate USDC refill - in real app this would update wallet balance
+                    toast.success("💰 +1000 USDC added to wallet!");
+                    console.log("Dev Action: USDC wallet refilled with 1000 USDC");
+                  }}
+                  className="bg-green-600 hover:bg-green-700 px-4 py-3 rounded text-sm font-medium"
+                >
+                  💵 Add 1000 USDC
+                </button>
+                
+                <button
+                  onClick={() => {
+                    toast.success("💰 +5000 USDC added to wallet!");
+                    console.log("Dev Action: USDC wallet refilled with 5000 USDC");
+                  }}
+                  className="bg-green-600 hover:bg-green-700 px-4 py-3 rounded text-sm font-medium"
+                >
+                  💵 Add 5000 USDC
+                </button>
+                
+                <button
+                  onClick={() => {
+                    toast.success("💰 Wallet reset to 10,000 USDC!");
+                    console.log("Dev Action: USDC wallet reset to 10,000 USDC");
+                  }}
+                  className="bg-blue-600 hover:bg-blue-700 px-4 py-3 rounded text-sm font-medium"
+                >
+                  🔄 Reset to 10k USDC
+                </button>
+              </div>
+              <p className="text-xs text-gray-400 mt-2">
+                Simulate adding USDC to test purchasing flows and new user experience.
+              </p>
+            </div>
+
+            {/* Card Collection Reset */}
+            <div className="bg-gray-700 p-4 rounded-lg mb-4">
+              <h4 className="text-md font-medium mb-3 text-blue-400">🃏 Card Collection Management</h4>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <button
+                  onClick={() => {
+                    // Simulate clearing user collection
+                    toast.success("🗑️ Card collection cleared - simulating new user!");
+                    console.log("Dev Action: Card collection reset to simulate new user");
+                  }}
+                  className="bg-orange-600 hover:bg-orange-700 px-4 py-3 rounded text-sm font-medium"
+                >
+                  🆕 Simulate New User
+                </button>
+                
+                <button
+                  onClick={() => {
+                    toast.success("🎲 Starter cards added to collection!");
+                    console.log("Dev Action: Added starter card set");
+                  }}
+                  className="bg-purple-600 hover:bg-purple-700 px-4 py-3 rounded text-sm font-medium"
+                >
+                  🎁 Add Starter Pack
+                </button>
+              </div>
+              <p className="text-xs text-gray-400 mt-2">
+                Reset collection to test onboarding and progression flows.
+              </p>
+            </div>
+
+            {/* Experience & Progress Reset */}
+            <div className="bg-gray-700 p-4 rounded-lg mb-4">
+              <h4 className="text-md font-medium mb-3 text-yellow-400">🏆 Experience & Progress</h4>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <button
+                  onClick={() => {
+                    toast.success("📊 Player level reset to 1!");
+                    console.log("Dev Action: Player experience reset to level 1");
+                  }}
+                  className="bg-yellow-600 hover:bg-yellow-700 px-4 py-3 rounded text-sm font-medium"
+                >
+                  🔢 Reset to Level 1
+                </button>
+                
+                <button
+                  onClick={() => {
+                    toast.success("⚡ +5000 XP added!");
+                    console.log("Dev Action: Added 5000 experience points");
+                  }}
+                  className="bg-yellow-600 hover:bg-yellow-700 px-4 py-3 rounded text-sm font-medium"
+                >
+                  ⭐ Add 5000 XP
+                </button>
+              </div>
+              <p className="text-xs text-gray-400 mt-2">
+                Manage player progression for testing different experience levels.
+              </p>
+            </div>
+
+            {/* Complete Reset */}
+            <div className="bg-gray-700 p-4 rounded-lg">
+              <h4 className="text-md font-medium mb-3 text-red-400">⚠️ Complete Reset</h4>
+              <button
+                onClick={() => {
+                  if (confirm("Are you sure? This will reset EVERYTHING to simulate a completely new user.")) {
+                    toast.success("🔄 Complete reset performed - welcome new user!");
+                    console.log("Dev Action: Complete user data reset performed");
+                  }
+                }}
+                className="bg-red-600 hover:bg-red-700 px-4 py-3 rounded text-sm font-medium w-full"
+              >
+                🚨 FULL RESET (New User Experience)
+              </button>
+              <p className="text-xs text-gray-400 mt-2">
+                Complete reset: clears wallet, cards, progress, and settings. Use this to test the full new user onboarding flow.
+              </p>
+            </div>
+            
+            <div className="mt-4 p-3 bg-blue-900 rounded border border-blue-700">
+              <p className="text-sm text-blue-200">
+                <strong>ℹ️ Dev Note:</strong> These utilities simulate user states for testing. 
+                In production, actual wallet balances and NFT ownership would be managed through Solana blockchain integration.
+              </p>
             </div>
           </div>
         )}
