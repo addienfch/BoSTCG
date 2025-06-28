@@ -22,7 +22,7 @@ import { cardNftService } from '../blockchain/solana/cardNftService';
 
 const PremadeDecksPage: React.FC = () => {
   const navigate = useNavigate();
-  const { addDeck, getAvailableCards, addCards } = useDeckStore();
+  const { addDeck, getAvailableCards, addCards, removeCard } = useDeckStore();
   const { expansions } = useExpansionStore();
   const { premadeDecks, purchaseDeck } = usePremadeDecksStore();
   const [purchasedDecks, setPurchasedDecks] = useState<Set<string>>(new Set());
@@ -169,7 +169,8 @@ const PremadeDecksPage: React.FC = () => {
         // Rollback: Remove cards that were added
         deckCards.forEach(card => {
           try {
-            removeCard(card.id);
+            const deckStore = useDeckStore.getState();
+            deckStore.removeCard(card.id);
           } catch (rollbackError) {
             console.warn('Failed to rollback card:', rollbackError);
           }
