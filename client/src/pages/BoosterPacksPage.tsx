@@ -327,14 +327,25 @@ const BoosterPacksPage: React.FC = () => {
               className="relative aspect-square bg-gray-800 rounded-lg cursor-pointer transform hover:scale-105 transition-all duration-300 hover:shadow-xl border-2 border-gray-600 hover:border-spektrum-orange"
               onClick={() => handlePackSelection(pack)}
             >
-              <div className="absolute inset-0 bg-gradient-to-br from-gray-700 to-gray-900 rounded-lg">
-                <div className="p-2 h-full flex flex-col justify-center items-center">
-                  <div className="text-lg mb-1">{selectedExpansion.symbol}</div>
-                  <div className="text-xs text-gray-400 mb-1">#{pack.packNumber}</div>
-                  <div className="text-sm">{selectedTier.emoji}</div>
-                  <div className="text-xs text-spektrum-orange font-bold mt-1">
-                    ${selectedTier.price}
-                  </div>
+              {/* Booster Pack Image Background */}
+              <div className="absolute inset-0 rounded-lg overflow-hidden">
+                <SafeCardImage
+                  src="/textures/cards/booster_pack.png"
+                  alt="Booster Pack"
+                  className="w-full h-full object-cover opacity-40"
+                />
+                <div className="absolute inset-0 bg-gradient-to-br from-gray-700/80 to-gray-900/80"></div>
+              </div>
+              
+              <div className="relative p-2 h-full flex flex-col justify-center items-center z-10">
+                <div className="text-lg mb-1">{selectedExpansion.symbol}</div>
+                <div className="text-xs text-gray-400 mb-1">Pack #{pack.packNumber}</div>
+                <div className="text-sm">{selectedTier.emoji}</div>
+                <div className="text-xs text-spektrum-orange font-bold mt-1">
+                  ${selectedTier.price}
+                </div>
+                <div className="text-xs text-gray-300 mt-1 text-center">
+                  5 Cards
                 </div>
               </div>
             </div>

@@ -1901,7 +1901,7 @@ const DevToolsPage: React.FC = () => {
             {/* Card Collection Reset */}
             <div className="bg-gray-700 p-4 rounded-lg mb-4">
               <h4 className="text-md font-medium mb-3 text-blue-400">🃏 Card Collection Management</h4>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                 <button
                   onClick={() => {
                     // Simulate clearing user collection
@@ -1922,9 +1922,23 @@ const DevToolsPage: React.FC = () => {
                 >
                   🎁 Add Starter Pack
                 </button>
+
+                <button
+                  onClick={() => {
+                    toast.success("🎮 New player experience activated! Check console for details.");
+                    console.log("Dev Action: New player experience simulation started");
+                    console.log("- Wallet reset to 10,000 USDC");
+                    console.log("- Collection cleared");
+                    console.log("- Experience reset to Level 1");
+                    console.log("- Tutorial flags reset");
+                  }}
+                  className="bg-green-600 hover:bg-green-700 px-4 py-3 rounded text-sm font-medium"
+                >
+                  🎮 New Player Experience
+                </button>
               </div>
               <p className="text-xs text-gray-400 mt-2">
-                Reset collection to test onboarding and progression flows.
+                Reset collection to test onboarding and progression flows. Use "New Player Experience" for complete onboarding simulation.
               </p>
             </div>
 
