@@ -1975,10 +1975,23 @@ const DevToolsPage: React.FC = () => {
             <div className="bg-gray-700 p-4 rounded-lg">
               <h4 className="text-md font-medium mb-3 text-red-400">⚠️ Complete Reset</h4>
               <button
-                onClick={() => {
+                onClick={async () => {
                   if (confirm("Are you sure? This will reset EVERYTHING to simulate a completely new user.")) {
-                    toast.success("🔄 Complete reset performed - welcome new user!");
-                    console.log("Dev Action: Complete user data reset performed");
+                    try {
+                      // Import and use the cardNftService
+                      const { cardNftService } = await import('../blockchain/solana/cardNftService');
+                      
+                      // Clear NFTs from wallet
+                      await cardNftService.clearAllNfts();
+                      
+                      toast.success("🔄 Complete reset performed - wallet cleared, NFTs removed!");
+                      console.log("Dev Action: Complete user data reset performed");
+                      console.log("- All NFTs cleared from wallet");
+                      console.log("- Local data reset");
+                    } catch (error) {
+                      console.error("Error during full reset:", error);
+                      toast.error("Error during full reset. Check console for details.");
+                    }
                   }
                 }}
                 className="bg-red-600 hover:bg-red-700 px-4 py-3 rounded text-sm font-medium w-full"

@@ -92,11 +92,9 @@ export const usePackTierStore = create<PackTierStore>()(
 
       initializePackTiers: () => {
         try {
-          const { packTiers } = get();
-          if (packTiers.length === 0) {
-            set({ packTiers: defaultPackTiers });
-            console.log('Pack tiers initialized with default data');
-          }
+          // Force reset to ensure no cached "master" tiers exist
+          set({ packTiers: defaultPackTiers });
+          console.log('Pack tiers initialized with default data (forced reset)');
         } catch (error) {
           console.error('Error initializing pack tiers:', error);
         }
@@ -167,6 +165,7 @@ export const usePackTierStore = create<PackTierStore>()(
     }),
     {
       name: 'pack-tier-storage',
+      version: 1, // Force cache invalidation to remove any old "master" pack references
       partialize: (state) => ({ 
         packTiers: state.packTiers
       })

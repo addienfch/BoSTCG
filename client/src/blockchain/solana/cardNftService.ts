@@ -43,6 +43,9 @@ export interface CardNftService {
   // Card conversion functions
   convertNftToCard: (metadata: CardNftMetadata) => Card;
   convertCardToNftMetadata: (card: Card) => CardNftMetadata;
+  
+  // Development utility functions
+  clearAllNfts: () => Promise<void>;
 }
 
 // Mock implementation for development until blockchain integration is ready
@@ -185,6 +188,12 @@ class MockCardNftService implements CardNftService {
       image: card.art,
       attributes
     };
+  }
+  
+  async clearAllNfts(): Promise<void> {
+    console.log('Clearing all NFTs from wallet...');
+    this.mockNfts = [];
+    console.log('All NFTs cleared from wallet');
   }
 }
 
