@@ -136,15 +136,48 @@ const PremadeDecksPage: React.FC = () => {
 
   const handlePurchaseDeck = async (deck: PremadeDeck) => {
     try {
+      console.log(`Starting deck purchase: ${deck.name}`);
+      
+      // Validate deck data first
+      if (!deck || !deck.name || !deck.id) {
+        throw new Error('Invalid deck data');
+      }
+      
+      // Generate deck cards with validation
       const deckCards = generateDeckCards(deck);
+      if (!deckCards || deckCards.length === 0) {
+        throw new Error('Failed to generate deck cards');
+      }
       
-      // Add cards to player's collection
-      addCards(deckCards);
+      console.log(`Generated ${deckCards.length} cards for deck: ${deck.name}`);
       
-      // Create the deck
-      const newDeck = addDeck(deck.name, deckCards, deck.tribe);
+      // Add cards to player's collection with error handling
+      try {
+        addCards(deckCards);
+        console.log('Cards added to collection successfully');
+      } catch (cardError: any) {
+        console.error('Failed to add cards to collection:', cardError);
+        throw new Error(`Failed to add cards to collection: ${cardError?.message || 'Unknown error'}`);
+      }
       
-      // Mark as purchased
+      // Create the deck with validation
+      try {
+        const newDeck = addDeck(deck.name, deckCards, deck.tribe);
+        console.log(`Deck created successfully: ${newDeck.id}`);
+      } catch (deckError: any) {
+        console.error('Failed to create deck:', deckError);
+        // Rollback: Remove cards that were added
+        deckCards.forEach(card => {
+          try {
+            removeCard(card.id);
+          } catch (rollbackError) {
+            console.warn('Failed to rollback card:', rollbackError);
+          }
+        });
+        throw new Error(`Failed to create deck: ${deckError?.message || 'Unknown deck creation error'}`);
+      }
+      
+      // Mark as purchased only after successful creation
       setPurchasedDecks(prev => {
         const newSet = new Set(prev);
         newSet.add(deck.id);
@@ -157,10 +190,26 @@ const PremadeDecksPage: React.FC = () => {
       setShowRewardPopup(true);
       
       toast.success(`Successfully purchased ${deck.name}! Added ${deckCards.length} cards to your collection.`);
+      console.log(`Deck purchase completed successfully: ${deck.name}`);
       
     } catch (error) {
       console.error('Error purchasing deck:', error);
-      toast.error('Failed to purchase deck. Please try again.');
+      
+      // Provide specific error messages
+      let errorMessage = 'Failed to purchase deck. Please try again.';
+      if (error instanceof Error) {
+        if (error.message.includes('Maximum number of decks')) {
+          errorMessage = 'You can only have 5 decks. Please delete one first.';
+        } else if (error.message.includes('at least 40 cards')) {
+          errorMessage = 'This deck has too few cards. Please try another deck.';
+        } else if (error.message.includes('Invalid deck data')) {
+          errorMessage = 'This deck appears to be corrupted. Please try another deck.';
+        } else {
+          errorMessage = `Purchase failed: ${error.message}`;
+        }
+      }
+      
+      toast.error(errorMessage);
     }
   };
 

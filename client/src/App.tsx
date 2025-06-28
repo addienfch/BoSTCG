@@ -32,12 +32,22 @@ function SoundLoader() {
   const { initializeApp, getInitializationReport } = useAppInitStore();
   
   useEffect(() => {
-    // Initialize all stores on app startup
-    initializeApp().then(() => {
-      console.log(getInitializationReport());
-    }).catch(error => {
-      console.error('Failed to initialize app:', error);
-    });
+    // Initialize all stores on app startup with comprehensive error handling
+    const initializeAppSafely = async () => {
+      try {
+        await initializeApp();
+        console.log(getInitializationReport());
+      } catch (error) {
+        console.error('Failed to initialize app:', error);
+        // Prevent unhandled promise rejection
+        if (error instanceof Error) {
+          console.error('Initialization error details:', error.message);
+        }
+      }
+    };
+    
+    // Call async function without creating unhandled promise
+    initializeAppSafely();
     // Global error handlers for unhandled promise rejections
     const handleUnhandledRejection = (event: PromiseRejectionEvent) => {
       console.warn('Unhandled promise rejection caught:', event.reason);
