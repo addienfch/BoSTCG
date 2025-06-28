@@ -146,8 +146,8 @@ export const openBoosterPack = (packType: BoosterPackType, cardCount: number = 5
     // Combine and shuffle
     const allNeutralCards = shuffleArray([...itemCards, ...spellCards]);
     
-    // Return 5 random neutral cards
-    return allNeutralCards.slice(0, cardCount);
+    // Return exactly 5 random neutral cards
+    return allNeutralCards.slice(0, maxCards);
   }
   
   // Regular pack processing for other types
@@ -171,8 +171,8 @@ export const openBoosterPack = (packType: BoosterPackType, cardCount: number = 5
     ...shuffledSpells.slice(0, guaranteedSpells)
   ];
   
-  // Fill the rest with random cards from combined pool
-  const remainingCount = cardCount - packCards.length;
+  // Fill the rest with random cards from combined pool (limit to 5 total)
+  const remainingCount = Math.min(maxCards - packCards.length, cardCount - packCards.length);
   if (remainingCount > 0) {
     const remainingPool = shuffleArray([
       ...shuffledAvatars.slice(guaranteedAvatars),
@@ -182,7 +182,8 @@ export const openBoosterPack = (packType: BoosterPackType, cardCount: number = 5
     packCards.push(...remainingPool.slice(0, remainingCount));
   }
   
-  return packCards;
+  // Ensure exactly 5 cards are returned
+  return packCards.slice(0, maxCards);
 };
 
 // Function to purchase a booster pack with coins

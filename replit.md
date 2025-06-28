@@ -112,6 +112,13 @@ Book of Spektrum is a full-stack 3D trading card game built for the web, featuri
 
 ## Changelog
 
+- June 28, 2025. BOOSTER PACK SYSTEM STANDARDIZATION - All Packs Limited to 5 Cards:
+  - **Fixed All Card Generation Systems**: Enforced exactly 5 cards per pack across all booster systems (BoosterVariantStore, BoosterPacksPage, BoosterPackSystem, cardRarityVariants)
+  - **Removed "Master" References**: Updated Expert variant subtitle from "Master Collection" to "Superior Collection" to eliminate confusion
+  - **Standardized Pack Tiers**: Confirmed all 3 pack tiers (Beginner, Advanced, Expert) properly configured with 5-card limit
+  - **Enhanced Card Generation Logic**: Added safety checks and slice() operations to guarantee maximum 5 cards returned
+  - **Updated Dev Utilities**: Added comprehensive dev tools tab with USDC refill, wallet reset, and user simulation features for testing
+  - **Consistent Pack Behavior**: All booster systems now use identical 5-card generation regardless of tier or variant selected
 - June 27, 2025. **PHASE 1 DATA SYNCHRONIZATION COMPLETED** - All Stores Populated:
   - **Battle Sets Store POPULATED**: 13 default items across 5 categories (card backs, deck covers, avatar skins, battlefields, effect animations)
   - **Booster Variants System IMPLEMENTED**: 9 variant templates with proper rarity weights and price multipliers (Starter to Infinity tiers)
