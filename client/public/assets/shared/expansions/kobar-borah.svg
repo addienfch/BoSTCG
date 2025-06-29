@@ -1,0 +1,39 @@
+<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background Circle -->
+  <circle cx="50" cy="50" r="48" fill="url(#kobarGradient)" stroke="#fff" stroke-width="2"/>
+  
+  <!-- Definitions -->
+  <defs>
+    <linearGradient id="kobarGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#dc2626;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#ef4444;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#b91c1c;stop-opacity:1" />
+    </linearGradient>
+    <filter id="fireGlow">
+      <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
+      <feMerge> 
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  
+  <!-- Inner Circle -->
+  <circle cx="50" cy="50" r="35" fill="#000" opacity="0.3"/>
+  
+  <!-- Fire Symbol -->
+  <path d="M50 25 C45 35, 40 40, 45 50 C40 55, 45 65, 50 60 C55 65, 60 55, 55 50 C60 40, 55 35, 50 25 Z" 
+        fill="#fbbf24" filter="url(#fireGlow)"/>
+  <path d="M50 30 C47 38, 44 42, 47 48 C44 52, 47 58, 50 55 C53 58, 56 52, 53 48 C56 42, 53 38, 50 30 Z" 
+        fill="#fff" opacity="0.8"/>
+  
+  <!-- Tribal Markings -->
+  <circle cx="35" cy="35" r="3" fill="#fbbf24" opacity="0.8"/>
+  <circle cx="65" cy="35" r="3" fill="#fbbf24" opacity="0.8"/>
+  <circle cx="35" cy="65" r="3" fill="#fbbf24" opacity="0.8"/>
+  <circle cx="65" cy="65" r="3" fill="#fbbf24" opacity="0.8"/>
+  
+  <!-- Text -->
+  <text x="50" y="82" text-anchor="middle" fill="#fff" font-family="Arial, sans-serif" font-size="8" font-weight="bold">KOBAR</text>
+  <text x="50" y="92" text-anchor="middle" fill="#fff" font-family="Arial, sans-serif" font-size="8" font-weight="bold">BORAH</text>
+</svg>
