@@ -16,6 +16,7 @@ import { toast } from 'sonner';
 import BackButton from '../components/BackButton';
 import NavigationBar from '../components/NavigationBar';
 import { getRarityColor, getRarityTextColor } from '../game/utils/rarityUtils';
+import { expansionManager, type ExpansionTemplate } from '../lib/expansionManager';
 
 
 
@@ -79,10 +80,24 @@ const DevToolsPage: React.FC = () => {
   // Premade deck management now uses centralized store
   const [selectedCard, setSelectedCard] = useState<Card | null>(null);
   const [isEditing, setIsEditing] = useState(false);
-  const [activeTab, setActiveTab] = useState<'database' | 'edit' | 'expansion' | 'conditional' | 'premade-decks' | 'dev-utils'>('database');
+  const [activeTab, setActiveTab] = useState<'database' | 'edit' | 'expansion' | 'conditional' | 'premade-decks' | 'asset-manager' | 'dev-utils'>('database');
   const [selectedExpansion, setSelectedExpansion] = useState<Expansion | null>(null);
   const [isEditingExpansion, setIsEditingExpansion] = useState(false);
   const [selectedExpansionFilter, setSelectedExpansionFilter] = useState<string>('all');
+  
+  // Asset manager state
+  const [expansionTemplate, setExpansionTemplate] = useState<ExpansionTemplate>({
+    id: '',
+    name: '',
+    description: '',
+    symbol: '',
+    theme: 'neutral',
+    tribes: [],
+    expectedCardCount: 100
+  });
+  const [assetUploadPath, setAssetUploadPath] = useState('');
+  const [selectedAssetCategory, setSelectedAssetCategory] = useState<'avatars' | 'spells' | 'equipment' | 'battle-sets' | 'boosters'>('avatars');
+  const [cloneSourceExpansion, setCloneSourceExpansion] = useState('');
   
 
 
@@ -534,6 +549,84 @@ const DevToolsPage: React.FC = () => {
     }
   };
 
+  // Asset Management Functions
+  const handleCreateExpansion = async () => {
+    try {
+      const result = await expansionManager.createExpansion(expansionTemplate);
+      
+      if (result.success && result.expansion) {
+        toast.success(`✅ Expansion "${result.expansion.name}" created successfully!`);
+        console.log(`📁 Created ${result.directories.length} directories`);
+        
+        // Reset form
+        setExpansionTemplate({
+          id: '',
+          name: '',
+          description: '',
+          symbol: '',
+          theme: 'neutral',
+          tribes: [],
+          expectedCardCount: 100
+        });
+      } else {
+        toast.error(`❌ Failed to create expansion: ${result.errors.join(', ')}`);
+      }
+    } catch (error) {
+      toast.error(`❌ Expansion creation failed: ${error}`);
+    }
+  };
+
+  const handleCloneExpansion = async () => {
+    if (!cloneSourceExpansion) {
+      toast.error('Please select a source expansion to clone');
+      return;
+    }
+
+    try {
+      const result = await expansionManager.cloneExpansion(cloneSourceExpansion, expansionTemplate);
+      
+      if (result.success) {
+        toast.success(`✅ Expansion cloned successfully! ${result.clonedAssets.length} assets copied`);
+        setCloneSourceExpansion('');
+        setExpansionTemplate({
+          id: '',
+          name: '',
+          description: '',
+          symbol: '',
+          theme: 'neutral',
+          tribes: [],
+          expectedCardCount: 100
+        });
+      } else {
+        toast.error(`❌ Clone failed: ${result.errors.join(', ')}`);
+      }
+    } catch (error) {
+      toast.error(`❌ Clone operation failed: ${error}`);
+    }
+  };
+
+  const handleValidateAssetFile = (fileName: string) => {
+    const result = expansionManager.validateAssetFile(fileName, selectedAssetCategory);
+    
+    if (result.isValid) {
+      toast.success(`✅ "${fileName}" is valid for ${selectedAssetCategory}`);
+    } else {
+      toast.error(`❌ Invalid file: ${result.errors.join(', ')}`);
+    }
+
+    if (result.suggestions.length > 0) {
+      console.log('💡 Suggestions:', result.suggestions);
+    }
+  };
+
+  const getExpansionAssetStatus = () => {
+    return expansionManager.getExpansionAssetStatus();
+  };
+
+  const generateAssetUploadPaths = (expansionId: string) => {
+    return expansionManager.generateAssetUploadPaths(expansionId);
+  };
+
   return (
     <div className="min-h-screen bg-spektrum-dark text-spektrum-light pb-20" style={{ fontFamily: 'Noto Sans, Inter, sans-serif' }}>
       <BackButton />
@@ -582,6 +675,17 @@ const DevToolsPage: React.FC = () => {
             }`}
           >
             Premade Decks
+          </button>
+
+          <button
+            onClick={() => setActiveTab('asset-manager')}
+            className={`flex-1 py-2 px-4 rounded text-sm font-medium transition-colors ${
+              activeTab === 'asset-manager' 
+                ? 'bg-spektrum-orange text-spektrum-dark' 
+                : 'text-gray-400 hover:text-white'
+            }`}
+          >
+            Asset Manager
           </button>
 
           <button
@@ -1849,6 +1953,297 @@ const DevToolsPage: React.FC = () => {
                     </div>
                   </div>
                 </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'asset-manager' && (
+          <div className="bg-gray-800 rounded-lg p-4">
+            <h3 className="text-lg font-medium mb-4">📁 Asset & Expansion Manager</h3>
+            
+            {/* Expansion Creation Section */}
+            <div className="bg-gray-700 p-4 rounded-lg mb-4">
+              <h4 className="text-md font-medium mb-3 text-blue-400">🚀 Create New Expansion</h4>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <div>
+                  <label className="block text-sm font-medium mb-1">Expansion ID</label>
+                  <input
+                    type="text"
+                    value={expansionTemplate.id}
+                    onChange={(e) => setExpansionTemplate(prev => ({ ...prev, id: e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '-') }))}
+                    placeholder="fire-and-water-tribes"
+                    className="w-full px-3 py-2 bg-gray-600 border border-gray-500 rounded text-sm"
+                  />
+                  <p className="text-xs text-gray-400 mt-1">Lowercase with hyphens only</p>
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium mb-1">Expansion Name</label>
+                  <input
+                    type="text"
+                    value={expansionTemplate.name}
+                    onChange={(e) => setExpansionTemplate(prev => ({ ...prev, name: e.target.value }))}
+                    placeholder="Fire & Water Tribes"
+                    className="w-full px-3 py-2 bg-gray-600 border border-gray-500 rounded text-sm"
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium mb-1">Symbol</label>
+                  <input
+                    type="text"
+                    value={expansionTemplate.symbol}
+                    onChange={(e) => setExpansionTemplate(prev => ({ ...prev, symbol: e.target.value }))}
+                    placeholder="🔥"
+                    className="w-full px-3 py-2 bg-gray-600 border border-gray-500 rounded text-sm"
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium mb-1">Theme</label>
+                  <select
+                    value={expansionTemplate.theme}
+                    onChange={(e) => setExpansionTemplate(prev => ({ ...prev, theme: e.target.value as any }))}
+                    className="w-full px-3 py-2 bg-gray-600 border border-gray-500 rounded text-sm"
+                  >
+                    <option value="neutral">Neutral</option>
+                    <option value="fire">Fire</option>
+                    <option value="water">Water</option>
+                    <option value="earth">Earth</option>
+                    <option value="air">Air</option>
+                    <option value="mixed">Mixed Elements</option>
+                  </select>
+                </div>
+              </div>
+              
+              <div className="mb-4">
+                <label className="block text-sm font-medium mb-1">Description</label>
+                <textarea
+                  value={expansionTemplate.description}
+                  onChange={(e) => setExpansionTemplate(prev => ({ ...prev, description: e.target.value }))}
+                  placeholder="Describe the expansion theme and mechanics..."
+                  className="w-full px-3 py-2 bg-gray-600 border border-gray-500 rounded text-sm h-20"
+                />
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <div>
+                  <label className="block text-sm font-medium mb-1">Expected Card Count</label>
+                  <input
+                    type="number"
+                    value={expansionTemplate.expectedCardCount}
+                    onChange={(e) => setExpansionTemplate(prev => ({ ...prev, expectedCardCount: parseInt(e.target.value) || 100 }))}
+                    className="w-full px-3 py-2 bg-gray-600 border border-gray-500 rounded text-sm"
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium mb-1">Tribes (comma separated)</label>
+                  <input
+                    type="text"
+                    value={expansionTemplate.tribes.join(', ')}
+                    onChange={(e) => setExpansionTemplate(prev => ({ ...prev, tribes: e.target.value.split(',').map(t => t.trim()).filter(t => t) }))}
+                    placeholder="fire-tribe, water-tribe"
+                    className="w-full px-3 py-2 bg-gray-600 border border-gray-500 rounded text-sm"
+                  />
+                </div>
+              </div>
+              
+              <div className="flex gap-3">
+                <button
+                  onClick={handleCreateExpansion}
+                  className="bg-green-600 hover:bg-green-700 px-4 py-2 rounded text-sm font-medium"
+                >
+                  🚀 Create Expansion
+                </button>
+                
+                <button
+                  onClick={() => setExpansionTemplate({
+                    id: '',
+                    name: '',
+                    description: '',
+                    symbol: '',
+                    theme: 'neutral',
+                    tribes: [],
+                    expectedCardCount: 100
+                  })}
+                  className="bg-gray-600 hover:bg-gray-500 px-4 py-2 rounded text-sm font-medium"
+                >
+                  🔄 Reset Form
+                </button>
+              </div>
+            </div>
+            
+            {/* Clone Expansion Section */}
+            <div className="bg-gray-700 p-4 rounded-lg mb-4">
+              <h4 className="text-md font-medium mb-3 text-yellow-400">📋 Clone Existing Expansion</h4>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <div>
+                  <label className="block text-sm font-medium mb-1">Source Expansion</label>
+                  <select
+                    value={cloneSourceExpansion}
+                    onChange={(e) => setCloneSourceExpansion(e.target.value)}
+                    className="w-full px-3 py-2 bg-gray-600 border border-gray-500 rounded text-sm"
+                  >
+                    <option value="">Select expansion to clone...</option>
+                    {expansions.map(expansion => (
+                      <option key={expansion.id} value={expansion.id}>
+                        {expansion.symbol} {expansion.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                
+                <div className="flex items-end">
+                  <button
+                    onClick={handleCloneExpansion}
+                    disabled={!cloneSourceExpansion || !expansionTemplate.name}
+                    className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-500 disabled:cursor-not-allowed px-4 py-2 rounded text-sm font-medium w-full"
+                  >
+                    📋 Clone to New Expansion
+                  </button>
+                </div>
+              </div>
+              
+              <p className="text-xs text-gray-400">Clone directory structure and assets from an existing expansion</p>
+            </div>
+            
+            {/* Asset Upload Manager */}
+            <div className="bg-gray-700 p-4 rounded-lg mb-4">
+              <h4 className="text-md font-medium mb-3 text-purple-400">📤 Asset Upload Manager</h4>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <div>
+                  <label className="block text-sm font-medium mb-1">Target Expansion</label>
+                  <select
+                    onChange={(e) => {
+                      const expansion = expansions.find(exp => exp.id === e.target.value);
+                      if (expansion) {
+                        const paths = generateAssetUploadPaths(expansion.id);
+                        setAssetUploadPath(paths[0]?.path || '');
+                      }
+                    }}
+                    className="w-full px-3 py-2 bg-gray-600 border border-gray-500 rounded text-sm"
+                  >
+                    <option value="">Select expansion...</option>
+                    {expansions.map(expansion => (
+                      <option key={expansion.id} value={expansion.id}>
+                        {expansion.symbol} {expansion.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium mb-1">Asset Category</label>
+                  <select
+                    value={selectedAssetCategory}
+                    onChange={(e) => setSelectedAssetCategory(e.target.value as any)}
+                    className="w-full px-3 py-2 bg-gray-600 border border-gray-500 rounded text-sm"
+                  >
+                    <option value="avatars">Avatar Cards</option>
+                    <option value="spells">Spell Cards</option>
+                    <option value="equipment">Equipment</option>
+                    <option value="battle-sets">Battle Sets</option>
+                    <option value="boosters">Booster Packs</option>
+                  </select>
+                </div>
+              </div>
+              
+              <div className="mb-4">
+                <label className="block text-sm font-medium mb-1">Upload Path</label>
+                <div className="flex">
+                  <input
+                    type="text"
+                    value={assetUploadPath}
+                    readOnly
+                    className="flex-1 px-3 py-2 bg-gray-600 border border-gray-500 rounded-l text-sm text-gray-300"
+                    placeholder="Select expansion and category first..."
+                  />
+                  <button
+                    onClick={() => navigator.clipboard.writeText(assetUploadPath)}
+                    className="bg-blue-600 hover:bg-blue-700 px-3 py-2 rounded-r text-sm"
+                  >
+                    📋 Copy
+                  </button>
+                </div>
+              </div>
+              
+              <div className="mb-4">
+                <label className="block text-sm font-medium mb-1">Test File Name</label>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    placeholder="test-avatar.png"
+                    className="flex-1 px-3 py-2 bg-gray-600 border border-gray-500 rounded text-sm"
+                    onKeyPress={(e) => {
+                      if (e.key === 'Enter') {
+                        handleValidateAssetFile(e.currentTarget.value);
+                      }
+                    }}
+                  />
+                  <button
+                    onClick={(e) => {
+                      const input = e.currentTarget.previousElementSibling as HTMLInputElement;
+                      if (input.value) {
+                        handleValidateAssetFile(input.value);
+                      }
+                    }}
+                    className="bg-green-600 hover:bg-green-700 px-4 py-2 rounded text-sm"
+                  >
+                    ✅ Validate
+                  </button>
+                </div>
+                <p className="text-xs text-gray-400 mt-1">Test if a filename follows naming conventions</p>
+              </div>
+            </div>
+            
+            {/* Expansion Status Overview */}
+            <div className="bg-gray-700 p-4 rounded-lg">
+              <h4 className="text-md font-medium mb-3 text-green-400">📊 Expansion Status Overview</h4>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {getExpansionAssetStatus().map((status, index) => (
+                  <div key={index} className="bg-gray-600 p-3 rounded border-l-4 border-blue-500">
+                    <div className="flex items-center justify-between mb-2">
+                      <h5 className="font-medium text-sm">{status.expansion.symbol} {status.expansion.name}</h5>
+                      <span className="text-xs bg-blue-600 px-2 py-1 rounded">{status.completionPercentage}%</span>
+                    </div>
+                    
+                    <div className="text-xs text-gray-300 space-y-1">
+                      <div className="flex justify-between">
+                        <span>Avatars:</span>
+                        <span>{status.assetCounts.avatars}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Spells:</span>
+                        <span>{status.assetCounts.spells}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Equipment:</span>
+                        <span>{status.assetCounts.equipment}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Battle Sets:</span>
+                        <span>{status.assetCounts.battleSets}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Boosters:</span>
+                        <span>{status.assetCounts.boosters}</span>
+                      </div>
+                    </div>
+                    
+                    <div className="mt-2 bg-gray-700 rounded-full h-2">
+                      <div 
+                        className="bg-blue-500 h-2 rounded-full transition-all duration-300"
+                        style={{ width: `${status.completionPercentage}%` }}
+                      ></div>
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
           </div>
