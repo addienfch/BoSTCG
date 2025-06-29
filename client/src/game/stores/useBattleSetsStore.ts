@@ -12,6 +12,7 @@ export interface BattleSetItem {
   preview: string;
   owned: boolean;
   element?: string;
+  expansion?: string; // Which expansion this battle set belongs to
 }
 
 interface BattleSetsStore {
@@ -28,7 +29,7 @@ interface BattleSetsStore {
 }
 
 const defaultBattleSets: BattleSetItem[] = [
-  // Card Backs
+  // Kobar & Borah Card Backs
   {
     id: 'cardback-fire-1',
     name: 'Blazing Flames',
@@ -36,10 +37,25 @@ const defaultBattleSets: BattleSetItem[] = [
     description: 'Fiery card back with animated flame effects',
     price: 150,
     rarity: 'Rare',
-    preview: '/textures/cards/fire_booster.png',
+    preview: getBoosterAssetPath('kobar-borah', 'fire_booster.png'),
     owned: false,
-    element: 'fire'
+    element: 'fire',
+    expansion: 'kobar-borah'
   },
+  {
+    id: 'cardback-earth-1',
+    name: 'Stone & Earth',
+    type: 'card_back',
+    description: 'Earthy card back with rock and soil textures',
+    price: 150,
+    rarity: 'Rare',
+    preview: getBoosterAssetPath('kobar-borah', 'kobar_booster.png'),
+    owned: false,
+    element: 'ground',
+    expansion: 'kobar-borah'
+  },
+  
+  // Kujana & Kuhaka Card Backs
   {
     id: 'cardback-water-1',
     name: 'Ocean Depths',
@@ -47,9 +63,36 @@ const defaultBattleSets: BattleSetItem[] = [
     description: 'Deep blue card back with flowing water patterns',
     price: 150,
     rarity: 'Rare',
-    preview: '/textures/cards/neutral_booster.png',
+    preview: getBoosterAssetPath('kujana-kuhaka', 'kuhaka_booster.png'),
     owned: false,
-    element: 'water'
+    element: 'water',
+    expansion: 'kujana-kuhaka'
+  },
+  {
+    id: 'cardback-air-1',
+    name: 'Wind Currents',
+    type: 'card_back',
+    description: 'Airy card back with swirling wind patterns',
+    price: 150,
+    rarity: 'Rare',
+    preview: getBoosterAssetPath('kujana-kuhaka', 'kuhaka_booster.png'),
+    owned: false,
+    element: 'air',
+    expansion: 'kujana-kuhaka'
+  },
+  
+  // Neutral Card Backs
+  {
+    id: 'cardback-neutral-1',
+    name: 'Universal Magic',
+    type: 'card_back',
+    description: 'Neutral card back with arcane symbols',
+    price: 120,
+    rarity: 'Common',
+    preview: getBoosterAssetPath('neutral-spells', 'neutral_booster.png'),
+    owned: false,
+    element: 'neutral',
+    expansion: 'neutral-spells'
   },
   {
     id: 'cardback-legendary-1',
@@ -58,61 +101,90 @@ const defaultBattleSets: BattleSetItem[] = [
     description: 'Exclusive card back for dedicated players',
     price: 500,
     rarity: 'Legendary',
-    preview: '/textures/cards/fire_booster.png',
-    owned: false
+    preview: getBoosterAssetPath('kobar-borah', 'fire_booster.png'),
+    owned: false,
+    expansion: 'kobar-borah'
   },
   
-  // Deck Covers
+  // Expansion-Specific Deck Covers
   {
-    id: 'deckcover-tribal-1',
+    id: 'deckcover-kobar-1',
     name: 'Kobar Dominance',
     type: 'deck_cover',
     description: 'Showcase your Kobar tribal mastery',
     price: 200,
     rarity: 'Epic',
-    preview: '/textures/cards/neutral_booster.png',
+    preview: getBoosterAssetPath('kobar-borah', 'kobar_booster.png'),
     owned: false,
-    element: 'fire'
+    element: 'fire',
+    expansion: 'kobar-borah'
   },
   {
-    id: 'deckcover-tribal-2',
+    id: 'deckcover-borah-1',
     name: 'Borah Wisdom',
     type: 'deck_cover',
     description: 'Display your Borah strategic prowess',
     price: 200,
     rarity: 'Epic',
-    preview: '/textures/cards/neutral_booster.png',
+    preview: getBoosterAssetPath('kobar-borah', 'fire_booster.png'),
     owned: false,
-    element: 'water'
-  },
-  
-  // Avatar Skins
-  {
-    id: 'avatar-elemental-1',
-    name: 'Fire Lord Avatar',
-    type: 'avatar_skin',
-    description: 'Command respect with this blazing avatar skin',
-    price: 300,
-    rarity: 'Epic',
-    preview: '/textures/cards/fire_booster.png',
-    owned: false,
-    element: 'fire'
+    element: 'ground',
+    expansion: 'kobar-borah'
   },
   {
-    id: 'avatar-elemental-2',
-    name: 'Water Sage Avatar',
-    type: 'avatar_skin',
-    description: 'Embody wisdom with this flowing avatar skin',
-    price: 300,
+    id: 'deckcover-kujana-1',
+    name: 'Kujana Flow',
+    type: 'deck_cover',
+    description: 'Showcase your Kujana water mastery',
+    price: 200,
     rarity: 'Epic',
-    preview: '/textures/cards/neutral_booster.png',
+    preview: getBoosterAssetPath('kujana-kuhaka', 'kuhaka_booster.png'),
     owned: false,
-    element: 'water'
+    element: 'water',
+    expansion: 'kujana-kuhaka'
   },
   
-  // Battlefields
+  // Battlefields with Expansion-Specific Assets
   {
     id: 'battlefield-volcanic-1',
+    name: 'Kobar Volcanic Arena',
+    type: 'battlefield',
+    description: 'Battle on the fiery volcanic fields of Kobar territory',
+    price: 400,
+    rarity: 'Legendary',
+    preview: getBattleSetAssetPath('kobar-borah', 'volcanic_arena.png'),
+    owned: false,
+    element: 'fire',
+    expansion: 'kobar-borah'
+  },
+  {
+    id: 'battlefield-oceanic-1',
+    name: 'Kujana Ocean Depths',
+    type: 'battlefield',
+    description: 'Duel in the mysterious depths of Kujana waters',
+    price: 400,
+    rarity: 'Legendary',
+    preview: getBattleSetAssetPath('kujana-kuhaka', 'ocean_depths.png'),
+    owned: false,
+    element: 'water',
+    expansion: 'kujana-kuhaka'
+  },
+  {
+    id: 'battlefield-neutral-1',
+    name: 'Ancient Spellground',
+    type: 'battlefield',
+    description: 'Fight in the sacred neutral magic grounds',
+    price: 350,
+    rarity: 'Epic',
+    preview: getBattleSetAssetPath('neutral-spells', 'battle_preparation.png'),
+    owned: false,
+    element: 'neutral',
+    expansion: 'neutral-spells'
+  },
+  
+  // Effect Animations
+  {
+    id: 'effect-fire-burst',
     name: 'Volcanic Crater',
     type: 'battlefield',
     description: 'Battle in the heart of an active volcano',

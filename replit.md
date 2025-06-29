@@ -112,6 +112,15 @@ Book of Spektrum is a full-stack 3D trading card game built for the web, featuri
 
 ## Changelog
 
+- June 28, 2025. ASSET ORGANIZATION & EXPANSION STRUCTURE - Scalable Architecture:
+  - **Organized Asset Directory**: Complete restructure of assets by expansion with clear separation (kobar-borah/, kujana-kuhaka/, neutral-spells/, shared/)
+  - **Asset Path Mapper**: Created comprehensive path mapping system with legacy compatibility and automatic path conversion
+  - **Expansion-Specific Battle Sets**: Updated battle sets store with expansion categorization and organized asset paths
+  - **Scalable Structure**: Easy expansion addition with standardized directory layout (cards/avatars/, cards/spells/, battle-sets/, boosters/)
+  - **Asset Security**: Integrated new organized paths with existing security validation system
+  - **Documentation**: Created comprehensive Asset Organization Guide with structure and usage examples
+  - **Legacy Compatibility**: Automatic conversion of old asset paths to new organized structure
+  - **Battle Set Integration**: Battle sets now properly categorized by expansion with appropriate asset paths
 - June 28, 2025. COMPREHENSIVE SECURITY AUDIT & FIXES - Production Ready:
   - **Complete Game Audit**: Conducted comprehensive security, performance, and stability audit with A- grade (91/100)
   - **Critical Error Handling**: Fixed unhandled promise rejections and deck purchase errors with transaction rollback
