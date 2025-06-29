@@ -523,7 +523,8 @@ const DevToolsPage: React.FC = () => {
       difficulty: deckForm.difficulty,
       coverCardName: deckForm.coverCardName.trim(),
       keyCards: deckForm.keyCards,
-      purchased: false
+      purchased: false,
+      artUrl: selectedDeck?.artUrl || '/assets/shared/decks/fire-tribe-starter.svg'
     };
 
     console.log('Saving premade deck:', deckData);
