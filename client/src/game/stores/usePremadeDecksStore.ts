@@ -15,6 +15,7 @@ export interface PremadeDeck {
   coverCardName: string;
   keyCards: string[];
   purchased: boolean;
+  artUrl: string; // Deck cover image
   cards?: Card[]; // Optional full card list
 }
 
@@ -43,7 +44,8 @@ const defaultPremadeDecks: PremadeDeck[] = [
     difficulty: 'Beginner',
     coverCardName: 'Radja',
     keyCards: ['Radja', 'Crimson', 'Boar Berserker', 'Banaspati'],
-    purchased: false
+    purchased: false,
+    artUrl: '/assets/shared/decks/fire-tribe-starter.svg'
   },
   {
     id: 'kujana-kuhaka-starter',
@@ -57,7 +59,8 @@ const defaultPremadeDecks: PremadeDeck[] = [
     difficulty: 'Intermediate',
     coverCardName: 'Boar Witch',
     keyCards: ['Boar Witch', 'Daisy', 'Spark', 'Burn Ball'],
-    purchased: false
+    purchased: false,
+    artUrl: '/assets/shared/decks/water-tribe-starter.svg'
   },
   {
     id: 'kobar-pure',
@@ -71,7 +74,8 @@ const defaultPremadeDecks: PremadeDeck[] = [
     difficulty: 'Advanced',
     coverCardName: 'Kobar Trainee A',
     keyCards: ['Kobar Trainee A', 'Kobar Trainee B', 'Cracking Sword'],
-    purchased: false
+    purchased: false,
+    artUrl: '/assets/shared/decks/ground-tribe-starter.svg'
   },
   {
     id: 'kobar-fire-starter',
@@ -85,7 +89,8 @@ const defaultPremadeDecks: PremadeDeck[] = [
     difficulty: 'Beginner',
     coverCardName: 'Radja',
     keyCards: ['Radja', 'Crimson', 'Spark'],
-    purchased: false
+    purchased: false,
+    artUrl: '/assets/shared/decks/air-tribe-starter.svg'
   }
 ];
 

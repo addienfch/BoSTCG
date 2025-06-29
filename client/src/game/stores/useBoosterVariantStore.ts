@@ -99,7 +99,7 @@ export const useBoosterVariantStore = create<BoosterVariantStore>()(
         return variantTemplates.map((template, index) => ({
           id: `${pack.id}-variant-${index + 1}`,
           name: `${template.rarity} ${pack.name}`,
-          artUrl: pack.artUrl,
+          artUrl: `/assets/shared/boosters/${template.rarity.toLowerCase()}-pack.svg`,
           ...template
         }));
       },

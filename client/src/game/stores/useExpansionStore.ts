@@ -29,7 +29,7 @@ const defaultExpansions: Expansion[] = [
     description: 'Fire and Earth tribes clash in epic battles',
     releaseDate: '2024-01-01',
     cardCount: 120,
-    artUrl: '/attached_assets/Red Elemental Avatar_Ava - Crimson.png',
+    artUrl: '/assets/shared/expansions/kobar-borah.svg',
     symbol: '🔥'
   },
   {
@@ -38,7 +38,7 @@ const defaultExpansions: Expansion[] = [
     description: 'Water and Air tribes unite with new mechanics',
     releaseDate: '2024-03-01',
     cardCount: 115,
-    artUrl: '/attached_assets/Non Elemental - Spell_Kencur.png',
+    artUrl: '/assets/shared/expansions/kujana-kuhaka.svg',
     symbol: '💧'
   },
   {
@@ -47,7 +47,7 @@ const defaultExpansions: Expansion[] = [
     description: 'Universal magic cards for all elements',
     releaseDate: '2024-02-01',
     cardCount: 80,
-    artUrl: '/attached_assets/Non Elemental (1)-15.png',
+    artUrl: '/assets/shared/expansions/neutral-spells.svg',
     symbol: '⚡'
   }
 ];
