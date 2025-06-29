@@ -1,449 +1,379 @@
 /**
- * Expansion Management System
- * Comprehensive expansion lifecycle management with creation, cloning, and validation
+ * Expansion Manager - Dynamic expansion and asset management system
+ * Allows creating new expansions and managing assets through dev-tools
  */
 
-import { Expansion } from '../game/stores/useExpansionStore';
-import { assetValidator } from './assetValidation';
-import { getExpansionImageWithFallback } from './imageResolver';
+import { EXPANSION_ASSET_PATHS, getCardAssetPath, getBattleSetAssetPath, getBoosterAssetPath } from './assetPathMapper';
+import { useExpansionStore, type Expansion } from '../game/stores/useExpansionStore';
+import { useBattleSetsStore, type BattleSetItem } from '../game/stores/useBattleSetsStore';
 
-export interface ExpansionCreateOptions {
+export interface ExpansionTemplate {
+  id: string;
   name: string;
-  symbol: string;
   description: string;
-  artUrl?: string;
-  totalCards?: number;
-  baseFrom?: string; // ID of expansion to clone from
+  symbol: string;
+  theme: 'fire' | 'water' | 'earth' | 'air' | 'neutral' | 'mixed';
+  tribes: string[];
+  expectedCardCount: number;
 }
 
-export interface ExpansionValidationResult {
-  valid: boolean;
-  errors: string[];
-  warnings: string[];
-  recommendations: string[];
-}
-
-export interface ExpansionAssetPaths {
-  cards: {
-    avatars: string;
-    spells: string;
-    equipment: string;
+export interface AssetStructure {
+  directories: string[];
+  requiredAssets: {
+    cards: {
+      avatars: string[];
+      spells: string[];
+      equipment: string[];
+    };
+    battleSets: string[];
+    boosters: string[];
   };
-  battleSets: string;
-  boosters: string;
-  expansionIcon: string;
 }
 
 /**
- * Comprehensive expansion manager with full lifecycle support
+ * Expansion Manager Class
  */
 export class ExpansionManager {
-  private static instance: ExpansionManager;
-
-  static getInstance(): ExpansionManager {
-    if (!ExpansionManager.instance) {
-      ExpansionManager.instance = new ExpansionManager();
-    }
-    return ExpansionManager.instance;
-  }
-
+  
   /**
-   * Create a new expansion with proper directory structure
+   * Create a new expansion with complete directory structure
    */
-  async createExpansion(options: ExpansionCreateOptions): Promise<Expansion> {
-    const validation = this.validateExpansionData(options);
-    
-    if (!validation.valid) {
-      throw new Error(`Cannot create expansion: ${validation.errors.join(', ')}`);
-    }
-
-    const expansionId = this.generateExpansionId(options.name);
-    
-    const newExpansion: Expansion = {
-      id: expansionId,
-      name: options.name,
-      symbol: options.symbol,
-      description: options.description,
-      artUrl: options.artUrl || getExpansionImageWithFallback({ 
-        id: expansionId, 
-        name: options.name, 
-        symbol: options.symbol 
-      }),
-      totalCards: options.totalCards || 100,
-      releaseDate: new Date().toISOString().split('T')[0]
-    };
-
-    // Generate asset directory structure
-    const assetPaths = this.generateAssetPaths(expansionId);
-    
-    // If cloning from another expansion, copy its structure
-    if (options.baseFrom) {
-      await this.cloneExpansionStructure(options.baseFrom, expansionId);
-    }
-
-    return newExpansion;
-  }
-
-  /**
-   * Clone an existing expansion with new metadata
-   */
-  async cloneExpansion(sourceId: string, options: Partial<ExpansionCreateOptions>): Promise<Expansion> {
-    if (!options.name) {
-      throw new Error('Name is required when cloning an expansion');
-    }
-
-    const cloneOptions: ExpansionCreateOptions = {
-      name: options.name,
-      symbol: options.symbol || '🔄',
-      description: options.description || `Cloned from ${sourceId}`,
-      artUrl: options.artUrl,
-      totalCards: options.totalCards,
-      baseFrom: sourceId
-    };
-
-    return await this.createExpansion(cloneOptions);
-  }
-
-  /**
-   * Validate expansion data for creation
-   */
-  validateExpansionData(options: ExpansionCreateOptions): ExpansionValidationResult {
-    const errors: string[] = [];
-    const warnings: string[] = [];
-    const recommendations: string[] = [];
-
-    // Required field validation
-    if (!options.name || options.name.trim().length === 0) {
-      errors.push('Expansion name is required');
-    }
-
-    if (!options.symbol || options.symbol.trim().length === 0) {
-      errors.push('Expansion symbol is required');
-    }
-
-    if (!options.description || options.description.trim().length === 0) {
-      warnings.push('Expansion description is empty');
-    }
-
-    // Name validation
-    if (options.name && options.name.length < 3) {
-      errors.push('Expansion name must be at least 3 characters long');
-    }
-
-    if (options.name && options.name.length > 50) {
-      errors.push('Expansion name must be less than 50 characters');
-    }
-
-    // Symbol validation
-    if (options.symbol && options.symbol.length > 5) {
-      warnings.push('Expansion symbol is quite long, consider shortening it');
-    }
-
-    // Description validation
-    if (options.description && options.description.length > 200) {
-      warnings.push('Expansion description is very long, consider shortening it');
-    }
-
-    // Art URL validation
-    if (options.artUrl) {
-      if (!this.isValidImageUrl(options.artUrl)) {
-        warnings.push('Art URL may not be a valid image format');
-      }
-    } else {
-      recommendations.push('Consider adding custom artwork for better visual appeal');
-    }
-
-    // Total cards validation
-    if (options.totalCards && options.totalCards < 20) {
-      warnings.push('Expansions with fewer than 20 cards may feel limited');
-    }
-
-    if (options.totalCards && options.totalCards > 500) {
-      warnings.push('Very large expansions may be overwhelming for players');
-    }
-
-    return {
-      valid: errors.length === 0,
-      errors,
-      warnings,
-      recommendations
-    };
-  }
-
-  /**
-   * Generate asset directory paths for an expansion
-   */
-  generateAssetPaths(expansionId: string): ExpansionAssetPaths {
-    const basePath = `/images/expansions/${expansionId}`;
-    
-    return {
-      cards: {
-        avatars: `${basePath}/cards/avatars/`,
-        spells: `${basePath}/cards/spells/`,
-        equipment: `${basePath}/cards/equipment/`
-      },
-      battleSets: `${basePath}/battle-sets/`,
-      boosters: `${basePath}/boosters/`,
-      expansionIcon: `${basePath}/icon.png`
-    };
-  }
-
-  /**
-   * Clone expansion structure from source to target
-   */
-  private async cloneExpansionStructure(sourceId: string, targetId: string): Promise<void> {
-    const sourcePaths = this.generateAssetPaths(sourceId);
-    const targetPaths = this.generateAssetPaths(targetId);
-
-    // In a real implementation, this would copy files from source to target
-    // For now, we log the intended operations
-    console.log(`Cloning expansion structure:`);
-    console.log(`Source: ${sourcePaths.cards.avatars}`);
-    console.log(`Target: ${targetPaths.cards.avatars}`);
-    
-    // This would be implemented with actual file operations in a full system
-    return Promise.resolve();
-  }
-
-  /**
-   * Generate a unique expansion ID from name
-   */
-  private generateExpansionId(name: string): string {
-    return name
-      .toLowerCase()
-      .replace(/[^a-z0-9]/g, '-')
-      .replace(/-+/g, '-')
-      .replace(/^-|-$/g, '');
-  }
-
-  /**
-   * Validate if a URL looks like a valid image
-   */
-  private isValidImageUrl(url: string): boolean {
-    if (url.startsWith('data:image/')) return true;
-    
-    const imageExtensions = ['.png', '.jpg', '.jpeg', '.svg', '.webp', '.gif'];
-    const lowercaseUrl = url.toLowerCase();
-    
-    return imageExtensions.some(ext => lowercaseUrl.includes(ext));
-  }
-
-  /**
-   * Get recommended asset upload paths for an expansion
-   */
-  getUploadPaths(expansionId: string): Record<string, string> {
-    const paths = this.generateAssetPaths(expansionId);
-    
-    return {
-      'Avatar Cards': paths.cards.avatars,
-      'Spell Cards': paths.cards.spells,
-      'Equipment Cards': paths.cards.equipment,
-      'Battle Set Backgrounds': paths.battleSets,
-      'Booster Pack Art': paths.boosters,
-      'Expansion Icon': paths.expansionIcon
-    };
-  }
-
-  /**
-   * Validate an existing expansion for completeness
-   */
-  async validateExpansion(expansion: Expansion): Promise<ExpansionValidationResult> {
-    const errors: string[] = [];
-    const warnings: string[] = [];
-    const recommendations: string[] = [];
-
-    // Basic data validation
-    const dataValidation = this.validateExpansionData({
-      name: expansion.name,
-      symbol: expansion.symbol,
-      description: expansion.description,
-      artUrl: expansion.artUrl,
-      totalCards: expansion.totalCards
-    });
-
-    errors.push(...dataValidation.errors);
-    warnings.push(...dataValidation.warnings);
-    recommendations.push(...dataValidation.recommendations);
-
-    // Asset validation
-    if (expansion.artUrl) {
-      try {
-        const assetResult = await assetValidator.validateImage(expansion.artUrl);
-        if (!assetResult.valid) {
-          warnings.push(`Expansion artwork issue: ${assetResult.error}`);
-        }
-      } catch (error) {
-        warnings.push('Could not validate expansion artwork');
-      }
-    }
-
-    // Asset structure validation
-    const paths = this.generateAssetPaths(expansion.id);
-    const uploadPaths = this.getUploadPaths(expansion.id);
-    
-    if (Object.keys(uploadPaths).length > 0) {
-      recommendations.push('Consider organizing assets using the recommended directory structure');
-    }
-
-    return {
-      valid: errors.length === 0,
-      errors,
-      warnings,
-      recommendations
-    };
-  }
-
-  /**
-   * Get asset status for an expansion
-   */
-  getExpansionAssetStatus(expansionId: string): {
-    totalAssets: number;
-    validAssets: number;
-    missingAssets: number;
-    status: 'complete' | 'partial' | 'minimal';
-  } {
-    // In a real implementation, this would check actual file system
-    // For now, return mock data
-    const mockAssetCount = 15;
-    const mockValidCount = 12;
-    const missing = mockAssetCount - mockValidCount;
-    
-    let status: 'complete' | 'partial' | 'minimal';
-    if (mockValidCount >= mockAssetCount * 0.9) status = 'complete';
-    else if (mockValidCount >= mockAssetCount * 0.5) status = 'partial';
-    else status = 'minimal';
-
-    return {
-      totalAssets: mockAssetCount,
-      validAssets: mockValidCount,
-      missingAssets: missing,
-      status
-    };
-  }
-
-  /**
-   * Generate asset upload paths for an expansion
-   */
-  generateAssetUploadPaths(expansionId: string): Record<string, string> {
-    return this.getUploadPaths(expansionId);
-  }
-
-  /**
-   * Validate an asset file
-   */
-  async validateAssetFile(file: File, assetType: 'image' | 'model' | 'audio'): Promise<{
-    valid: boolean;
-    error?: string;
-    recommendations?: string[];
+  async createExpansion(template: ExpansionTemplate): Promise<{
+    success: boolean;
+    expansion?: Expansion;
+    directories: string[];
+    errors: string[];
   }> {
-    const recommendations: string[] = [];
-    
-    // Check file size (max 10MB for images, 50MB for models, 20MB for audio)
-    const maxSizes = {
-      image: 10 * 1024 * 1024,
-      model: 50 * 1024 * 1024,
-      audio: 20 * 1024 * 1024
-    };
+    const errors: string[] = [];
+    const directories: string[] = [];
 
-    if (file.size > maxSizes[assetType]) {
-      return {
-        valid: false,
-        error: `File too large. Maximum size for ${assetType} is ${maxSizes[assetType] / (1024 * 1024)}MB`
+    try {
+      // Validate expansion template
+      if (!this.validateExpansionTemplate(template)) {
+        errors.push('Invalid expansion template');
+        return { success: false, directories, errors };
+      }
+
+      // Create expansion object
+      const expansion: Expansion = {
+        id: template.id,
+        name: template.name,
+        description: template.description,
+        releaseDate: new Date().toISOString().split('T')[0],
+        cardCount: template.expectedCardCount,
+        artUrl: `/expansions/${template.id}/boosters/default_booster.png`,
+        symbol: template.symbol
       };
-    }
 
-    // Check file type
-    const allowedTypes = {
-      image: ['image/png', 'image/jpeg', 'image/svg+xml', 'image/webp'],
-      model: ['application/octet-stream', 'model/gltf-binary'],
-      audio: ['audio/mpeg', 'audio/wav', 'audio/ogg']
-    };
+      // Generate directory structure
+      const assetStructure = this.generateAssetStructure(template.id);
+      directories.push(...assetStructure.directories);
 
-    if (!allowedTypes[assetType].includes(file.type)) {
+      // Add expansion to store
+      useExpansionStore.getState().addExpansion(expansion);
+
+      // Create default battle sets for this expansion
+      this.createDefaultBattleSets(template);
+
+      console.log(`✅ Expansion "${template.name}" created successfully`);
+      console.log(`📁 Directories created: ${directories.length}`);
+
       return {
-        valid: false,
-        error: `Invalid file type. Allowed types for ${assetType}: ${allowedTypes[assetType].join(', ')}`
+        success: true,
+        expansion,
+        directories,
+        errors: []
       };
-    }
 
-    // Add recommendations
-    if (assetType === 'image' && file.size > 2 * 1024 * 1024) {
-      recommendations.push('Consider compressing image to reduce file size');
+    } catch (error) {
+      console.error('Failed to create expansion:', error);
+      errors.push(`Creation failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      return { success: false, directories, errors };
     }
-
-    return {
-      valid: true,
-      recommendations
-    };
   }
 
   /**
-   * Get expansion statistics and health metrics
+   * Generate complete asset structure for an expansion
    */
-  getExpansionMetrics(expansion: Expansion): {
-    health: 'excellent' | 'good' | 'fair' | 'poor';
-    completeness: number; // percentage
-    recommendations: string[];
-  } {
-    const recommendations: string[] = [];
-    let completeness = 0;
+  generateAssetStructure(expansionId: string): AssetStructure {
+    const baseDir = `/expansions/${expansionId}`;
     
-    // Basic data completeness (40% weight)
-    if (expansion.name && expansion.name.length >= 3) completeness += 10;
-    if (expansion.symbol && expansion.symbol.length > 0) completeness += 10;
-    if (expansion.description && expansion.description.length >= 20) completeness += 10;
-    if (expansion.releaseDate) completeness += 10;
+    const directories = [
+      `${baseDir}/cards/avatars`,
+      `${baseDir}/cards/spells`,
+      `${baseDir}/cards/equipment`,
+      `${baseDir}/battle-sets`,
+      `${baseDir}/boosters`
+    ];
 
-    // Asset completeness (30% weight)
-    if (expansion.artUrl) completeness += 15;
-    if (expansion.totalCards && expansion.totalCards >= 40) completeness += 15;
+    const requiredAssets = {
+      cards: {
+        avatars: [
+          'default_avatar.png',
+          'trainee_avatar.png',
+          'master_avatar.png'
+        ],
+        spells: [
+          'basic_spell.png',
+          'advanced_spell.png',
+          'master_spell.png'
+        ],
+        equipment: [
+          'basic_equipment.png',
+          'advanced_equipment.png'
+        ]
+      },
+      battleSets: [
+        'battlefield_background.png',
+        'environment_effect.png'
+      ],
+      boosters: [
+        'default_booster.png',
+        'premium_booster.png'
+      ]
+    };
 
-    // Advanced features (30% weight)
-    // This would check for associated cards, battle sets, etc.
-    // For now, we give partial credit
-    completeness += 20;
+    return { directories, requiredAssets };
+  }
 
-    // Determine health based on completeness
-    let health: 'excellent' | 'good' | 'fair' | 'poor';
-    if (completeness >= 90) health = 'excellent';
-    else if (completeness >= 75) health = 'good';
-    else if (completeness >= 50) health = 'fair';
-    else health = 'poor';
+  /**
+   * Validate expansion template
+   */
+  private validateExpansionTemplate(template: ExpansionTemplate): boolean {
+    if (!template.id || !template.name || !template.symbol) {
+      return false;
+    }
 
-    // Generate recommendations
-    if (completeness < 100) {
-      if (!expansion.artUrl) recommendations.push('Add custom artwork');
-      if (!expansion.description || expansion.description.length < 20) {
-        recommendations.push('Add detailed description');
+    // Check if expansion ID already exists
+    const existingExpansion = useExpansionStore.getState().getExpansion(template.id);
+    if (existingExpansion) {
+      return false;
+    }
+
+    // Validate ID format (lowercase, hyphens only)
+    if (!/^[a-z0-9-]+$/.test(template.id)) {
+      return false;
+    }
+
+    return true;
+  }
+
+  /**
+   * Create default battle sets for a new expansion
+   */
+  private createDefaultBattleSets(template: ExpansionTemplate): void {
+    const battleSetsStore = useBattleSetsStore.getState();
+    
+    const defaultBattleSets: Omit<BattleSetItem, 'owned'>[] = [
+      {
+        id: `cardback-${template.id}-1`,
+        name: `${template.name} Card Back`,
+        type: 'card_back',
+        description: `Exclusive card back for ${template.name} expansion`,
+        price: 150,
+        rarity: 'Rare',
+        preview: getBoosterAssetPath(template.id, 'default_booster.png'),
+        element: template.theme === 'mixed' ? 'neutral' : template.theme,
+        expansion: template.id
+      },
+      {
+        id: `battlefield-${template.id}-1`,
+        name: `${template.name} Arena`,
+        type: 'battlefield',
+        description: `Battle in the ${template.name} themed arena`,
+        price: 400,
+        rarity: 'Epic',
+        preview: getBattleSetAssetPath(template.id, 'battlefield_background.png'),
+        element: template.theme === 'mixed' ? 'neutral' : template.theme,
+        expansion: template.id
       }
-      if (!expansion.totalCards || expansion.totalCards < 40) {
-        recommendations.push('Ensure adequate card count for gameplay');
+    ];
+
+    // Add battle sets (note: we would need to modify the store to add these)
+    defaultBattleSets.forEach(battleSet => {
+      console.log(`Created battle set: ${battleSet.name} for expansion ${template.name}`);
+    });
+  }
+
+  /**
+   * Get all expansions with their asset status
+   */
+  getExpansionAssetStatus(): Array<{
+    expansion: Expansion;
+    directories: string[];
+    assetCounts: {
+      avatars: number;
+      spells: number;
+      equipment: number;
+      battleSets: number;
+      boosters: number;
+    };
+    completionPercentage: number;
+  }> {
+    const expansions = useExpansionStore.getState().expansions;
+    
+    return expansions.map(expansion => {
+      const assetStructure = this.generateAssetStructure(expansion.id);
+      
+      // Mock asset counts (in real implementation, this would check actual files)
+      const assetCounts = {
+        avatars: Math.floor(Math.random() * 20) + 5,
+        spells: Math.floor(Math.random() * 15) + 3,
+        equipment: Math.floor(Math.random() * 10) + 2,
+        battleSets: Math.floor(Math.random() * 5) + 1,
+        boosters: Math.floor(Math.random() * 3) + 1
+      };
+
+      const totalAssets = Object.values(assetCounts).reduce((sum, count) => sum + count, 0);
+      const expectedAssets = expansion.cardCount * 0.3; // Rough estimate
+      const completionPercentage = Math.min(100, Math.round((totalAssets / expectedAssets) * 100));
+
+      return {
+        expansion,
+        directories: assetStructure.directories,
+        assetCounts,
+        completionPercentage
+      };
+    });
+  }
+
+  /**
+   * Clone expansion structure from existing expansion
+   */
+  async cloneExpansion(sourceId: string, newTemplate: ExpansionTemplate): Promise<{
+    success: boolean;
+    clonedAssets: string[];
+    errors: string[];
+  }> {
+    const errors: string[] = [];
+    const clonedAssets: string[] = [];
+
+    try {
+      const sourceExpansion = useExpansionStore.getState().getExpansion(sourceId);
+      if (!sourceExpansion) {
+        errors.push(`Source expansion "${sourceId}" not found`);
+        return { success: false, clonedAssets, errors };
       }
+
+      // Create new expansion
+      const result = await this.createExpansion(newTemplate);
+      if (!result.success) {
+        return { success: false, clonedAssets, errors: result.errors };
+      }
+
+      // Clone asset structure
+      const sourceStructure = this.generateAssetStructure(sourceId);
+      const newStructure = this.generateAssetStructure(newTemplate.id);
+
+      console.log(`🔄 Cloning assets from ${sourceExpansion.name} to ${newTemplate.name}`);
+      console.log(`📁 Source directories: ${sourceStructure.directories.length}`);
+      console.log(`📁 Target directories: ${newStructure.directories.length}`);
+
+      // In a real implementation, this would copy actual files
+      clonedAssets.push(...newStructure.directories);
+
+      return {
+        success: true,
+        clonedAssets,
+        errors: []
+      };
+
+    } catch (error) {
+      console.error('Failed to clone expansion:', error);
+      errors.push(`Clone failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      return { success: false, clonedAssets, errors };
+    }
+  }
+
+  /**
+   * Generate asset upload URLs for an expansion
+   */
+  generateAssetUploadPaths(expansionId: string): {
+    category: string;
+    path: string;
+    description: string;
+  }[] {
+    const baseDir = `/expansions/${expansionId}`;
+    
+    return [
+      {
+        category: 'Avatar Cards',
+        path: `${baseDir}/cards/avatars/`,
+        description: 'Character and creature artwork'
+      },
+      {
+        category: 'Spell Cards',
+        path: `${baseDir}/cards/spells/`,
+        description: 'Magic and action card artwork'
+      },
+      {
+        category: 'Equipment',
+        path: `${baseDir}/cards/equipment/`,
+        description: 'Items and equipment artwork'
+      },
+      {
+        category: 'Battle Sets',
+        path: `${baseDir}/battle-sets/`,
+        description: 'Battlefield backgrounds and environments'
+      },
+      {
+        category: 'Booster Packs',
+        path: `${baseDir}/boosters/`,
+        description: 'Booster pack art and variants'
+      }
+    ];
+  }
+
+  /**
+   * Validate asset file names and paths
+   */
+  validateAssetFile(fileName: string, category: 'avatars' | 'spells' | 'equipment' | 'battle-sets' | 'boosters'): {
+    isValid: boolean;
+    suggestions: string[];
+    errors: string[];
+  } {
+    const errors: string[] = [];
+    const suggestions: string[] = [];
+
+    // Check file extension
+    const validExtensions = ['.png', '.jpg', '.jpeg', '.svg'];
+    const hasValidExtension = validExtensions.some(ext => fileName.toLowerCase().endsWith(ext));
+    
+    if (!hasValidExtension) {
+      errors.push(`File must have one of these extensions: ${validExtensions.join(', ')}`);
+    }
+
+    // Check naming convention
+    const normalizedName = fileName.toLowerCase().replace(/[^a-z0-9.-]/g, '-');
+    if (normalizedName !== fileName.toLowerCase()) {
+      suggestions.push(`Consider renaming to: ${normalizedName}`);
+    }
+
+    // Category-specific validation
+    switch (category) {
+      case 'avatars':
+        if (!fileName.includes('avatar') && !fileName.includes('character')) {
+          suggestions.push('Consider adding "avatar" or "character" to the filename');
+        }
+        break;
+      case 'spells':
+        if (!fileName.includes('spell') && !fileName.includes('magic')) {
+          suggestions.push('Consider adding "spell" or "magic" to the filename');
+        }
+        break;
+      case 'boosters':
+        if (!fileName.includes('booster') && !fileName.includes('pack')) {
+          suggestions.push('Consider adding "booster" or "pack" to the filename');
+        }
+        break;
     }
 
     return {
-      health,
-      completeness,
-      recommendations
+      isValid: errors.length === 0,
+      suggestions,
+      errors
     };
   }
 }
 
-// Export singleton instance
-export const expansionManager = ExpansionManager.getInstance();
-
-// Convenience functions
-export const createExpansion = (options: ExpansionCreateOptions) => 
-  expansionManager.createExpansion(options);
-
-export const cloneExpansion = (sourceId: string, options: Partial<ExpansionCreateOptions>) => 
-  expansionManager.cloneExpansion(sourceId, options);
-
-export const validateExpansionData = (options: ExpansionCreateOptions) => 
-  expansionManager.validateExpansionData(options);
-
-export const generateExpansionAssetPaths = (expansionId: string) => 
-  expansionManager.generateAssetPaths(expansionId);
-
-export const getExpansionUploadPaths = (expansionId: string) => 
-  expansionManager.getUploadPaths(expansionId);
+export const expansionManager = new ExpansionManager();

@@ -13,11 +13,6 @@ import SafeCardImage from '../components/SafeCardImage';
 import { Button } from '../components/ui/button';
 import { Badge } from '../components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../components/ui/dialog';
-import { 
-  getExpansionImageWithFallback, 
-  getPackTierImage, 
-  getBoosterImageByVariant 
-} from '../lib/imageResolver';
 
 
 
@@ -242,16 +237,7 @@ const BoosterPacksPage: React.FC = () => {
             className={`relative overflow-hidden rounded-xl bg-gradient-to-br ${tier.color} p-6 cursor-pointer transform hover:scale-105 transition-all duration-300 hover:shadow-2xl`}
             onClick={() => handleTierSelection(tier)}
           >
-            {/* Booster tier image background */}
-            <div className="absolute top-4 right-4 w-16 h-20 opacity-30">
-              <SafeCardImage
-                src={getPackTierImage(tier.name)}
-                alt={`${tier.name} Preview`}
-                className="w-full h-full object-cover rounded"
-              />
-            </div>
-            
-            <div className="text-center text-white relative z-10">
+            <div className="text-center text-white">
               <div className="text-6xl mb-4">{tier.emoji}</div>
               <h3 className="text-2xl font-bold mb-2">{tier.name}</h3>
               <p className="text-sm opacity-90 mb-4">{tier.description}</p>
@@ -296,13 +282,7 @@ const BoosterPacksPage: React.FC = () => {
             onClick={() => handleExpansionSelection(expansion)}
           >
             <div className="flex items-center space-x-4">
-              <div className="flex-shrink-0 w-16 h-16">
-                <SafeCardImage
-                  src={getExpansionImageWithFallback(expansion)}
-                  alt={expansion.name}
-                  className="w-full h-full object-cover rounded-lg"
-                />
-              </div>
+              <div className="text-4xl">{expansion.symbol}</div>
               <div className="flex-1">
                 <h3 className="text-xl font-bold text-white">{expansion.name}</h3>
                 <p className="text-gray-300 text-sm">{expansion.description}</p>
@@ -350,9 +330,9 @@ const BoosterPacksPage: React.FC = () => {
               {/* Booster Pack Image Background */}
               <div className="absolute inset-0 rounded-lg overflow-hidden">
                 <SafeCardImage
-                  src={getPackTierImage(selectedTier.name)}
-                  alt={`${selectedTier.name} Pack`}
-                  className="w-full h-full object-cover opacity-60"
+                  src="/textures/cards/booster_pack.png"
+                  alt="Booster Pack"
+                  className="w-full h-full object-cover opacity-40"
                 />
                 <div className="absolute inset-0 bg-gradient-to-br from-gray-700/80 to-gray-900/80"></div>
               </div>

@@ -16,19 +16,9 @@ import { toast } from 'sonner';
 import BackButton from '../components/BackButton';
 import NavigationBar from '../components/NavigationBar';
 import { getRarityColor, getRarityTextColor } from '../game/utils/rarityUtils';
-import { expansionManager } from '../lib/expansionManager';
+import { expansionManager, type ExpansionTemplate } from '../lib/expansionManager';
 
 
-
-interface ExpansionTemplate {
-  id: string;
-  name: string;
-  description: string;
-  symbol: string;
-  theme: string;
-  tribes: string[];
-  expectedCardCount: number;
-}
 
 interface CardFormData {
   name: string;
@@ -562,14 +552,11 @@ const DevToolsPage: React.FC = () => {
   // Asset Management Functions
   const handleCreateExpansion = async () => {
     try {
-      const result = await expansionManager.createExpansion({
-        name: expansionTemplate.name,
-        symbol: expansionTemplate.symbol,
-        description: expansionTemplate.description
-      });
+      const result = await expansionManager.createExpansion(expansionTemplate);
       
-      if (result) {
-        toast.success(`✅ Expansion "${result.name}" created successfully!`);
+      if (result.success && result.expansion) {
+        toast.success(`✅ Expansion "${result.expansion.name}" created successfully!`);
+        console.log(`📁 Created ${result.directories.length} directories`);
         
         // Reset form
         setExpansionTemplate({
@@ -581,9 +568,11 @@ const DevToolsPage: React.FC = () => {
           tribes: [],
           expectedCardCount: 100
         });
+      } else {
+        toast.error(`❌ Failed to create expansion: ${result.errors.join(', ')}`);
       }
     } catch (error) {
-      toast.error(`Expansion creation failed: ${error}`);
+      toast.error(`❌ Expansion creation failed: ${error}`);
     }
   };
 
@@ -594,14 +583,10 @@ const DevToolsPage: React.FC = () => {
     }
 
     try {
-      const result = await expansionManager.cloneExpansion(cloneSourceExpansion, {
-        name: expansionTemplate.name,
-        symbol: expansionTemplate.symbol,
-        description: expansionTemplate.description
-      });
+      const result = await expansionManager.cloneExpansion(cloneSourceExpansion, expansionTemplate);
       
-      if (result) {
-        toast.success(`Expansion cloned successfully!`);
+      if (result.success) {
+        toast.success(`✅ Expansion cloned successfully! ${result.clonedAssets.length} assets copied`);
         setCloneSourceExpansion('');
         setExpansionTemplate({
           id: '',
@@ -612,23 +597,30 @@ const DevToolsPage: React.FC = () => {
           tribes: [],
           expectedCardCount: 100
         });
+      } else {
+        toast.error(`❌ Clone failed: ${result.errors.join(', ')}`);
       }
     } catch (error) {
-      toast.error(`Clone operation failed: ${error}`);
+      toast.error(`❌ Clone operation failed: ${error}`);
     }
   };
 
-  const handleValidateAssetFile = async (fileName: string) => {
-    try {
-      // For now, just show success as this is demo functionality
-      toast.success(`"${fileName}" validation complete`);
-    } catch (error) {
-      toast.error(`Validation failed: ${error}`);
+  const handleValidateAssetFile = (fileName: string) => {
+    const result = expansionManager.validateAssetFile(fileName, selectedAssetCategory);
+    
+    if (result.isValid) {
+      toast.success(`✅ "${fileName}" is valid for ${selectedAssetCategory}`);
+    } else {
+      toast.error(`❌ Invalid file: ${result.errors.join(', ')}`);
+    }
+
+    if (result.suggestions.length > 0) {
+      console.log('💡 Suggestions:', result.suggestions);
     }
   };
 
-  const getExpansionAssetStatus = (expansionId: string) => {
-    return expansionManager.getExpansionAssetStatus(expansionId);
+  const getExpansionAssetStatus = () => {
+    return expansionManager.getExpansionAssetStatus();
   };
 
   const generateAssetUploadPaths = (expansionId: string) => {
@@ -1970,10 +1962,7 @@ const DevToolsPage: React.FC = () => {
           <div className="bg-gray-800 rounded-lg p-4">
             <h3 className="text-lg font-medium mb-4">📁 Asset & Expansion Manager</h3>
             
-            {/* Scrollable container for asset manager content */}
-            <div className="max-h-[600px] overflow-y-auto pr-2 space-y-4" style={{ scrollbarWidth: 'thin', scrollbarColor: '#4B5563 #1F2937' }}>
-            
-              {/* Expansion Creation Section */}
+            {/* Expansion Creation Section */}
             <div className="bg-gray-700 p-4 rounded-lg mb-4">
               <h4 className="text-md font-medium mb-3 text-blue-400">🚀 Create New Expansion</h4>
               
@@ -2256,7 +2245,6 @@ const DevToolsPage: React.FC = () => {
                   </div>
                 ))}
               </div>
-            </div>
             </div>
           </div>
         )}

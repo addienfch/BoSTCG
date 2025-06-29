@@ -1,315 +1,132 @@
 /**
- * Asset Validation System
- * Comprehensive validation for all game assets including images, models, and audio
+ * Asset validation utilities to prevent broken images and 3D models
  */
 
-export interface AssetValidationResult {
-  valid: boolean;
-  error?: string;
-  fallback?: string;
-  assetType: 'image' | 'model' | 'audio' | 'data';
-}
-
-export interface AssetValidationOptions {
-  allowFallback?: boolean;
-  maxFileSize?: number; // bytes
-  allowedExtensions?: string[];
-  requireSecure?: boolean;
-}
+// Cache for validated assets to avoid repeated checks
+const assetCache = new Map<string, boolean>();
 
 /**
- * Comprehensive asset validator with security checks
+ * Validates if an asset exists before using it
  */
-export class AssetValidator {
-  private static instance: AssetValidator;
-  private validatedAssets = new Map<string, AssetValidationResult>();
-
-  static getInstance(): AssetValidator {
-    if (!AssetValidator.instance) {
-      AssetValidator.instance = new AssetValidator();
-    }
-    return AssetValidator.instance;
+export const validateAssetPath = async (path: string): Promise<boolean> => {
+  // Check cache first
+  if (assetCache.has(path)) {
+    return assetCache.get(path)!;
   }
 
-  /**
-   * Validate image asset with security checks
-   */
-  async validateImage(src: string, options: AssetValidationOptions = {}): Promise<AssetValidationResult> {
-    const cacheKey = `image:${src}`;
-    
-    if (this.validatedAssets.has(cacheKey)) {
-      return this.validatedAssets.get(cacheKey)!;
-    }
-
-    const result = await this.performImageValidation(src, options);
-    this.validatedAssets.set(cacheKey, result);
-    return result;
-  }
-
-  private async performImageValidation(src: string, options: AssetValidationOptions): Promise<AssetValidationResult> {
-    try {
-      // Security check: Prevent path traversal
-      if (src.includes('..') || src.includes('\\')) {
-        return {
-          valid: false,
-          error: 'Invalid path: Path traversal detected',
-          assetType: 'image'
-        };
-      }
-
-      // Check for allowed extensions
-      const allowedExtensions = options.allowedExtensions || ['.png', '.jpg', '.jpeg', '.svg', '.webp'];
-      const extension = src.toLowerCase().substring(src.lastIndexOf('.'));
-      
-      if (!allowedExtensions.includes(extension)) {
-        return {
-          valid: false,
-          error: `Invalid file type: ${extension} not allowed`,
-          assetType: 'image'
-        };
-      }
-
-      // For data URIs (base64 images)
-      if (src.startsWith('data:image/')) {
-        return {
-          valid: true,
-          assetType: 'image'
-        };
-      }
-
-      // For external URLs in production
-      if (src.startsWith('http')) {
-        if (options.requireSecure && !src.startsWith('https://')) {
-          return {
-            valid: false,
-            error: 'Insecure URL: HTTPS required',
-            assetType: 'image'
-          };
-        }
-        return {
-          valid: true,
-          assetType: 'image'
-        };
-      }
-
-      // For local assets
-      if (src.startsWith('/') || src.startsWith('./')) {
-        return {
-          valid: true,
-          assetType: 'image'
-        };
-      }
-
-      return {
-        valid: false,
-        error: 'Invalid image source format',
-        assetType: 'image'
-      };
-
-    } catch (error) {
-      return {
-        valid: false,
-        error: `Validation failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
-        assetType: 'image'
-      };
-    }
-  }
-
-  /**
-   * Validate 3D model asset
-   */
-  async validateModel(src: string, options: AssetValidationOptions = {}): Promise<AssetValidationResult> {
-    const cacheKey = `model:${src}`;
-    
-    if (this.validatedAssets.has(cacheKey)) {
-      return this.validatedAssets.get(cacheKey)!;
-    }
-
-    const result = await this.performModelValidation(src, options);
-    this.validatedAssets.set(cacheKey, result);
-    return result;
-  }
-
-  private async performModelValidation(src: string, options: AssetValidationOptions): Promise<AssetValidationResult> {
-    try {
-      // Security check: Prevent path traversal
-      if (src.includes('..') || src.includes('\\')) {
-        return {
-          valid: false,
-          error: 'Invalid path: Path traversal detected',
-          assetType: 'model'
-        };
-      }
-
-      // Check for allowed 3D model extensions
-      const allowedExtensions = options.allowedExtensions || ['.glb', '.gltf', '.fbx', '.obj'];
-      const extension = src.toLowerCase().substring(src.lastIndexOf('.'));
-      
-      if (!allowedExtensions.includes(extension)) {
-        return {
-          valid: false,
-          error: `Invalid model type: ${extension} not supported`,
-          assetType: 'model'
-        };
-      }
-
-      return {
-        valid: true,
-        assetType: 'model'
-      };
-
-    } catch (error) {
-      return {
-        valid: false,
-        error: `Model validation failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
-        assetType: 'model'
-      };
-    }
-  }
-
-  /**
-   * Validate audio asset
-   */
-  async validateAudio(src: string, options: AssetValidationOptions = {}): Promise<AssetValidationResult> {
-    const cacheKey = `audio:${src}`;
-    
-    if (this.validatedAssets.has(cacheKey)) {
-      return this.validatedAssets.get(cacheKey)!;
-    }
-
-    const result = await this.performAudioValidation(src, options);
-    this.validatedAssets.set(cacheKey, result);
-    return result;
-  }
-
-  private async performAudioValidation(src: string, options: AssetValidationOptions): Promise<AssetValidationResult> {
-    try {
-      // Security check: Prevent path traversal
-      if (src.includes('..') || src.includes('\\')) {
-        return {
-          valid: false,
-          error: 'Invalid path: Path traversal detected',
-          assetType: 'audio'
-        };
-      }
-
-      // Check for allowed audio extensions
-      const allowedExtensions = options.allowedExtensions || ['.mp3', '.wav', '.ogg', '.m4a'];
-      const extension = src.toLowerCase().substring(src.lastIndexOf('.'));
-      
-      if (!allowedExtensions.includes(extension)) {
-        return {
-          valid: false,
-          error: `Invalid audio type: ${extension} not supported`,
-          assetType: 'audio'
-        };
-      }
-
-      return {
-        valid: true,
-        assetType: 'audio'
-      };
-
-    } catch (error) {
-      return {
-        valid: false,
-        error: `Audio validation failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
-        assetType: 'audio'
-      };
-    }
-  }
-
-  /**
-   * Clear validation cache
-   */
-  clearCache(): void {
-    this.validatedAssets.clear();
-  }
-
-  /**
-   * Get validation statistics
-   */
-  getValidationStats(): { total: number; valid: number; invalid: number } {
-    const total = this.validatedAssets.size;
-    let valid = 0;
-    let invalid = 0;
-
-    this.validatedAssets.forEach((result) => {
-      if (result.valid) {
-        valid++;
-      } else {
-        invalid++;
-      }
+  try {
+    const response = await fetch(path, { 
+      method: 'HEAD',
+      cache: 'force-cache' // Use browser cache
     });
-
-    return { total, valid, invalid };
+    
+    const isValid = response.ok;
+    assetCache.set(path, isValid);
+    return isValid;
+  } catch (error) {
+    console.warn(`Asset validation failed for ${path}:`, error);
+    assetCache.set(path, false);
+    return false;
   }
-}
-
-// Export singleton instance
-export const assetValidator = AssetValidator.getInstance();
-
-/**
- * Quick validation helpers
- */
-export const validateImageAsset = (src: string, options?: AssetValidationOptions) => 
-  assetValidator.validateImage(src, options);
-
-export const validateModelAsset = (src: string, options?: AssetValidationOptions) => 
-  assetValidator.validateModel(src, options);
-
-export const validateAudioAsset = (src: string, options?: AssetValidationOptions) => 
-  assetValidator.validateAudio(src, options);
-
-/**
- * Legacy function name for card image validation
- * Maintains backward compatibility
- */
-export const validateCardImage = async (src: string): Promise<string> => {
-  const result = await assetValidator.validateImage(src);
-  
-  if (result.valid) {
-    return src;
-  }
-  
-  // Return fallback SVG for invalid images
-  return `data:image/svg+xml,${encodeURIComponent(`
-    <svg width="100" height="140" xmlns="http://www.w3.org/2000/svg">
-      <rect width="100" height="140" fill="#374151" stroke="#6B7280" stroke-width="2" rx="8"/>
-      <text x="50" y="70" font-family="Arial" font-size="12" fill="#9CA3AF" text-anchor="middle">
-        Card
-      </text>
-      <text x="50" y="85" font-family="Arial" font-size="10" fill="#6B7280" text-anchor="middle">
-        Image
-      </text>
-    </svg>
-  `)}`;
 };
 
 /**
- * Batch validation for multiple assets
+ * Validates card image with fallback
  */
-export const validateAssetBatch = async (
-  assets: Array<{ src: string; type: 'image' | 'model' | 'audio'; options?: AssetValidationOptions }>
-): Promise<AssetValidationResult[]> => {
-  const results = await Promise.all(
-    assets.map(asset => {
-      switch (asset.type) {
-        case 'image':
-          return assetValidator.validateImage(asset.src, asset.options);
-        case 'model':
-          return assetValidator.validateModel(asset.src, asset.options);
-        case 'audio':
-          return assetValidator.validateAudio(asset.src, asset.options);
-        default:
-          return Promise.resolve({
-            valid: false,
-            error: `Unknown asset type: ${asset.type}`,
-            assetType: asset.type as any
-          });
-      }
-    })
-  );
+export const validateCardImage = async (imagePath: string): Promise<string> => {
+  const fullPath = imagePath.startsWith('/') ? imagePath : `/${imagePath}`;
+  
+  const isValid = await validateAssetPath(fullPath);
+  if (isValid) {
+    return fullPath;
+  }
 
+  // Fallback to default card image
+  const fallbackPath = '/textures/cards/default_avatar.svg';
+  const fallbackValid = await validateAssetPath(fallbackPath);
+  
+  if (fallbackValid) {
+    console.warn(`Using fallback image for ${imagePath}`);
+    return fallbackPath;
+  }
+
+  // Ultimate fallback - generate SVG placeholder
+  console.warn(`No valid image found for ${imagePath}, using SVG placeholder`);
+  return generateCardPlaceholder();
+};
+
+/**
+ * Validates texture path for 3D models
+ */
+export const validateTexture = async (texturePath: string): Promise<string | null> => {
+  const fullPath = texturePath.startsWith('/textures/') ? texturePath : `/textures/${texturePath}`;
+  
+  const isValid = await validateAssetPath(fullPath);
+  if (isValid) {
+    return fullPath;
+  }
+
+  console.warn(`Texture not found: ${texturePath}`);
+  return null; // Return null for missing textures - Three.js can handle this
+};
+
+/**
+ * Generates a placeholder SVG for missing card images
+ */
+const generateCardPlaceholder = (): string => {
+  const svg = `data:image/svg+xml;base64,${btoa(`
+    <svg width="200" height="280" xmlns="http://www.w3.org/2000/svg">
+      <rect width="200" height="280" fill="#1a1a1a" stroke="#444" stroke-width="2" rx="12"/>
+      <text x="100" y="140" text-anchor="middle" fill="#666" font-family="Arial" font-size="14">
+        Card Image
+      </text>
+      <text x="100" y="160" text-anchor="middle" fill="#666" font-family="Arial" font-size="14">
+        Not Found
+      </text>
+    </svg>
+  `)}`;
+  
+  return svg;
+};
+
+/**
+ * Preloads and validates critical assets
+ */
+export const preloadCriticalAssets = async (): Promise<void> => {
+  const criticalAssets = [
+    '/textures/cards/default_avatar.svg',
+    '/textures/cards/placeholder.svg',
+    '/textures/asphalt.png'
+  ];
+
+  const validationPromises = criticalAssets.map(async (asset) => {
+    const isValid = await validateAssetPath(asset);
+    if (!isValid) {
+      console.warn(`Critical asset missing: ${asset}`);
+    }
+    return { asset, isValid };
+  });
+
+  const results = await Promise.all(validationPromises);
+  const missingAssets = results.filter(r => !r.isValid);
+  
+  if (missingAssets.length > 0) {
+    console.warn('Missing critical assets:', missingAssets.map(r => r.asset));
+  }
+};
+
+/**
+ * Batch validates multiple assets
+ */
+export const validateAssetBatch = async (paths: string[]): Promise<Record<string, boolean>> => {
+  const results: Record<string, boolean> = {};
+  
+  const validationPromises = paths.map(async (path) => {
+    const isValid = await validateAssetPath(path);
+    results[path] = isValid;
+    return { path, isValid };
+  });
+
+  await Promise.all(validationPromises);
   return results;
 };
