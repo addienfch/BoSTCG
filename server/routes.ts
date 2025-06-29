@@ -2,6 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { generalRateLimit, strictRateLimit, authRateLimit } from "./middleware/rateLimiter";
+import { sessionManager } from "./middleware/sessionSecurity";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Security middleware - apply rate limiting to all routes
@@ -62,11 +63,48 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // API endpoint examples with validation
   app.get('/api/health', (req, res) => {
     const rateLimitStats = generalRateLimit.getStats();
+    const sessionStats = sessionManager.getStats();
     res.json({ 
       status: 'healthy', 
       timestamp: new Date().toISOString(),
-      rateLimitStats
+      rateLimitStats,
+      sessionStats,
+      security: {
+        cspEnabled: true,
+        sessionManagement: true,
+        inputValidation: true,
+        rateLimiting: true
+      }
     });
+  });
+
+  // Session management endpoints
+  app.post('/api/session/wallet', (req, res) => {
+    const { walletAddress } = req.body;
+    if (!walletAddress || typeof walletAddress !== 'string') {
+      return res.status(400).json({ error: 'Invalid wallet address' });
+    }
+
+    const sessionId = req.sessionId;
+    if (!sessionId) {
+      return res.status(401).json({ error: 'No session found' });
+    }
+
+    const success = sessionManager.associateWallet(sessionId, walletAddress);
+    if (success) {
+      res.json({ success: true, message: 'Wallet associated with session' });
+    } else {
+      res.status(500).json({ error: 'Failed to associate wallet' });
+    }
+  });
+
+  app.delete('/api/session', (req, res) => {
+    const sessionId = req.sessionId;
+    if (sessionId) {
+      sessionManager.destroySession(sessionId);
+      res.clearCookie('sessionId');
+    }
+    res.json({ success: true, message: 'Session destroyed' });
   });
 
   app.post('/api/validate-input', (req, res) => {
