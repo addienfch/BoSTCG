@@ -61,7 +61,7 @@ export const IMAGE_PATHS: ImagePaths = {
 /**
  * Get booster pack image by tier
  */
-export const getBoosterImage = (tier: string): string => {
+const getBoosterImage = (tier: string): string => {
   const normalizedTier = tier.toLowerCase().replace(/[^a-z]/g, '');
   return IMAGE_PATHS.boosters[normalizedTier] || IMAGE_PATHS.fallbacks.booster;
 };
@@ -69,7 +69,7 @@ export const getBoosterImage = (tier: string): string => {
 /**
  * Get expansion icon image by expansion ID
  */
-export const getExpansionImage = (expansionId: string): string => {
+const getExpansionImage = (expansionId: string): string => {
   const normalizedId = expansionId.toLowerCase();
   return IMAGE_PATHS.expansions[normalizedId] || IMAGE_PATHS.fallbacks.expansion;
 };
@@ -77,7 +77,7 @@ export const getExpansionImage = (expansionId: string): string => {
 /**
  * Get premade deck image by deck ID or name
  */
-export const getPremadeDeckImage = (deckId: string): string => {
+const getPremadeDeckImage = (deckId: string): string => {
   const normalizedId = deckId.toLowerCase().replace(/[^a-z-]/g, '');
   return IMAGE_PATHS.premadeDecks[normalizedId] || IMAGE_PATHS.fallbacks.deck;
 };
@@ -85,7 +85,7 @@ export const getPremadeDeckImage = (deckId: string): string => {
 /**
  * Enhanced booster image resolver with variant support
  */
-export const getBoosterImageByVariant = (variantName: string): string => {
+const getBoosterImageByVariant = (variantName: string): string => {
   const name = variantName.toLowerCase();
   
   if (name.includes('beginner') || name.includes('starter')) {
@@ -106,7 +106,7 @@ export const getBoosterImageByVariant = (variantName: string): string => {
 /**
  * Get image by pack tier name (for BoosterPacksPage compatibility)
  */
-export const getPackTierImage = (tierName: string): string => {
+const getPackTierImage = (tierName: string): string => {
   const tier = tierName.toLowerCase();
   
   switch (tier) {
@@ -127,7 +127,7 @@ export const getPackTierImage = (tierName: string): string => {
 /**
  * Enhanced expansion image resolver with fallback logic
  */
-export const getExpansionImageWithFallback = (expansion: { id: string; symbol?: string; name?: string }): string => {
+const getExpansionImageWithFallback = (expansion: { id: string; symbol?: string; name?: string }): string => {
   // Try by ID first
   let image = getExpansionImage(expansion.id);
   
@@ -302,7 +302,7 @@ export class ImagePathResolver {
 
 export const imagePathResolver = new ImagePathResolver();
 
-// Export utility functions for direct use
+// Export all utility functions
 export {
   getBoosterImage,
   getExpansionImage,
