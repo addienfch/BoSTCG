@@ -294,6 +294,90 @@ export class ExpansionManager {
   }
 
   /**
+   * Get asset status for an expansion
+   */
+  getExpansionAssetStatus(expansionId: string): {
+    totalAssets: number;
+    validAssets: number;
+    missingAssets: number;
+    status: 'complete' | 'partial' | 'minimal';
+  } {
+    // In a real implementation, this would check actual file system
+    // For now, return mock data
+    const mockAssetCount = 15;
+    const mockValidCount = 12;
+    const missing = mockAssetCount - mockValidCount;
+    
+    let status: 'complete' | 'partial' | 'minimal';
+    if (mockValidCount >= mockAssetCount * 0.9) status = 'complete';
+    else if (mockValidCount >= mockAssetCount * 0.5) status = 'partial';
+    else status = 'minimal';
+
+    return {
+      totalAssets: mockAssetCount,
+      validAssets: mockValidCount,
+      missingAssets: missing,
+      status
+    };
+  }
+
+  /**
+   * Generate asset upload paths for an expansion
+   */
+  generateAssetUploadPaths(expansionId: string): Record<string, string> {
+    return this.getUploadPaths(expansionId);
+  }
+
+  /**
+   * Validate an asset file
+   */
+  async validateAssetFile(file: File, assetType: 'image' | 'model' | 'audio'): Promise<{
+    valid: boolean;
+    error?: string;
+    recommendations?: string[];
+  }> {
+    const recommendations: string[] = [];
+    
+    // Check file size (max 10MB for images, 50MB for models, 20MB for audio)
+    const maxSizes = {
+      image: 10 * 1024 * 1024,
+      model: 50 * 1024 * 1024,
+      audio: 20 * 1024 * 1024
+    };
+
+    if (file.size > maxSizes[assetType]) {
+      return {
+        valid: false,
+        error: `File too large. Maximum size for ${assetType} is ${maxSizes[assetType] / (1024 * 1024)}MB`
+      };
+    }
+
+    // Check file type
+    const allowedTypes = {
+      image: ['image/png', 'image/jpeg', 'image/svg+xml', 'image/webp'],
+      model: ['application/octet-stream', 'model/gltf-binary'],
+      audio: ['audio/mpeg', 'audio/wav', 'audio/ogg']
+    };
+
+    if (!allowedTypes[assetType].includes(file.type)) {
+      return {
+        valid: false,
+        error: `Invalid file type. Allowed types for ${assetType}: ${allowedTypes[assetType].join(', ')}`
+      };
+    }
+
+    // Add recommendations
+    if (assetType === 'image' && file.size > 2 * 1024 * 1024) {
+      recommendations.push('Consider compressing image to reduce file size');
+    }
+
+    return {
+      valid: true,
+      recommendations
+    };
+  }
+
+  /**
    * Get expansion statistics and health metrics
    */
   getExpansionMetrics(expansion: Expansion): {
