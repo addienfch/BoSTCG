@@ -242,7 +242,16 @@ const BoosterPacksPage: React.FC = () => {
             className={`relative overflow-hidden rounded-xl bg-gradient-to-br ${tier.color} p-6 cursor-pointer transform hover:scale-105 transition-all duration-300 hover:shadow-2xl`}
             onClick={() => handleTierSelection(tier)}
           >
-            <div className="text-center text-white">
+            {/* Booster tier image background */}
+            <div className="absolute top-4 right-4 w-16 h-20 opacity-30">
+              <SafeCardImage
+                src={getPackTierImage(tier.name)}
+                alt={`${tier.name} Preview`}
+                className="w-full h-full object-cover rounded"
+              />
+            </div>
+            
+            <div className="text-center text-white relative z-10">
               <div className="text-6xl mb-4">{tier.emoji}</div>
               <h3 className="text-2xl font-bold mb-2">{tier.name}</h3>
               <p className="text-sm opacity-90 mb-4">{tier.description}</p>

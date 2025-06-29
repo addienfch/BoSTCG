@@ -8,8 +8,10 @@ import { toast } from 'sonner';
 import BackButton from '../components/BackButton';
 import NavigationBar from '../components/NavigationBar';
 import CardRewardPopup from '../components/CardRewardPopup';
+import SafeCardImage from '../components/SafeCardImage';
 import { Button } from '../components/ui/button';
 import { Badge } from '../components/ui/badge';
+import { getPremadeDeckImageWithTribal, getExpansionImageWithFallback } from '../lib/imageResolver';
 import { 
   kobarBorahAvatarCards, 
   kobarBorahActionCards, 
@@ -269,7 +271,13 @@ const PremadeDecksPage: React.FC = () => {
             onClick={() => handleExpansionSelection(expansion)}
           >
             <div className="flex items-center space-x-4">
-              <div className="text-4xl">{expansion.symbol}</div>
+              <div className="flex-shrink-0 w-16 h-16">
+                <SafeCardImage
+                  src={getExpansionImageWithFallback(expansion)}
+                  alt={expansion.name}
+                  className="w-full h-full object-cover rounded-lg"
+                />
+              </div>
               <div className="flex-1">
                 <h3 className="text-xl font-bold text-white">{expansion.name}</h3>
                 <p className="text-gray-300 text-sm">{expansion.description}</p>
@@ -310,7 +318,21 @@ const PremadeDecksPage: React.FC = () => {
               key={deck.id}
               className={`relative overflow-hidden rounded-xl bg-gradient-to-br ${getTribeColor(deck.tribe)} p-6 border-2 border-gray-600 hover:border-spektrum-orange transition-all duration-300`}
             >
-              <div className="text-white">
+              {/* Deck image in top right corner */}
+              <div className="absolute top-4 right-4 w-20 h-28 opacity-40">
+                <SafeCardImage
+                  src={getPremadeDeckImageWithTribal({ 
+                    id: deck.id,
+                    name: deck.name, 
+                    tribal: deck.tribe, 
+                    element: deck.tribe.includes('kobar') ? 'fire' : 'water' 
+                  })}
+                  alt={deck.name}
+                  className="w-full h-full object-cover rounded"
+                />
+              </div>
+              
+              <div className="text-white relative z-10">
                 <div className="flex justify-between items-start mb-4">
                   <h3 className="text-xl font-bold">{deck.name}</h3>
                   <Badge className={`${getDifficultyColor(deck.difficulty)} text-white`}>
