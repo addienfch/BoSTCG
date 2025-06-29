@@ -149,7 +149,7 @@ const getExpansionImageWithFallback = (expansion: { id: string; symbol?: string;
 /**
  * Enhanced premade deck image resolver with tribal support
  */
-export const getPremadeDeckImageWithTribal = (deck: { 
+const getPremadeDeckImageWithTribal = (deck: { 
   id?: string; 
   name?: string; 
   tribal?: string; 

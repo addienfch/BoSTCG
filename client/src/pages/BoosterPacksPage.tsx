@@ -17,7 +17,7 @@ import {
   getExpansionImageWithFallback, 
   getPackTierImage, 
   getBoosterImageByVariant 
-} from '../lib/imagePathResolver';
+} from '../lib/imageResolver';
 
 
 
@@ -287,7 +287,13 @@ const BoosterPacksPage: React.FC = () => {
             onClick={() => handleExpansionSelection(expansion)}
           >
             <div className="flex items-center space-x-4">
-              <div className="text-4xl">{expansion.symbol}</div>
+              <div className="flex-shrink-0 w-16 h-16">
+                <SafeCardImage
+                  src={getExpansionImageWithFallback(expansion)}
+                  alt={expansion.name}
+                  className="w-full h-full object-cover rounded-lg"
+                />
+              </div>
               <div className="flex-1">
                 <h3 className="text-xl font-bold text-white">{expansion.name}</h3>
                 <p className="text-gray-300 text-sm">{expansion.description}</p>
@@ -335,9 +341,9 @@ const BoosterPacksPage: React.FC = () => {
               {/* Booster Pack Image Background */}
               <div className="absolute inset-0 rounded-lg overflow-hidden">
                 <SafeCardImage
-                  src="/textures/cards/booster_pack.png"
-                  alt="Booster Pack"
-                  className="w-full h-full object-cover opacity-40"
+                  src={getPackTierImage(selectedTier.name)}
+                  alt={`${selectedTier.name} Pack`}
+                  className="w-full h-full object-cover opacity-60"
                 />
                 <div className="absolute inset-0 bg-gradient-to-br from-gray-700/80 to-gray-900/80"></div>
               </div>
