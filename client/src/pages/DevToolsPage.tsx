@@ -1962,7 +1962,10 @@ const DevToolsPage: React.FC = () => {
           <div className="bg-gray-800 rounded-lg p-4">
             <h3 className="text-lg font-medium mb-4">📁 Asset & Expansion Manager</h3>
             
-            {/* Expansion Creation Section */}
+            {/* Scrollable container for asset manager content */}
+            <div className="max-h-[600px] overflow-y-auto pr-2 space-y-4" style={{ scrollbarWidth: 'thin', scrollbarColor: '#4B5563 #1F2937' }}>
+            
+              {/* Expansion Creation Section */}
             <div className="bg-gray-700 p-4 rounded-lg mb-4">
               <h4 className="text-md font-medium mb-3 text-blue-400">🚀 Create New Expansion</h4>
               
@@ -2245,6 +2248,7 @@ const DevToolsPage: React.FC = () => {
                   </div>
                 ))}
               </div>
+            </div>
             </div>
           </div>
         )}
