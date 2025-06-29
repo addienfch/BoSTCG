@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import { getBattleSetAssetPath, getBoosterAssetPath } from '../../lib/assetPathMapper';
 
 export interface BattleSetItem {
   id: string;
