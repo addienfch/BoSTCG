@@ -1,284 +1,309 @@
 /**
- * Comprehensive input validation for dev tools and user inputs
+ * Enhanced Input Validation and Sanitization System
+ * Provides comprehensive validation for all user inputs
  */
-
-import { ElementType, RarityType } from '../game/data/cardTypes';
 
 export interface ValidationResult {
   isValid: boolean;
+  sanitizedValue: string;
   errors: string[];
   warnings: string[];
 }
 
-/**
- * Validates card creation form data
- */
-export const validateCardData = (data: any): ValidationResult => {
-  const errors: string[] = [];
-  const warnings: string[] = [];
+export interface ValidationOptions {
+  maxLength?: number;
+  minLength?: number;
+  allowHtml?: boolean;
+  allowSpecialChars?: boolean;
+  required?: boolean;
+  pattern?: RegExp;
+  customValidator?: (value: string) => boolean;
+}
 
-  // Required field validations
-  if (!data.name || typeof data.name !== 'string') {
-    errors.push('Card name is required');
-  } else if (data.name.length < 2) {
-    errors.push('Card name must be at least 2 characters');
-  } else if (data.name.length > 50) {
-    errors.push('Card name cannot exceed 50 characters');
-  }
+class InputValidator {
+  private xssPatterns = [
+    /<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi,
+    /javascript:/gi,
+    /on\w+\s*=/gi,
+    /<iframe[^>]*>/gi,
+    /<embed[^>]*>/gi,
+    /<object[^>]*>/gi,
+    /vbscript:/gi,
+    /data:text\/html/gi,
+    /<link[^>]*rel=['"]?stylesheet['"]?[^>]*>/gi
+  ];
 
-  if (!data.type) {
-    errors.push('Card type is required');
-  } else if (!['avatar', 'spell', 'quickSpell', 'ritualArmor', 'field', 'equipment', 'item'].includes(data.type)) {
-    errors.push('Invalid card type');
-  }
+  private dangerousPatterns = [
+    /\.\.\//g,  // Path traversal
+    /\0/g,      // Null bytes
+    /[\x00-\x08\x0E-\x1F\x7F]/g, // Control characters
+  ];
 
-  if (!data.element) {
-    errors.push('Element is required');
-  } else if (!['fire', 'water', 'ground', 'air', 'neutral'].includes(data.element)) {
-    errors.push('Invalid element type');
-  }
+  /**
+   * Validates and sanitizes user input
+   */
+  validateInput(value: string, options: ValidationOptions = {}): ValidationResult {
+    const result: ValidationResult = {
+      isValid: true,
+      sanitizedValue: value || '',
+      errors: [],
+      warnings: []
+    };
 
-  if (!data.rarity) {
-    errors.push('Rarity is required');
-  } else if (!['common', 'uncommon', 'rare', 'superRare', 'mythic'].includes(data.rarity)) {
-    errors.push('Invalid rarity type');
-  }
-
-  // Numeric validations
-  if (data.level !== undefined) {
-    const level = parseInt(data.level);
-    if (isNaN(level) || level < 1 || level > 10) {
-      errors.push('Level must be between 1 and 10');
+    // Required field validation
+    if (options.required && (!value || value.trim().length === 0)) {
+      result.isValid = false;
+      result.errors.push('This field is required');
+      return result;
     }
-  }
 
-  if (data.health !== undefined) {
-    const health = parseInt(data.health);
-    if (isNaN(health) || health < 1 || health > 999) {
-      errors.push('Health must be between 1 and 999');
+    // Skip further validation if empty and not required
+    if (!value) {
+      return result;
     }
-  }
 
-  // Skill damage validations
-  if (data.skill1Damage !== undefined) {
-    const damage = parseInt(data.skill1Damage);
-    if (isNaN(damage) || damage < 0 || damage > 999) {
-      errors.push('Skill 1 damage must be between 0 and 999');
+    // Length validation
+    if (options.maxLength && value.length > options.maxLength) {
+      result.isValid = false;
+      result.errors.push(`Maximum length is ${options.maxLength} characters`);
     }
-  }
 
-  if (data.skill2Damage !== undefined) {
-    const damage = parseInt(data.skill2Damage);
-    if (isNaN(damage) || damage < 0 || damage > 999) {
-      errors.push('Skill 2 damage must be between 0 and 999');
+    if (options.minLength && value.length < options.minLength) {
+      result.isValid = false;
+      result.errors.push(`Minimum length is ${options.minLength} characters`);
     }
-  }
 
-  // String length validations
-  if (data.description && data.description.length > 500) {
-    errors.push('Description cannot exceed 500 characters');
-  }
-
-  if (data.subType && data.subType.length > 50) {
-    errors.push('Sub-type cannot exceed 50 characters');
-  }
-
-  // Skill name validations
-  if (data.skill1Name && data.skill1Name.length > 50) {
-    errors.push('Skill 1 name cannot exceed 50 characters');
-  }
-
-  if (data.skill2Name && data.skill2Name.length > 50) {
-    errors.push('Skill 2 name cannot exceed 50 characters');
-  }
-
-  // Warnings for potentially problematic inputs
-  if (data.name && /[<>"\']/.test(data.name)) {
-    warnings.push('Card name contains potentially problematic characters');
-  }
-
-  if (data.description && /[<>]/.test(data.description)) {
-    warnings.push('Description contains HTML-like characters');
-  }
-
-  return {
-    isValid: errors.length === 0,
-    errors,
-    warnings
-  };
-};
-
-/**
- * Validates expansion data
- */
-export const validateExpansionData = (data: any): ValidationResult => {
-  const errors: string[] = [];
-  const warnings: string[] = [];
-
-  if (!data.id || typeof data.id !== 'string') {
-    errors.push('Expansion ID is required');
-  } else if (data.id.length < 3) {
-    errors.push('Expansion ID must be at least 3 characters');
-  } else if (!/^[a-z0-9-]+$/.test(data.id)) {
-    errors.push('Expansion ID can only contain lowercase letters, numbers, and hyphens');
-  }
-
-  if (!data.name || typeof data.name !== 'string') {
-    errors.push('Expansion name is required');
-  } else if (data.name.length < 2) {
-    errors.push('Expansion name must be at least 2 characters');
-  } else if (data.name.length > 100) {
-    errors.push('Expansion name cannot exceed 100 characters');
-  }
-
-  if (data.description && data.description.length > 1000) {
-    errors.push('Description cannot exceed 1000 characters');
-  }
-
-  if (data.totalCards !== undefined) {
-    const total = parseInt(data.totalCards);
-    if (isNaN(total) || total < 1 || total > 1000) {
-      errors.push('Total cards must be between 1 and 1000');
+    // XSS protection
+    result.sanitizedValue = this.sanitizeXSS(value);
+    if (result.sanitizedValue !== value) {
+      result.warnings.push('Potentially dangerous content was removed');
     }
-  }
 
-  return {
-    isValid: errors.length === 0,
-    errors,
-    warnings
-  };
-};
-
-/**
- * Validates deck data
- */
-export const validateDeckData = (data: any): ValidationResult => {
-  const errors: string[] = [];
-  const warnings: string[] = [];
-
-  if (!data.name || typeof data.name !== 'string') {
-    errors.push('Deck name is required');
-  } else if (data.name.length < 2) {
-    errors.push('Deck name must be at least 2 characters');
-  } else if (data.name.length > 100) {
-    errors.push('Deck name cannot exceed 100 characters');
-  }
-
-  if (data.description && data.description.length > 500) {
-    errors.push('Description cannot exceed 500 characters');
-  }
-
-  if (data.price !== undefined) {
-    const price = parseFloat(data.price);
-    if (isNaN(price) || price < 0 || price > 999.99) {
-      errors.push('Price must be between $0.00 and $999.99');
+    // Remove dangerous patterns
+    const beforeDangerousClean = result.sanitizedValue;
+    result.sanitizedValue = this.removeDangerousPatterns(result.sanitizedValue);
+    if (result.sanitizedValue !== beforeDangerousClean) {
+      result.warnings.push('Suspicious patterns were removed');
     }
-  }
 
-  if (!data.difficulty) {
-    errors.push('Difficulty level is required');
-  } else if (!['Beginner', 'Intermediate', 'Advanced', 'Expert'].includes(data.difficulty)) {
-    errors.push('Invalid difficulty level');
-  }
-
-  if (data.cardCount !== undefined) {
-    const count = parseInt(data.cardCount);
-    if (isNaN(count) || count < 40 || count > 60) {
-      errors.push('Card count must be between 40 and 60');
+    // HTML validation
+    if (!options.allowHtml && this.containsHtml(result.sanitizedValue)) {
+      result.sanitizedValue = this.stripHtml(result.sanitizedValue);
+      result.warnings.push('HTML tags were removed');
     }
-  }
 
-  return {
-    isValid: errors.length === 0,
-    errors,
-    warnings
-  };
-};
-
-/**
- * Sanitizes string input to prevent XSS and other issues
- */
-export const sanitizeString = (input: string): string => {
-  if (!input || typeof input !== 'string') return '';
-  
-  return input
-    .trim()
-    .replace(/[<>]/g, '') // Remove HTML-like characters
-    .replace(/['"]/g, '') // Remove quotes
-    .substring(0, 1000); // Limit length
-};
-
-/**
- * Validates numeric input with bounds
- */
-export const validateNumeric = (value: any, min: number, max: number): ValidationResult => {
-  const errors: string[] = [];
-  const warnings: string[] = [];
-
-  const num = parseFloat(value);
-  if (isNaN(num)) {
-    errors.push('Must be a valid number');
-  } else if (num < min) {
-    errors.push(`Must be at least ${min}`);
-  } else if (num > max) {
-    errors.push(`Must be at most ${max}`);
-  }
-
-  return {
-    isValid: errors.length === 0,
-    errors,
-    warnings
-  };
-};
-
-/**
- * Validates email format
- */
-export const validateEmail = (email: string): ValidationResult => {
-  const errors: string[] = [];
-  const warnings: string[] = [];
-
-  if (!email || typeof email !== 'string') {
-    errors.push('Email is required');
-  } else {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      errors.push('Invalid email format');
-    } else if (email.length > 254) {
-      errors.push('Email too long');
+    // Special characters validation
+    if (!options.allowSpecialChars && this.containsSpecialChars(result.sanitizedValue)) {
+      result.sanitizedValue = this.removeSpecialChars(result.sanitizedValue);
+      result.warnings.push('Special characters were removed');
     }
+
+    // Pattern validation
+    if (options.pattern && !options.pattern.test(result.sanitizedValue)) {
+      result.isValid = false;
+      result.errors.push('Input format is invalid');
+    }
+
+    // Custom validation
+    if (options.customValidator && !options.customValidator(result.sanitizedValue)) {
+      result.isValid = false;
+      result.errors.push('Input failed custom validation');
+    }
+
+    // Final trim
+    result.sanitizedValue = result.sanitizedValue.trim();
+
+    return result;
   }
 
-  return {
-    isValid: errors.length === 0,
-    errors,
-    warnings
-  };
-};
+  /**
+   * Validates card name input
+   */
+  validateCardName(name: string): ValidationResult {
+    return this.validateInput(name, {
+      required: true,
+      maxLength: 100,
+      minLength: 2,
+      allowHtml: false,
+      allowSpecialChars: true,
+      pattern: /^[a-zA-Z0-9\s\-'\.!]+$/
+    });
+  }
 
-/**
- * Validates URL format
- */
-export const validateUrl = (url: string): ValidationResult => {
-  const errors: string[] = [];
-  const warnings: string[] = [];
+  /**
+   * Validates expansion ID input
+   */
+  validateExpansionId(id: string): ValidationResult {
+    return this.validateInput(id, {
+      required: true,
+      maxLength: 50,
+      minLength: 3,
+      allowHtml: false,
+      allowSpecialChars: false,
+      pattern: /^[a-z0-9\-]+$/,
+      customValidator: (value) => !value.startsWith('-') && !value.endsWith('-')
+    });
+  }
 
-  if (!url || typeof url !== 'string') {
-    errors.push('URL is required');
-  } else {
-    try {
-      new URL(url);
-      if (!url.startsWith('http://') && !url.startsWith('https://')) {
-        warnings.push('URL should start with http:// or https://');
+  /**
+   * Validates description text
+   */
+  validateDescription(description: string): ValidationResult {
+    return this.validateInput(description, {
+      required: false,
+      maxLength: 1000,
+      allowHtml: false,
+      allowSpecialChars: true
+    });
+  }
+
+  /**
+   * Validates file names
+   */
+  validateFileName(fileName: string): ValidationResult {
+    return this.validateInput(fileName, {
+      required: true,
+      maxLength: 255,
+      minLength: 1,
+      allowHtml: false,
+      allowSpecialChars: false,
+      pattern: /^[a-zA-Z0-9\-_\.]+$/,
+      customValidator: (value) => {
+        const allowedExtensions = ['.png', '.jpg', '.jpeg', '.gif', '.svg', '.webp'];
+        return allowedExtensions.some(ext => value.toLowerCase().endsWith(ext));
       }
-    } catch {
-      errors.push('Invalid URL format');
-    }
+    });
   }
 
-  return {
-    isValid: errors.length === 0,
-    errors,
-    warnings
-  };
-};
+  /**
+   * Validates numeric input
+   */
+  validateNumber(value: string | number, min?: number, max?: number): ValidationResult {
+    const stringValue = String(value);
+    const numValue = Number(stringValue);
+    
+    const result: ValidationResult = {
+      isValid: true,
+      sanitizedValue: stringValue,
+      errors: [],
+      warnings: []
+    };
+
+    if (isNaN(numValue)) {
+      result.isValid = false;
+      result.errors.push('Must be a valid number');
+      return result;
+    }
+
+    if (min !== undefined && numValue < min) {
+      result.isValid = false;
+      result.errors.push(`Must be at least ${min}`);
+    }
+
+    if (max !== undefined && numValue > max) {
+      result.isValid = false;
+      result.errors.push(`Must be at most ${max}`);
+    }
+
+    result.sanitizedValue = String(numValue);
+    return result;
+  }
+
+  /**
+   * Sanitizes input to prevent XSS attacks
+   */
+  private sanitizeXSS(input: string): string {
+    let sanitized = input;
+    
+    this.xssPatterns.forEach(pattern => {
+      sanitized = sanitized.replace(pattern, '');
+    });
+
+    return sanitized;
+  }
+
+  /**
+   * Removes dangerous patterns
+   */
+  private removeDangerousPatterns(input: string): string {
+    let cleaned = input;
+    
+    this.dangerousPatterns.forEach(pattern => {
+      cleaned = cleaned.replace(pattern, '');
+    });
+
+    return cleaned;
+  }
+
+  /**
+   * Checks if input contains HTML
+   */
+  private containsHtml(input: string): boolean {
+    return /<[^>]*>/g.test(input);
+  }
+
+  /**
+   * Strips HTML tags from input
+   */
+  private stripHtml(input: string): string {
+    return input.replace(/<[^>]*>/g, '');
+  }
+
+  /**
+   * Checks if input contains special characters
+   */
+  private containsSpecialChars(input: string): boolean {
+    return /[<>{}[\]\\\/\0\x08\x0E-\x1F\x7F]/.test(input);
+  }
+
+  /**
+   * Removes special characters
+   */
+  private removeSpecialChars(input: string): string {
+    return input.replace(/[<>{}[\]\\\/\0\x08\x0E-\x1F\x7F]/g, '');
+  }
+
+  /**
+   * Batch validates multiple inputs
+   */
+  validateBatch(inputs: Array<{ value: string; options: ValidationOptions }>): ValidationResult[] {
+    return inputs.map(({ value, options }) => this.validateInput(value, options));
+  }
+
+  /**
+   * Creates a validation report
+   */
+  createValidationReport(results: ValidationResult[]): {
+    allValid: boolean;
+    totalErrors: number;
+    totalWarnings: number;
+    summary: string;
+  } {
+    const totalErrors = results.reduce((sum, r) => sum + r.errors.length, 0);
+    const totalWarnings = results.reduce((sum, r) => sum + r.warnings.length, 0);
+    const allValid = results.every(r => r.isValid);
+    
+    const summary = allValid 
+      ? `All ${results.length} inputs are valid`
+      : `${results.filter(r => !r.isValid).length} of ${results.length} inputs have errors`;
+
+    return {
+      allValid,
+      totalErrors,
+      totalWarnings,
+      summary
+    };
+  }
+}
+
+export const inputValidator = new InputValidator();
+
+// Utility functions for common validations
+export const validateCardName = (name: string) => inputValidator.validateCardName(name);
+export const validateExpansionId = (id: string) => inputValidator.validateExpansionId(id);
+export const validateDescription = (desc: string) => inputValidator.validateDescription(desc);
+export const validateFileName = (fileName: string) => inputValidator.validateFileName(fileName);
+export const validateNumber = (value: string | number, min?: number, max?: number) => 
+  inputValidator.validateNumber(value, min, max);
+
+export default inputValidator;
